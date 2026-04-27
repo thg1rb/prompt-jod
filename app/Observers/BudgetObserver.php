@@ -4,10 +4,8 @@ namespace App\Observers;
 
 use App\Enums\AlertStatus;
 use App\Enums\AlertType;
-use App\Enums\BudgetStatus;
 use App\Models\Budget;
 use App\Models\BudgetAlert;
-use App\Models\Transaction;
 
 class BudgetObserver
 {
@@ -28,42 +26,9 @@ class BudgetObserver
     }
 
     /**
-     * Handle the Transaction "created" event for budget updates.
-     */
-    public function created(Transaction $transaction): void
-    {
-        // Only check for expense transactions
-        if ($transaction->type !== \App\Enums\TransactionType::Expense) {
-            return;
-        }
-
-        // Find relevant budgets for this transaction
-        $budgets = Budget::active()
-            ->where('user_id', $transaction->user_id)
-            ->where(function ($query) use ($transaction) {
-                // Check if category matches or if budget has no specific category
-                $query->where('category_id', $transaction->category_id)
-                      ->orWhereNull('category_id');
-            })
-            ->where('year', $transaction->transacted_at->year)
-            ->where(function ($query) use ($transaction) {
-                // Match monthly budgets by month or yearly budgets
-                $query->where(function ($q) use ($transaction) {
-                    $q->where('period', 'monthly')
-                      ->where('month', $transaction->transacted_at->month);
-                })->orWhere('period', 'yearly');
-            })
-            ->get();
-
-        foreach ($budgets as $budget) {
-            $this->checkBudgetThresholds($budget);
-        }
-    }
-
-    /**
      * Check budget thresholds and create alerts if necessary.
      */
-    protected function checkBudgetThresholds(Budget $budget): void
+    public function checkBudgetThresholds(Budget $budget): void
     {
         if (!$budget->alert_enabled) {
             return;
@@ -85,14 +50,6 @@ class BudgetObserver
 
     /**
      * Create a budget alert if the threshold has been met and no alert exists.
-     *
-     * @param Budget $budget The budget to check
-     * @param AlertType $alertType The type of alert to create
-     * @param float $thresholdPercent The threshold percentage
-     * @param float $currentPercent The current percentage used
-     * @param float $amountSpent The amount spent
-     * @param float $amountRemaining The amount remaining
-     * @param bool $strict Whether to strictly match the threshold or use >=
      */
     protected function createAlertIfNeeded(
         Budget $budget,

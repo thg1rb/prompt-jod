@@ -1,3 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* CSS Custom Properties */
+:root {
+    --color-background: #ffffff;
+    --color-background-alt: #f8fafc;
+    --color-border: #e2e8f0;
+    --color-text-primary: #0f172a;
+    --color-text-muted: #64748b;
+    --color-destructive: #ef4444;
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-primary: #6366f1;
+    --chart-grid: #e2e8f0;
+}
+
+.dark {
+    --color-background: #1e293b;
+    --color-background-alt: #0f172a;
+    --color-border: #334155;
+    --color-text-primary: #f8fafc;
+    --color-text-muted: #94a3b8;
+    --chart-grid: #334155;
+}

@@ -30,9 +30,15 @@ Route::get('/auth/callback', function () {
     return redirect('/dashboard');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+use App\Http\Controllers\DashboardController;
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
+
+Route::get('/dashboard/filter', [DashboardController::class, 'filter'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard.filter');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
