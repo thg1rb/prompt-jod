@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'google_id', 'google_token', 'google_refresh_token'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -30,6 +30,25 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Find or create user by Google ID.
+     */
+    public static function findByGoogleId(string $googleId): ?self
+    {
+        return static::where('google_id', $googleId)->first();
+    }
+
+    /**
+     * Find user by email and link Google account.
+     */
+    public function linkGoogleAccount(string $googleId, string $token, ?string $refreshToken = null): void
+    {
+        $this->google_id = $googleId;
+        $this->google_token = $token;
+        $this->google_refresh_token = $refreshToken;
+        $this->save();
     }
 
     /**
