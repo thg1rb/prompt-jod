@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
-            แก้ไขบัญชี: {{ $wallet->name }}
+            แก้ไขกระเป๋าเงิน: {{ $wallet->name }}
         </h2>
     </x-slot>
 
@@ -13,7 +13,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
-                    กลับไปหน้าบัญชี
+                    กลับไปหน้ากระเป๋าเงิน
                 </a>
 
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -22,13 +22,13 @@
                         @method('put')
 
                         <div>
-                            <x-input-label for="name" value="ชื่อบัญชี" />
+                            <x-input-label for="name" value="ชื่อกระเป๋าเงิน" />
                             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" value="{{ old('name', $wallet->name) }}" required autofocus />
                             <x-input-error class="mt-2" :messages="$errors->get('name')" />
                         </div>
 
                         <div>
-                            <x-input-label for="type" value="ประเภทบัญชี" />
+                            <x-input-label for="type" value="ประเภทกระเป๋าเงิน" />
                             <select id="type" name="type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600" required x-model="walletType">
                                 <option value="bank">บัญชีธนาคาร</option>
                                 <option value="ewallet">เว็บเวล็ต</option>
@@ -52,7 +52,7 @@
                         </template>
 
                         <div>
-                            <x-input-label for="color" value="สีประจำบัญชี" />
+                            <x-input-label for="color" value="สีประจำกระเป๋าเงิน" />
                             <div class="flex gap-2 mt-1">
                                 <input type="color" id="color" name="color" value="{{ old('color', $wallet->color ?? '#6366f1') }}" class="h-10 w-16 border rounded cursor-pointer" />
                                 <x-text-input id="color_text" name="color_text" type="text" class="flex-1" value="{{ old('color', $wallet->color ?? '#6366f1') }}" readonly />
@@ -74,7 +74,7 @@
 
                         <div class="flex items-center">
                             <input type="checkbox" id="is_default" name="is_default" class="rounded border-gray-300 text-indigo-600 shadow-sm" {{ $wallet->is_default ? 'checked' : '' }} />
-                            <label for="is_default" class="ml-2 text-sm text-gray-700 dark:text-gray-300">ตั้งเป็นบัญชีหลัก</label>
+                            <label for="is_default" class="ml-2 text-sm text-gray-700 dark:text-gray-300">ตั้งเป็นกระเป๋าเงินหลัก</label>
                         </div>
 
                         <!-- Delete Section -->
@@ -82,16 +82,16 @@
                             <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">อันตราย</h4>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">
                                 @if($wallet->transactions()->exists())
-                                    ไม่สามารถลบบัญชีนี้ได้เนื่องจากมีธุรกรรมอยู่
+                                    ไม่สามารถลบกระเป๋าเงินนี้ได้เนื่องจากมีธุรกรรมอยู่
                                 @else
-                                    การลบบัญชีจะไม่สามารถเรียกคืนได้
+                                    การลบกระเป๋าเงินจะไม่สามารถเรียกคืนได้
                                 @endif
                             </p>
                             @if(!$wallet->transactions()->exists())
-                                <form method="POST" action="{{ route('wallets.destroy', $wallet) }}" onsubmit="return confirm('คุณต้องการลบบัญชีนี้ใช่ไหม?');">
+                                <form method="POST" action="{{ route('wallets.destroy', $wallet) }}" onsubmit="return confirm('คุณต้องการลบกระเป๋าเงินนี้ใช่ไหม?');">
                                     @csrf
                                     @method('delete')
-                                    <x-danger-button>ลบบัญชี</x-danger-button>
+                                    <x-danger-button>ลบกระเป๋าเงิน</x-danger-button>
                                 </form>
                             @endif
                         </div>

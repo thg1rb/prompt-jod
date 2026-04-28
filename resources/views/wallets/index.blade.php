@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
-            บัญชีเงินของฉัน
+            กระเป๋าเงินของฉัน
         </h2>
     </x-slot>
 
@@ -10,8 +10,8 @@
             <!-- Header Section -->
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">บัญชีเงิน</h1>
-                    <p class="text-gray-500 dark:text-gray-400 mt-1">จัดการบัญชีเงินและยอดคงเหลือ</p>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">กระเป๋าเงิน</h1>
+                    <p class="text-gray-500 dark:text-gray-400 mt-1">จัดการกระเป๋าเงินและยอดคงเหลือ</p>
                 </div>
                 <button
                     onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'create-wallet' }))"
@@ -20,7 +20,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    เพิ่มบัญชีใหม่
+                    เพิ่มกระเป๋าเงินใหม่
                 </button>
             </div>
 
@@ -52,8 +52,8 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                     </svg>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">ยังไม่มีบัญชี</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mb-4">เริ่มต้นด้วยการเพิ่มบัญชีเงินแรกของคุณ</p>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">ยังไม่มีกระเป๋าเงิน</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mb-4">เริ่มต้นด้วยการเพิ่มกระเป๋าเงินแรกของคุณ</p>
                     <button
                         onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'create-wallet' }))"
                         class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
@@ -61,7 +61,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
-                        เพิ่มบัญชีใหม่
+                        เพิ่มกระเป๋าเงินใหม่
                     </button>
                 </div>
             @else
@@ -74,7 +74,7 @@
                                     <div>
                                         @if($wallet->is_default)
                                             <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-white/20 text-white mb-2">
-                                                บัญชีหลัก
+                                                กระเป๋าเงินหลัก
                                             </span>
                                         @endif
                                         <h3 class="text-lg font-semibold text-white">{{ $wallet->name }}</h3>
@@ -137,16 +137,16 @@
     <!-- Create Wallet Modal -->
     <x-modal name="create-wallet" maxWidth="2xl">
         <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">เพิ่มบัญชีใหม่</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">เพิ่มกระเป๋าเงินใหม่</h3>
             <form method="POST" action="{{ route('wallets.store') }}" class="space-y-4">
                 @csrf
                 <div>
-                    <x-input-label for="name" value="ชื่อบัญชี" />
+                    <x-input-label for="name" value="ชื่อกระเป๋าเงิน" />
                     <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" required autofocus />
                     <x-input-error class="mt-2" :messages="$errors->get('name')" />
                 </div>
                 <div>
-                    <x-input-label for="type" value="ประเภทบัญชี" />
+                    <x-input-label for="type" value="ประเภทกระเป๋าเงิน" />
                     <select id="type" name="type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600" required x-model="walletType">
                         <option value="">เลือกประเภท</option>
                         <option value="bank">บัญชีธนาคาร</option>
@@ -173,7 +173,7 @@
                     <x-input-error class="mt-2" :messages="$errors->get('opening_balance')" />
                 </div>
                 <div>
-                    <x-input-label for="color" value="สีประจำบัญชี" />
+                    <x-input-label for="color" value="สีประจำกระเป๋าเงิน" />
                     <div class="flex gap-2 mt-1">
                         <input type="color" id="color" name="color" value="#6366f1" class="h-10 w-16 border rounded cursor-pointer" />
                         <x-text-input id="color_text" name="color_text" type="text" class="flex-1" value="#6366f1" readonly />
@@ -192,7 +192,7 @@
                 </div>
                 <div class="flex items-center">
                     <input type="checkbox" id="is_default" name="is_default" class="rounded border-gray-300 text-indigo-600 shadow-sm" />
-                    <label for="is_default" class="ml-2 text-sm text-gray-700 dark:text-gray-300">ตั้งเป็นบัญชีหลัก</label>
+                    <label for="is_default" class="ml-2 text-sm text-gray-700 dark:text-gray-300">ตั้งเป็นกระเป๋าเงินหลัก</label>
                 </div>
                 <div class="flex gap-3 pt-4">
                     <button

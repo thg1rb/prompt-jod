@@ -16,7 +16,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     <x-nav-link :href="route('wallets.index')" :active="request()->routeIs('wallets.*')">
-                        บัญชีเงิน
+                        กระเป๋าเงิน
                     </x-nav-link>
                 </div>
             </div>
@@ -74,7 +74,7 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('wallets.index')" :active="request()->routeIs('wallets.*')">
-                บัญชีเงิน
+                กระเป๋าเงิน
             </x-responsive-nav-link>
         </div>
 

@@ -12,7 +12,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
-                กลับไปหน้าบัญชีทั้งหมด
+                กลับไปหน้ากระเป๋าเงินทั้งหมด
             </a>
 
             <!-- Success Message -->
@@ -30,7 +30,7 @@
                         <div>
                             @if($wallet->is_default)
                                 <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-white/20 text-white mb-2">
-                                            บัญชีหลัก
+                                            กระเป๋าเงินหลัก
                                         </span>
                             @endif
                             <h1 class="text-2xl font-bold text-white">{{ $wallet->name }}</h1>
