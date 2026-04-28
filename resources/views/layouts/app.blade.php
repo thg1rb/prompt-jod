@@ -14,14 +14,14 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-background text-text-primary">
+    <body class="antialiased">
         <!-- Desktop layout: sidebar + content side by side -->
         <div class="hidden lg:flex min-h-screen">
             <!-- Desktop sidebar -->
             <x-desktop-sidebar />
 
             <!-- Main content area -->
-            <div class="flex-1 flex flex-col min-h-screen">
+            <div class="flex-1 flex flex-col min-h-screen bg-background">
                 <!-- Page Content -->
                 <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
                     {{ $slot }}
@@ -30,7 +30,7 @@
         </div>
 
         <!-- Mobile/tablet layout: top bar + bottom bar -->
-        <div class="lg:hidden flex flex-col min-h-screen">
+        <div class="lg:hidden flex flex-col min-h-screen bg-background">
             <!-- Top bar (mobile/tablet only) -->
             <x-top-bar />
 

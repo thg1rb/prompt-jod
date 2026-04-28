@@ -4,17 +4,17 @@
     x-init="$store.sidebar.init()"
 >
     <!-- Logo section -->
-    <div class="h-16 flex items-center gap-2 border-b border-border overflow-hidden" :class="$store.sidebar.collapsed ? 'px-3 justify-center' : 'px-5'">
+    <div class="h-16 flex items-center gap-2 border-b border-sidebar-border overflow-hidden" :class="$store.sidebar.collapsed ? 'px-3 justify-center' : 'px-5'">
         <!-- App logo (hidden when collapsed) -->
         <div x-show="!$store.sidebar.collapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="flex items-center gap-2 shrink-0" style="display: none;">
-            <a href="{{ route('dashboard') }}" class="h-9 w-9 rounded-lg bg-primary text-primary-foreground grid place-items-center">
+            <a href="{{ route('dashboard') }}" class="h-9 w-9 rounded-lg bg-sidebar-primary text-sidebar-primary-foreground grid place-items-center">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
             </a>
             <div class="truncate">
-                <div class="font-semibold text-text-primary leading-tight">PromptJod</div>
-                <div class="text-xs text-text-muted">จัดการสลิปอัจฉริยะ</div>
+                <div class="font-semibold text-sidebar-foreground leading-tight">PromptJod</div>
+                <div class="text-xs text-muted-foreground">จัดการสลิปอัจฉริยะ</div>
             </div>
         </div>
 
@@ -22,7 +22,7 @@
         <button
             @click="$store.sidebar.toggle()"
             type="button"
-            class="shrink-0 inline-flex items-center justify-center p-1.5 rounded-lg text-text-secondary hover:bg-sidebar-accent hover:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            class="shrink-0 inline-flex items-center justify-center p-1.5 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-sidebar-ring focus:ring-offset-2 focus:ring-offset-sidebar"
             :class="$store.sidebar.collapsed ? 'mx-auto' : 'ml-auto'"
             :aria-label="$store.sidebar.collapsed ? 'ขยายเมนู' : 'ย่อเมนู'"
         >
@@ -40,7 +40,7 @@
         <!-- Dashboard -->
         <a
             href="{{ route('dashboard') }}"
-            class="{{ request()->routeIs('dashboard') ? '!bg-primary/10 !text-primary font-medium' : 'text-text-secondary hover:bg-sidebar-accent' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            class="{{ request()->routeIs('dashboard') ? '!bg-sidebar-primary !text-sidebar-primary-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
             :class="$store.sidebar.collapsed ? 'justify-center' : ''"
         >
             <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -52,7 +52,7 @@
         <!-- Wallets -->
         <a
             href="{{ route('wallets.index') }}"
-            class="{{ request()->routeIs('wallets.*') ? '!bg-primary/10 !text-primary font-medium' : 'text-text-secondary hover:bg-sidebar-accent' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            class="{{ request()->routeIs('wallets.*') ? '!bg-sidebar-primary !text-sidebar-primary-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
             :class="$store.sidebar.collapsed ? 'justify-center' : ''"
         >
             <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -64,7 +64,7 @@
         <!-- Profile -->
         <a
             href="{{ route('profile.edit') }}"
-            class="{{ request()->routeIs('profile.*') ? '!bg-primary/10 !text-primary font-medium' : 'text-text-secondary hover:bg-sidebar-accent' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
+            class="{{ request()->routeIs('profile.*') ? '!bg-sidebar-primary !text-sidebar-primary-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
             :class="$store.sidebar.collapsed ? 'justify-center' : ''"
         >
             <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -75,20 +75,20 @@
     </nav>
 
     <!-- User profile section -->
-    <div class="p-3 border-t border-border">
+    <div class="p-3 border-t border-sidebar-border">
         <div class="flex items-center gap-3 px-2 py-2" :class="$store.sidebar.collapsed ? 'justify-center' : ''">
-            <div class="h-9 w-9 rounded-full bg-primary-muted text-primary grid place-items-center font-semibold shrink-0">
+            <div class="h-9 w-9 rounded-full bg-primary/10 text-sidebar-primary grid place-items-center font-semibold shrink-0">
                 {{ Auth::user()->name[0] ?? '?' }}
             </div>
-            <div x-show="!$store.sidebar.collapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="flex-1 min-w-0">
-                <div class="text-sm font-medium text-text-primary truncate">{{ Auth::user()->name }}</div>
-                <div class="text-xs text-text-muted truncate">{{ Auth::user()->email }}</div>
+            <div x-show="!$store.sidebar.collapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave:transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="flex-1 min-w-0">
+                <div class="text-sm font-medium text-sidebar-foreground truncate">{{ Auth::user()->name }}</div>
+                <div class="text-xs text-muted-foreground truncate">{{ Auth::user()->email }}</div>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="inline" x-show="!$store.sidebar.collapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display: none;">
                 @csrf
                 <button
                     type="submit"
-                    class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-text-secondary hover:bg-sidebar-accent hover:text-destructive transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2"
+                    class="inline-flex items-center justify-center h-8 w-8 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-colors focus:outline-none focus:ring-2 focus:ring-destructive focus:ring-offset-2 focus:ring-offset-sidebar"
                     aria-label="ออกจากระบบ"
                 >
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

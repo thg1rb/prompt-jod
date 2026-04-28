@@ -18,7 +18,7 @@ $iconClasses = match($size) {
 <button
     type="button"
     @click="$store.theme.toggle()"
-    class="{{ $sizeClasses }} inline-flex items-center justify-center rounded-lg border border-border bg-card text-text-secondary hover:bg-sidebar-accent hover:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+    class="{{ $sizeClasses }} inline-flex items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
     aria-label="เปลี่ยนธีม"
 >
     <!-- Sun icon (shown in dark mode) -->
