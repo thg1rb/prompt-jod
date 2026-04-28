@@ -4,6 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent flash of wrong theme */
+@layer base {
+  /* Hide body until theme is applied, then show it */
+  body {
+    opacity: 1;
+  }
+}
+
 /* PromptJod design system. All colors MUST be HSL. */
 @layer base {
   :root {
