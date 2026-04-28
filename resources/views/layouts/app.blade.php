@@ -22,15 +22,6 @@
 
             <!-- Main content area -->
             <div class="flex-1 flex flex-col min-h-screen">
-                <!-- Page Heading -->
-                @isset($header)
-                    <header class="bg-background border-b border-border">
-                        <div class="px-4 py-6 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
-                @endisset
-
                 <!-- Page Content -->
                 <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
                     {{ $slot }}
@@ -45,15 +36,6 @@
 
             <!-- Main content area -->
             <div class="flex-1">
-                <!-- Page Heading -->
-                @isset($header)
-                    <header class="bg-background border-b border-border">
-                        <div class="px-4 py-6 sm:px-6 lg:px-8">
-                            {{ $header }}
-                        </div>
-                    </header>
-                @endisset
-
                 <!-- Page Content -->
                 <main class="px-4 py-6 sm:px-6 lg:px-8 pb-20">
                     {{ $slot }}

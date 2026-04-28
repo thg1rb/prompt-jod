@@ -138,6 +138,29 @@ Alpine.store('mobileMenu', {
     }
 });
 
+// Desktop sidebar store
+Alpine.store('sidebar', {
+    collapsed: false,
+    toggle() {
+        this.collapsed = !this.collapsed;
+        localStorage.setItem('sidebarCollapsed', this.collapsed);
+    },
+    collapse() {
+        this.collapsed = true;
+        localStorage.setItem('sidebarCollapsed', 'true');
+    },
+    expand() {
+        this.collapsed = false;
+        localStorage.setItem('sidebarCollapsed', 'false');
+    },
+    init() {
+        const saved = localStorage.getItem('sidebarCollapsed');
+        if (saved === 'true') {
+            this.collapsed = true;
+        }
+    }
+});
+
 // Register chart components
 Alpine.data('pieChart', pieChart);
 Alpine.data('barChart', barChart);
