@@ -86,45 +86,46 @@ Alpine.directive('tooltip', (el, { expression }, { evaluateLater, effect }) => {
 });
 
 // Theme store for managing light/dark mode
-Alpine.store('theme', () => {
-    const isDark = () => document.documentElement.classList.contains('dark');
-
-    return {
-        isDark: isDark(),
-        init() {
-            // Check localStorage or system preference
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-                this.isDark = true;
-            } else {
-                document.documentElement.classList.remove('dark');
-                this.isDark = false;
-            }
-
-            // Listen for system theme changes
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                if (!('theme' in localStorage)) {
-                    this.isDark = e.matches;
-                    document.documentElement.classList.toggle('dark', e.matches);
-                }
-            });
-        },
-        toggle() {
-            this.isDark = !this.isDark;
-            document.documentElement.classList.toggle('dark', this.isDark);
-            localStorage.theme = this.isDark ? 'dark' : 'light';
-        },
-        setDark() {
+Alpine.store('theme', {
+    isDark: false,
+    init() {
+        // Check localStorage or system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
             this.isDark = true;
+        } else {
+            document.documentElement.classList.remove('dark');
+            this.isDark = false;
+        }
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!('theme' in localStorage)) {
+                this.isDark = e.matches;
+                document.documentElement.classList.toggle('dark', e.matches);
+            }
+        });
+    },
+    toggle() {
+        this.isDark = !this.isDark;
+        if (this.isDark) {
             document.documentElement.classList.add('dark');
             localStorage.theme = 'dark';
-        },
-        setLight() {
-            this.isDark = false;
+        } else {
             document.documentElement.classList.remove('dark');
             localStorage.theme = 'light';
         }
-    };
+    },
+    setDark() {
+        this.isDark = true;
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+    },
+    setLight() {
+        this.isDark = false;
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
+    }
 });
 
 // Mobile menu store
@@ -165,5 +166,8 @@ Alpine.store('sidebar', {
 Alpine.data('pieChart', pieChart);
 Alpine.data('barChart', barChart);
 Alpine.data('dashboard', dashboard);
+
+// Initialize theme store
+Alpine.store('theme').init();
 
 Alpine.start();
