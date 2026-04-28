@@ -31,6 +31,7 @@ Route::get('/auth/callback', function () {
 });
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\WalletController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -44,6 +45,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Wallet Routes
+    Route::get('/wallets', [WalletController::class, 'index'])->name('wallets.index');
+    Route::get('/wallets/create', [WalletController::class, 'create'])->name('wallets.create');
+    Route::post('/wallets', [WalletController::class, 'store'])->name('wallets.store');
+    Route::get('/wallets/{wallet}', [WalletController::class, 'show'])->name('wallets.show');
+    Route::get('/wallets/{wallet}/edit', [WalletController::class, 'edit'])->name('wallets.edit');
+    Route::put('/wallets/{wallet}', [WalletController::class, 'update'])->name('wallets.update');
+    Route::delete('/wallets/{wallet}', [WalletController::class, 'destroy'])->name('wallets.destroy');
+
+    // Balance Adjustment
+    Route::post('/wallets/{wallet}/adjust-balance', [WalletController::class, 'adjustBalance'])->name('wallets.adjust-balance');
+    Route::get('/wallets/{wallet}/adjustments', [WalletController::class, 'adjustments'])->name('wallets.adjustments');
+
+    // Set Default
+    Route::post('/wallets/{wallet}/set-default', [WalletController::class, 'setDefault'])->name('wallets.set-default');
 });
 
 require __DIR__.'/auth.php';
