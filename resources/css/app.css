@@ -4,25 +4,144 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Custom Properties */
-:root {
-    --color-background: #ffffff;
-    --color-background-alt: #f8fafc;
-    --color-border: #e2e8f0;
-    --color-text-primary: #0f172a;
-    --color-text-muted: #64748b;
-    --color-destructive: #ef4444;
-    --color-success: #22c55e;
-    --color-warning: #f59e0b;
-    --color-primary: #6366f1;
-    --chart-grid: #e2e8f0;
+@layer base {
+    html, body {
+        @apply m-0 p-0;
+    }
+
+    body {
+        @apply min-h-screen;
+    }
+
+    :root {
+        /* Background colors */
+        --color-background: 0 0% 100%;
+        --color-background-alt: 210 40% 98%;
+        --color-card: 0 0% 100%;
+        --color-sidebar: 0 0% 100%;
+        --color-sidebar-accent: 210 40% 96%;
+
+        /* Border colors */
+        --color-border: 214 32% 91%;
+        --color-border-muted: 214 32% 96%;
+
+        /* Text colors */
+        --color-text-primary: 222 47% 11%;
+        --color-text-secondary: 215 16% 47%;
+        --color-text-muted: 215 20% 65%;
+
+        /* Primary brand colors */
+        --color-primary: 239 84% 67%;
+        --color-primary-foreground: 0 0% 100%;
+        --color-primary-hover: 239 84% 60%;
+        --color-primary-muted: 239 84% 90%;
+
+        /* Destructive colors */
+        --color-destructive: 0 84% 60%;
+        --color-destructive-foreground: 0 0% 100%;
+
+        /* Success colors */
+        --color-success: 142 76% 36%;
+        --color-success-foreground: 0 0% 100%;
+
+        /* Warning colors */
+        --color-warning: 38 92% 50%;
+        --color-warning-foreground: 0 0% 100%;
+
+        /* Elevation */
+        --color-elevated: 0 0% 100% / 0.8;
+
+        /* Chart grid */
+        --chart-grid: 214 32% 91%;
+
+        /* Safe area insets for mobile */
+        --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .dark {
+        /* Background colors */
+        --color-background: 222 47% 11%;
+        --color-background-alt: 224 71% 4%;
+        --color-card: 222 47% 11%;
+        --color-sidebar: 224 71% 4%;
+        --color-sidebar-accent: 217 33% 17%;
+
+        /* Border colors */
+        --color-border: 217 33% 17%;
+        --color-border-muted: 217 33% 15%;
+
+        /* Text colors */
+        --color-text-primary: 210 40% 98%;
+        --color-text-secondary: 215 20% 65%;
+        --color-text-muted: 215 16% 47%;
+
+        /* Primary brand colors */
+        --color-primary: 239 84% 67%;
+        --color-primary-foreground: 0 0% 100%;
+        --color-primary-hover: 239 84% 75%;
+        --color-primary-muted: 239 84% 20%;
+
+        /* Elevation */
+        --color-elevated: 222 47% 11% / 0.8;
+
+        /* Chart grid */
+        --chart-grid: 217 33% 17%;
+    }
 }
 
-.dark {
-    --color-background: #1e293b;
-    --color-background-alt: #0f172a;
-    --color-border: #334155;
-    --color-text-primary: #f8fafc;
-    --color-text-muted: #94a3b8;
-    --chart-grid: #334155;
+@layer components {
+    /* Utility classes mapped to CSS variables */
+    .bg-background { background-color: hsl(var(--color-background)); }
+    .bg-background-alt { background-color: hsl(var(--color-background-alt)); }
+    .bg-card { background-color: hsl(var(--color-card)); }
+    .bg-sidebar { background-color: hsl(var(--color-sidebar)); }
+    .bg-sidebar-accent { background-color: hsl(var(--color-sidebar-accent)); }
+    .bg-primary { background-color: hsl(var(--color-primary)); }
+    .bg-primary-foreground { background-color: hsl(var(--color-primary-foreground)); }
+    .bg-primary-muted { background-color: hsl(var(--color-primary-muted)); }
+    .bg-destructive { background-color: hsl(var(--color-destructive)); }
+
+    .border-border { border-color: hsl(var(--color-border)); }
+    .border-border-muted { border-color: hsl(var(--color-border-muted)); }
+
+    .text-text-primary { color: hsl(var(--color-text-primary)); }
+    .text-text-secondary { color: hsl(var(--color-text-secondary)); }
+    .text-text-muted { color: hsl(var(--color-text-muted)); }
+    .text-primary { color: hsl(var(--color-primary)); }
+    .text-primary-foreground { color: hsl(var(--color-primary-foreground)); }
+    .text-destructive { color: hsl(var(--color-destructive)); }
+
+    .shadow-elevated {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .dark .shadow-elevated {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Backdrop blur utilities */
+    .backdrop-blur-md {
+        backdrop-filter: blur(12px);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: hsl(var(--color-background-alt));
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: hsl(var(--color-border));
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: hsl(var(--color-text-muted));
+    }
 }
