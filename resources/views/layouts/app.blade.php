@@ -14,7 +14,15 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="antialiased">
+    <body
+        class="antialiased"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-100"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-out duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-100"
+    >
         <!-- Desktop layout: sidebar + content side by side -->
         <div class="hidden lg:flex min-h-screen">
             <!-- Desktop sidebar -->

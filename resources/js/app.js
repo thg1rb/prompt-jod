@@ -88,6 +88,7 @@ Alpine.directive('tooltip', (el, { expression }, { evaluateLater, effect }) => {
 // Theme store for managing light/dark mode
 Alpine.store('theme', {
     isDark: false,
+    isTransitioning: false,
     init() {
         // Check localStorage or system preference
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -107,14 +108,28 @@ Alpine.store('theme', {
         });
     },
     toggle() {
-        this.isDark = !this.isDark;
-        if (this.isDark) {
-            document.documentElement.classList.add('dark');
-            localStorage.theme = 'dark';
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.theme = 'light';
-        }
+        if (this.isTransitioning) return;
+        this.isTransitioning = true;
+
+        // Add a subtle fade effect
+        document.body.style.opacity = '0.95';
+
+        setTimeout(() => {
+            this.isDark = !this.isDark;
+            if (this.isDark) {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            }
+
+            // Restore opacity
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                this.isTransitioning = false;
+            }, 200);
+        }, 100);
     },
     setDark() {
         this.isDark = true;
