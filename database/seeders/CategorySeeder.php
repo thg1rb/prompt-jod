@@ -8,76 +8,71 @@ use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         DB::statement('SET CONSTRAINTS ALL DEFERRED');
 
         $defaultCategories = [
             [
-                'name' => 'Food',
-                'description' => 'Restaurants, cafes, groceries, and food delivery',
-                'color' => '#ef4444', // red-500
-                'icon' => 'food',
+                'name' => 'อาหาร & เครื่องดื่ม',
+                'description' => 'ร้านอาหาร คาเฟ่ ซูเปอร์มาร์เก็ต และอาหารส่ง',
+                'color' => '#EC4899',
+                'icon' => '🍜',
                 'sort_order' => 1,
             ],
             [
-                'name' => 'Shopping',
-                'description' => 'Clothing, electronics, and retail purchases',
-                'color' => '#f97316', // orange-500
-                'icon' => 'shopping-bag',
+                'name' => 'ช้อปปิ้ง',
+                'description' => 'เสื้อผ้า อิเล็กทรอนิกส์ และการซื้อของ',
+                'color' => '#F59E0B',
+                'icon' => '🛍️',
                 'sort_order' => 2,
             ],
             [
-                'name' => 'Transport',
-                'description' => 'Fuel, public transport, ride-sharing, and parking',
-                'color' => '#eab308', // yellow-500
-                'icon' => 'car',
+                'name' => 'เดินทาง',
+                'description' => 'น้ำมัน การเดินทางสาธารณะ และที่จอดรถ',
+                'color' => '#EC4899',
+                'icon' => '🚗',
                 'sort_order' => 3,
             ],
             [
-                'name' => 'Utilities',
-                'description' => 'Electricity, water, internet, and phone bills',
-                'color' => '#22c55e', // green-500
-                'icon' => 'bolt',
+                'name' => 'ค่าสาธารณูปโภค',
+                'description' => 'ไฟฟ้า น้ำ อินเทอร์เน็ต และโทรศัพท์',
+                'color' => '#EF4444',
+                'icon' => '💡',
                 'sort_order' => 4,
             ],
             [
-                'name' => 'Entertainment',
-                'description' => 'Movies, games, streaming, and hobbies',
-                'color' => '#14b8a6', // teal-500
-                'icon' => 'film',
+                'name' => 'บันเทิง',
+                'description' => 'ภาพยนตร์ เกม สตรีมมิ่ง และงานอดิเรก',
+                'color' => '#F59E0B',
+                'icon' => '🎬',
                 'sort_order' => 5,
             ],
             [
-                'name' => 'Health',
-                'description' => 'Medical, pharmacy, fitness, and wellness',
-                'color' => '#3b82f6', // blue-500
-                'icon' => 'heart',
+                'name' => 'สุขภาพ',
+                'description' => 'การแพทย์ ร้านขายยา ฟิตเนส และสุขภาพ',
+                'color' => '#F59E0B',
+                'icon' => '🏥',
                 'sort_order' => 6,
             ],
             [
-                'name' => 'Finance',
-                'description' => 'Insurance, investments, and banking fees',
-                'color' => '#8b5cf6', // violet-500
-                'icon' => 'bank',
+                'name' => 'การเงิน',
+                'description' => 'ประกัน การลงทุน และค่าธรรมเนียมธนาคาร',
+                'color' => '#10B981',
+                'icon' => '🏦',
                 'sort_order' => 7,
             ],
             [
-                'name' => 'Other',
-                'description' => 'Miscellaneous expenses',
-                'color' => '#6b7280', // gray-500
-                'icon' => 'dots-horizontal',
+                'name' => 'อื่น ๆ',
+                'description' => 'ค่าใช้จ่ายอื่นๆ',
+                'color' => '#3B82F6',
+                'icon' => '📌',
                 'sort_order' => 99,
             ],
         ];
 
-        // Create system categories for all existing users
         foreach (Category::withTrashed()->get()->pluck('user_id')->unique() as $userId) {
             foreach ($defaultCategories as $category) {
-                // Check if category already exists for this user
                 $existing = Category::withTrashed()
                     ->where('user_id', $userId)
                     ->where('name', $category['name'])
