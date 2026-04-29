@@ -90,12 +90,7 @@ class WalletController extends Controller
                 ->limit(50);
         }]);
 
-        $recentAdjustments = $wallet->balanceAdjustments()
-            ->recent()
-            ->limit(10)
-            ->get();
-
-        return view('wallets.show', compact('wallet', 'recentAdjustments'));
+        return view('wallets.show', compact('wallet'));
     }
 
     /**
@@ -170,7 +165,7 @@ class WalletController extends Controller
             'adjustment_amount' => $adjustmentAmount,
             'reason' => 'manual_adjustment',
             'notes' => $data['notes'],
-            'adjusted_at' => $data['adjusted_at'] ?? now(),
+            'adjusted_at' => now(),
         ]);
 
         // Update wallet balance
@@ -179,20 +174,6 @@ class WalletController extends Controller
         return redirect()
             ->route('wallets.show', $wallet)
             ->with('success', 'ปรับยอดเงินเรียบร้อยแล้ว');
-    }
-
-    /**
-     * Display balance adjustment history for the wallet.
-     */
-    public function adjustments(Wallet $wallet): View
-    {
-        $this->authorizeWallet($wallet);
-
-        $adjustments = $wallet->balanceAdjustments()
-            ->recent()
-            ->paginate(20);
-
-        return view('wallets.adjustments', compact('wallet', 'adjustments'));
     }
 
     /**

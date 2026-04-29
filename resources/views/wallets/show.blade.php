@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="space-y-6" x-data="{ editOpen: false, adjustOpen: false, draft: { type: '{{ $wallet->type->value }}' } }">
+    <div class="space-y-6" x-data="{ editOpen: false, adjustOpen: false, draft: { type: '{{ $wallet->type->value }}' }, activeTab: 'transactions' }">
         <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Back Button -->
@@ -90,17 +90,25 @@
             <!-- Tabs -->
             <div class="border-b border-gray-200 dark:border-gray-700">
                 <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <a href="#" class="border-indigo-500 text-indigo-600 dark:text-indigo-400 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <button
+                        @click="activeTab = 'transactions'"
+                        :class="activeTab === 'transactions' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                    >
                         ธุรกรรมล่าสุด
-                    </a>
-                    <a href="{{ route('wallets.adjustments', $wallet) }}" class="border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    </button>
+                    <button
+                        @click="activeTab = 'adjustments'"
+                        :class="activeTab === 'adjustments' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'"
+                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm"
+                    >
                         ประวัติการปรับยอด ({{ $wallet->balanceAdjustments()->count() }})
-                    </a>
+                    </button>
                 </nav>
             </div>
 
-            <!-- Recent Transactions -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <!-- Transactions Tab -->
+            <div x-show="activeTab === 'transactions'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">ธุรกรรมล่าสุด</h3>
 
                 @if($wallet->transactions->isEmpty())
@@ -151,12 +159,19 @@
                 @endif
             </div>
 
-            <!-- Recent Balance Adjustments -->
-            @if($recentAdjustments->isNotEmpty())
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">การปรับยอดล่าสุด</h3>
+            <!-- Adjustments Tab -->
+            <div x-show="activeTab === 'adjustments'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">ประวัติการปรับยอด</h3>
+                @if($wallet->balanceAdjustments->isEmpty())
+                    <div class="text-center py-12">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-gray-500 dark:text-gray-400">ยังไม่มีการปรับยอด</p>
+                    </div>
+                @else
                     <div class="space-y-3">
-                        @foreach($recentAdjustments as $adjustment)
+                        @foreach($wallet->balanceAdjustments as $adjustment)
                             <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                                 <div class="flex items-center gap-4">
                                     <div class="p-3 rounded-lg {{ $adjustment->isIncrease() ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">
@@ -182,9 +197,10 @@
                             </div>
                         @endforeach
                     </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
+    </div>
     </div>
 
     <!-- Adjust Balance Modal -->
@@ -297,6 +313,5 @@
                 </div>
             </form>
         </div>
-    </div>
     </div>
 </x-app-layout>
