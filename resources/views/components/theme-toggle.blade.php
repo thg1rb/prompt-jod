@@ -8,17 +8,17 @@ $sizeClasses = match($size) {
     default => 'h-9 w-9'
 };
 $iconClasses = match($size) {
-    'sm' => 'h-3.5 w-3.5',
-    'default' => 'h-4 w-4',
-    'lg' => 'h-5 w-5',
-    default => 'h-4 w-4'
+    'sm' => 'h-2.5 w-2.5',
+    'default' => 'h-3 w-3',
+    'lg' => 'h-3.5 w-3.5',
+    default => 'h-3 w-3'
 };
 @endphp
 
 <button
     type="button"
     @click="$store.theme.toggle()"
-    class="{{ $sizeClasses }} inline-flex items-center justify-center rounded-lg border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+    class="{{ $sizeClasses }} inline-flex items-center justify-center rounded-lg text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
     aria-label="เปลี่ยนธีม"
 >
     <!-- Sun icon (shown in dark mode) -->

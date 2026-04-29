@@ -20,6 +20,9 @@ class WalletController extends Controller
     {
         $wallets = auth()->user()
             ->wallets()
+            ->with(['transactions' => function ($query) {
+                $query->latest()->limit(3);
+            }])
             ->withCount(['transactions', 'balanceAdjustments'])
             ->orderBy('is_default', 'desc')
             ->orderBy('name')
