@@ -32,6 +32,7 @@ Route::get('/auth/callback', function () {
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\CategoryController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -60,6 +61,13 @@ Route::middleware('auth')->group(function () {
 
     // Set Default
     Route::post('/wallets/{wallet}/set-default', [WalletController::class, 'setDefault'])->name('wallets.set-default');
+
+    // Category Routes
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/categories/data', [CategoryController::class, 'data'])->name('categories.data');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 });
 
 require __DIR__.'/auth.php';
