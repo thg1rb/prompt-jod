@@ -154,6 +154,13 @@
                             <p class="text-sm text-destructive mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-foreground mb-1">หมายเหตุ</label>
+                        <textarea id="notes" name="notes" rows="2" placeholder="เพิ่มบันทึกเกี่ยวกับกระเป๋าเงินนี้" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"></textarea>
+                        @error('notes')
+                            <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                     <div class="flex items-center gap-2">
                         <input type="checkbox" id="is_default" name="is_default" class="rounded border-border text-primary focus:ring-ring" />
                         <label for="is_default" class="text-sm text-foreground">ตั้งเป็นกระเป๋าหลัก</label>

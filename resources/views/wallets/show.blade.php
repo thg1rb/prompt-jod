@@ -1,11 +1,6 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-100 leading-tight">
-            {{ $wallet->name }}
-        </h2>
-    </x-slot>
-
-    <div class="py-6">
+    <div class="space-y-6" x-data="{ editOpen: false, adjustOpen: false, draft: { type: '{{ $wallet->type->value }}' } }">
+        <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Back Button -->
             <a href="{{ route('wallets.index') }}" class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
@@ -64,20 +59,23 @@
                         </div>
                         <div class="flex gap-2">
                             <button
-                                onclick="window.dispatchEvent(new CustomEvent('open-modal', { detail: 'adjust-balance' }))"
-                                class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
+                                @click="adjustOpen = true"
+                                class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
                                 ปรับยอด
                             </button>
-                            <a href="{{ route('wallets.edit', $wallet) }}" class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium">
+                            <button
+                                @click="editOpen = true"
+                                class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium"
+                            >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                                 แก้ไข
-                            </a>
+                            </button>
                         </div>
                     </div>
 
@@ -190,43 +188,115 @@
     </div>
 
     <!-- Adjust Balance Modal -->
-    <x-modal name="adjust-balance" maxWidth="md">
-        <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">ปรับยอดเงิน</h3>
-            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
+    <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+        <!-- Backdrop -->
+        <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/50" @click="adjustOpen = false"></div>
+
+        <!-- Modal Content -->
+        <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="relative bg-card rounded-xl shadow-lg border border-border w-full max-w-md p-6">
+            <h3 class="text-lg font-semibold text-foreground mb-4">ปรับยอดเงิน</h3>
+            <div class="bg-muted rounded-lg p-4 mb-4">
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">ยอดเงินปัจจุบัน</span>
-                    <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ number_format($wallet->balance, 2) }} บาท</span>
+                    <span class="text-sm text-muted-foreground">ยอดเงินปัจจุบัน</span>
+                    <span class="text-lg font-semibold text-foreground">{{ number_format($wallet->balance, 2) }} บาท</span>
                 </div>
             </div>
-            <form method="POST" action="{{ route('wallets.adjust-balance', $wallet) }}" class="space-y-4">
+            <form method="POST" action="{{ route('wallets.adjust-balance', $wallet) }}" class="space-y-3">
                 @csrf
                 <div>
-                    <x-input-label for="new_balance" value="ยอดเงินใหม่ (บาท)" />
-                    <x-text-input id="new_balance" name="new_balance" type="number" step="0.01" min="0" class="mt-1 block w-full" required />
-                    <x-input-error class="mt-2" :messages="$errors->get('new_balance')" />
+                    <label for="new_balance" class="block text-sm font-medium text-foreground mb-1">ยอดเงินใหม่ (บาท)</label>
+                    <input type="number" id="new_balance" name="new_balance" step="0.01" min="0" required class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
+                    @error('new_balance')
+                        <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
-                    <x-input-label for="notes" value="เหตุผลการปรับ" />
-                    <textarea id="notes" name="notes" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600" rows="2" required placeholder="เช่น ตรวจสอบยอดเงิน, โอนเงินระหว่างบัญชี"></textarea>
-                    <x-input-error class="mt-2" :messages="$errors->get('notes')" />
-                </div>
-                <div>
-                    <x-input-label for="adjusted_at" value="วันที่ปรับ" />
-                    <x-text-input id="adjusted_at" name="adjusted_at" type="datetime-local" class="mt-1 block w-full" />
-                    <x-input-error class="mt-2" :messages="$errors->get('adjusted_at')" />
+                    <label for="adjust_notes" class="block text-sm font-medium text-foreground mb-1">เหตุผลการปรับ</label>
+                    <textarea id="adjust_notes" name="notes" rows="2" required placeholder="เช่น ตรวจสอบยอดเงิน, โอนเงินระหว่างบัญชี" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"></textarea>
+                    @error('notes')
+                        <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button
-                        type="button"
-                        onclick="window.dispatchEvent(new CustomEvent('close-modal', { detail: 'adjust-balance' }))"
-                        class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                    >
+                    <button type="button" @click="adjustOpen = false" class="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-foreground">
                         ยกเลิก
                     </button>
-                    <x-primary-button class="flex-1">ปรับยอด</x-primary-button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors">
+                        ปรับยอด
+                    </button>
                 </div>
             </form>
         </div>
-    </x-modal>
+    </div>
+
+    <!-- Edit Wallet Modal -->
+    <div x-show="editOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display: none;">
+        <!-- Backdrop -->
+        <div x-show="editOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/50" @click="editOpen = false"></div>
+
+        <!-- Modal Content -->
+        <div x-show="editOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="relative bg-card rounded-xl shadow-lg border border-border w-full max-w-md p-6">
+            <h3 class="text-lg font-semibold text-foreground mb-4">แก้ไขกระเป๋าเงิน</h3>
+            <form method="POST" action="{{ route('wallets.update', $wallet) }}" class="space-y-3">
+                @csrf
+                @method('put')
+                <div>
+                    <label for="edit_name" class="block text-sm font-medium text-foreground mb-1">ชื่อกระเป๋า</label>
+                    <input type="text" id="edit_name" name="name" required value="{{ $wallet->name }}" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
+                    @error('name')
+                        <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-foreground mb-1">ประเภท</label>
+                    <select id="edit_type" name="type" x-model="draft.type" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background">
+                        <option value="bank">บัญชีธนาคาร</option>
+                        <option value="ewallet">เว็บเวล็ต</option>
+                        <option value="cash">เงินสด</option>
+                    </select>
+                    @error('type')
+                        <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <template x-if="draft.type === 'bank'">
+                    <div class="space-y-3">
+                        <div>
+                            <label for="edit_bank_name" class="block text-sm font-medium text-foreground mb-1">ชื่อธนาคาร</label>
+                            <input type="text" id="edit_bank_name" name="bank_name" value="{{ $wallet->bank_name }}" placeholder="SCB, KBank, BBL..." class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
+                            @error('bank_name')
+                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="edit_account_number" class="block text-sm font-medium text-foreground mb-1">เลขที่บัญชี</label>
+                            <input type="text" id="edit_account_number" name="account_number" value="{{ $wallet->account_number }}" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
+                            @error('account_number')
+                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </template>
+                <div>
+                    <label for="edit_notes" class="block text-sm font-medium text-foreground mb-1">หมายเหตุ</label>
+                    <textarea id="edit_notes" name="notes" rows="3" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background">{{ $wallet->notes }}</textarea>
+                    @error('notes')
+                        <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="edit_is_default" name="is_default" class="rounded border-border text-primary focus:ring-ring" {{ $wallet->is_default ? 'checked' : '' }} />
+                    <label for="edit_is_default" class="text-sm text-foreground">ตั้งเป็นกระเป๋าหลัก</label>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" @click="editOpen = false" class="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-foreground">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="flex-1 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors">
+                        บันทึก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
 </x-app-layout>
