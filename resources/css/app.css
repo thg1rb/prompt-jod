@@ -143,6 +143,11 @@
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 200ms;
   }
+
+  /* Alpine x-cloak */
+  [x-cloak] {
+    display: none !important;
+  }
 }
 
 @layer utilities {

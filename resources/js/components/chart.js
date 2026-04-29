@@ -25,32 +25,13 @@ export function pieChart(initialData = {}) {
                 labels: labels,
                 chart: {
                     type: 'donut',
-                    height: 300,
+                    height: 260,
                     fontFamily: 'Sarabun, sans-serif',
                 },
                 plotOptions: {
                     pie: {
                         donut: {
-                            size: '65%',
-                            labels: {
-                                show: true,
-                                name: {
-                                    show: true,
-                                    fontSize: '14px',
-                                    color: this.getColors().text,
-                                },
-                                value: {
-                                    show: true,
-                                    fontSize: '24px',
-                                    fontWeight: 600,
-                                    color: this.getColors().text,
-                                },
-                                total: {
-                                    show: true,
-                                    label: 'รวม',
-                                    color: this.getColors().text,
-                                },
-                            },
+                            size: '60%',
                         },
                     },
                 },
@@ -58,21 +39,24 @@ export function pieChart(initialData = {}) {
                     enabled: false,
                 },
                 legend: {
-                    position: 'bottom',
-                    horizontalAlign: 'center',
-                    fontSize: '12px',
-                    itemMargin: { horizontal: 8, vertical: 4 },
-                    labels: {
-                        colors: this.getColors().text,
-                    },
+                    show: false,
                 },
                 stroke: {
                     show: true,
-                    colors: this.getColors().border,
+                    colors: this.getColors().card,
+                    width: 2,
                 },
                 colors: colors,
                 tooltip: {
                     theme: this.getColors().theme,
+                    y: {
+                        formatter: (value) => {
+                            return parseFloat(value).toLocaleString('th-TH', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            });
+                        },
+                    },
                 },
             };
 
@@ -90,30 +74,8 @@ export function pieChart(initialData = {}) {
             this.chart.updateOptions({
                 labels: labels,
                 colors: colors,
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            labels: {
-                                name: {
-                                    color: this.getColors().text,
-                                },
-                                value: {
-                                    color: this.getColors().text,
-                                },
-                                total: {
-                                    color: this.getColors().text,
-                                },
-                            },
-                        },
-                    },
-                },
-                legend: {
-                    labels: {
-                        colors: this.getColors().text,
-                    },
-                },
                 stroke: {
-                    colors: this.getColors().border,
+                    colors: this.getColors().card,
                 },
                 tooltip: {
                     theme: this.getColors().theme,
@@ -126,8 +88,7 @@ export function pieChart(initialData = {}) {
         getColors() {
             const isDark = document.documentElement.classList.contains('dark');
             return {
-                text: isDark ? '#f8fafc' : '#0f172a',
-                border: isDark ? '#1e293b' : '#ffffff',
+                card: isDark ? '#1e293b' : '#ffffff',
                 theme: isDark ? 'dark' : 'light',
             };
         },
@@ -164,7 +125,7 @@ export function barChart(initialData = {}) {
                 }],
                 chart: {
                     type: 'bar',
-                    height: 300,
+                    height: 260,
                     fontFamily: 'Sarabun, sans-serif',
                     toolbar: {
                         show: false,
@@ -203,24 +164,21 @@ export function barChart(initialData = {}) {
                     },
                 },
                 grid: {
-                    borderColor: this.getColors().grid,
+                    borderColor: this.getColors().border,
                     strokeDashArray: 4,
-                    padding: {
-                        top: 0,
-                        right: 0,
-                        bottom: 0,
-                        left: 10,
-                    },
                 },
                 tooltip: {
                     theme: this.getColors().theme,
                     y: {
                         formatter: (value) => {
-                            return value.toLocaleString('th-TH') + ' บาท';
+                            return parseFloat(value).toLocaleString('th-TH', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            });
                         },
                     },
                 },
-                colors: ['#6366f1'],
+                colors: [this.getColors().primary],
                 dataLabels: {
                     enabled: false,
                 },
@@ -251,7 +209,7 @@ export function barChart(initialData = {}) {
                     },
                 },
                 grid: {
-                    borderColor: this.getColors().grid,
+                    borderColor: this.getColors().border,
                 },
                 tooltip: {
                     theme: this.getColors().theme,
@@ -266,8 +224,9 @@ export function barChart(initialData = {}) {
         getColors() {
             const isDark = document.documentElement.classList.contains('dark');
             return {
-                text: isDark ? '#f8fafc' : '#0f172a',
-                grid: isDark ? '#334155' : '#e2e8f0',
+                text: isDark ? '#94a3b8' : '#64748b',
+                border: isDark ? '#334155' : '#e2e8f0',
+                primary: isDark ? '#60a5fa' : '#3b82f6',
                 theme: isDark ? 'dark' : 'light',
             };
         },
@@ -281,76 +240,65 @@ export function barChart(initialData = {}) {
 /**
  * Dashboard Component
  * Manages time range filtering and updates all dashboard components
- * Usage: x-data="dashboard()"
+ * Usage: x-data="dashboard()" x-init="init()"
  */
-export function dashboard() {
+export function dashboard(initialData = {}) {
     return {
         range: 'month',
         loading: false,
-        error: null,
 
-        // Summary data
-        totalExpenses: '0.00',
-        totalBalance: '0.00',
-        averagePerTransaction: '0.00',
-        topCategory: null,
+        totalExpenses: initialData.totalExpenses || '0.00',
+        totalBalance: initialData.totalBalance || '0.00',
+        averagePerTransaction: initialData.averagePerTransaction || '0.00',
+        topCategory: initialData.topCategory || null,
+        filteredCount: initialData.filteredCount || 0,
+        walletCount: initialData.walletCount || 0,
 
-        // Chart data
-        categoryData: [],
-        sevenDaySpending: [],
+        categoryData: initialData.categoryData || [],
+        sevenDaySpending: initialData.sevenDaySpending || [],
 
-        // Recent transactions
-        recentTransactions: [],
+        recentTransactions: initialData.recentTransactions || [],
 
         init() {
-            // Load initial data from the view
-            this.loadInitialData();
+            console.log('Dashboard init:', { totalExpenses: this.totalExpenses, categoryData: this.categoryData });
         },
 
-        loadInitialData() {
-            // Data is already loaded by the controller
-            // This method is for any additional initialization
-        },
-
-        async changeRange(newRange) {
+        async loadDashboardData() {
             if (this.loading) return;
-
-            this.range = newRange;
             this.loading = true;
-            this.error = null;
 
             try {
-                const response = await fetch(`/dashboard/filter?range=${newRange}`, {
+                const response = await fetch(`/dashboard/filter?range=${this.range}`, {
                     headers: {
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
                     },
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch dashboard data');
-                }
+                if (!response.ok) throw new Error('Failed to fetch dashboard data');
 
                 const data = await response.json();
 
-                // Update summary cards
                 this.totalExpenses = data.totalExpenses;
                 this.totalBalance = data.totalBalance;
                 this.averagePerTransaction = data.averagePerTransaction;
                 this.topCategory = data.topCategory;
-
-                // Update chart data
+                this.filteredCount = data.filteredCount;
+                this.walletCount = data.walletCount;
                 this.categoryData = data.categoryData;
                 this.sevenDaySpending = data.sevenDaySpending;
-
-                // Update transactions
                 this.recentTransactions = data.recentTransactions;
             } catch (err) {
-                this.error = err.message;
                 console.error('Failed to fetch dashboard data:', err);
             } finally {
                 this.loading = false;
             }
+        },
+
+        async setRange(newRange) {
+            if (this.range === newRange) return;
+            this.range = newRange;
+            await this.loadDashboardData();
         },
 
         formatAmount(amount) {
@@ -378,23 +326,6 @@ export function dashboard() {
                 month: 'short',
                 year: '2-digit',
             });
-        },
-
-        getTransactionIcon(type) {
-            switch (type) {
-                case 'expense':
-                    return `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                    </svg>`;
-                case 'income':
-                    return `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>`;
-                default:
-                    return `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                    </svg>`;
-            }
         },
     };
 }
