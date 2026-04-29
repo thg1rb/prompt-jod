@@ -22,8 +22,6 @@ return new class extends Migration
             $table->decimal('balance', 15, 2)->default(0);
             $table->boolean('is_active')->default(true);
             $table->boolean('is_default')->default(false);
-            $table->string('color', 7)->nullable(); // Hex color code
-            $table->string('icon')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();

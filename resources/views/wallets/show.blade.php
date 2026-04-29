@@ -24,8 +24,15 @@
 
             <!-- Wallet Card -->
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                @php
+                    $headerColor = match($wallet->type->value) {
+                        'bank' => '#3B82F6',
+                        'ewallet' => '#8B5CF6',
+                        'cash' => '#10B981',
+                    };
+                @endphp
                 <!-- Wallet Header -->
-                <div class="p-6" style="background-color: {{ $wallet->color ?? '#6366f1' }}">
+                <div class="p-6" style="background-color: {{ $headerColor }}">
                     <div class="flex items-start justify-between">
                         <div>
                             @if($wallet->is_default)
@@ -36,9 +43,6 @@
                             <h1 class="text-2xl font-bold text-white">{{ $wallet->name }}</h1>
                             <p class="text-white/80 mt-1">{{ $wallet->type->getLabel() }}</p>
                         </div>
-                        @if($wallet->icon)
-                            <div class="text-4xl">{{ $wallet->icon }}</div>
-                        @endif
                     </div>
                     @if($wallet->bank_name)
                         <p class="text-white/70 text-sm mt-2">{{ $wallet->bank_name }}

@@ -34,35 +34,24 @@
                             </select>
                             <x-input-error class="mt-2" :messages="$errors->get('type')" />
                         </div>
-                        <template x-if="walletType === 'bank' || walletType === 'ewallet'">
-                            <div>
-                                <x-input-label for="bank_name" value="ชื่อธนาคาร/บริการ" />
-                                <x-text-input id="bank_name" name="bank_name" type="text" class="mt-1 block w-full" value="{{ old('bank_name') }}" />
-                                <x-input-error class="mt-2" :messages="$errors->get('bank_name')" />
-                            </div>
-                            <div>
-                                <x-input-label for="account_number" value="เลขที่บัญชี" />
-                                <x-text-input id="account_number" name="account_number" type="text" class="mt-1 block w-full" value="{{ old('account_number') }}" />
-                                <x-input-error class="mt-2" :messages="$errors->get('account_number')" />
+                        <template x-if="walletType === 'bank'">
+                            <div class="space-y-6">
+                                <div>
+                                    <x-input-label for="bank_name" value="ชื่อธนาคาร" />
+                                    <x-text-input id="bank_name" name="bank_name" type="text" class="mt-1 block w-full" value="{{ old('bank_name') }}" />
+                                    <x-input-error class="mt-2" :messages="$errors->get('bank_name')" />
+                                </div>
+                                <div>
+                                    <x-input-label for="account_number" value="เลขที่บัญชี" />
+                                    <x-text-input id="account_number" name="account_number" type="text" class="mt-1 block w-full" value="{{ old('account_number') }}" />
+                                    <x-input-error class="mt-2" :messages="$errors->get('account_number')" />
+                                </div>
                             </div>
                         </template>
                         <div>
                             <x-input-label for="opening_balance" value="ยอดเงินเริ่มต้น (บาท)" />
                             <x-text-input id="opening_balance" name="opening_balance" type="number" step="0.01" min="0" class="mt-1 block w-full" value="{{ old('opening_balance') }}" />
                             <x-input-error class="mt-2" :messages="$errors->get('opening_balance')" />
-                        </div>
-                        <div>
-                            <x-input-label for="color" value="สีประจำกระเป๋าเงิน" />
-                            <div class="flex gap-2 mt-1">
-                                <input type="color" id="color" name="color" value="{{ old('color', '#6366f1') }}" class="h-10 w-16 border rounded cursor-pointer" />
-                                <x-text-input id="color_text" name="color_text" type="text" class="flex-1" value="{{ old('color', '#6366f1') }}" readonly />
-                            </div>
-                            <x-input-error class="mt-2" :messages="$errors->get('color')" />
-                        </div>
-                        <div>
-                            <x-input-label for="icon" value="ไอคอน (Emoji)" />
-                            <x-text-input id="icon" name="icon" type="text" class="mt-1 block w-full" value="{{ old('icon') }}" placeholder="🏦 💳 💵" />
-                            <x-input-error class="mt-2" :messages="$errors->get('icon')" />
                         </div>
                         <div>
                             <x-input-label for="notes" value="หมายเหตุ" />
@@ -84,10 +73,4 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.getElementById('color')?.addEventListener('input', (e) => {
-            document.getElementById('color_text').value = e.target.value;
-        });
-    </script>
 </x-app-layout>

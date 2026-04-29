@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="space-y-6" x-data="{ open: false, draft: { type: 'bank' }, typeColor: '#3B82F6' }" x-init="typeColor = draft.type === 'bank' ? '#3B82F6' : draft.type === 'ewallet' ? '#8B5CF6' : '#10B981'; $watch('draft.type', val => typeColor = val === 'bank' ? '#3B82F6' : val === 'ewallet' ? '#8B5CF6' : '#10B981')">
+    <div class="space-y-6" x-data="{ open: false, draft: { type: 'bank' } }">
         <!-- Header Section -->
         <div class="flex items-center justify-between gap-3">
             <div>
@@ -28,28 +28,35 @@
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach($wallets as $wallet)
                     @php
-                        $typeIcon = match($wallet->type->value) {
-                            'bank' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18" /></svg>',
-                            'ewallet' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>',
-                            'cash' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
-                        };
-                        $typeLabel = match($wallet->type->value) {
-                            'bank' => 'ธนาคาร',
-                            'ewallet' => 'e-Wallet',
-                            'cash' => 'เงินสด',
+                        $typeMeta = match($wallet->type->value) {
+                            'bank' => [
+                                'label' => 'ธนาคาร',
+                                'color' => '#3B82F6',
+                                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18" /></svg>'
+                            ],
+                            'ewallet' => [
+                                'label' => 'e-Wallet',
+                                'color' => '#8B5CF6',
+                                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>'
+                            ],
+                            'cash' => [
+                                'label' => 'เงินสด',
+                                'color' => '#10B981',
+                                'icon' => '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
+                            ],
                         };
                     @endphp
                     <div class="bg-card rounded-xl border border-border p-5 flex flex-col">
                         <!-- Wallet Header -->
                         <div class="flex items-start justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="h-11 w-11 rounded-lg grid place-items-center text-white" style="background-color: {{ $wallet->color ?? '#3B82F6' }}">
-                                    {!! $typeIcon !!}
+                                <div class="h-11 w-11 rounded-lg grid place-items-center text-white" style="background-color: {{ $typeMeta['color'] }}">
+                                    {!! $typeMeta['icon'] !!}
                                 </div>
                                 <div>
                                     <div class="font-semibold text-foreground">{{ $wallet->name }}</div>
                                     <div class="text-xs text-muted-foreground">
-                                        {{ $typeLabel }}
+                                        {{ $typeMeta['label'] }}
                                         @if($wallet->bank_name)
                                             · {{ $wallet->bank_name }}
                                         @endif
@@ -122,33 +129,28 @@
                             <p class="text-sm text-destructive mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-                    <div x-show="draft.type === 'bank' || draft.type === 'ewallet'" class="space-y-3">
-                        <div>
-                            <label for="bank" class="block text-sm font-medium text-foreground mb-1">ธนาคาร</label>
-                            <input type="text" id="bank" name="bank_name" placeholder="SCB, KBank, BBL..." class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
-                            @error('bank_name')
-                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                            @enderror
+                    <template x-if="draft.type === 'bank'">
+                        <div class="space-y-3">
+                            <div>
+                                <label for="bank" class="block text-sm font-medium text-foreground mb-1">ชื่อธนาคาร</label>
+                                <input type="text" id="bank" name="bank_name" placeholder="SCB, KBank, BBL..." class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
+                                @error('bank_name')
+                                    <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="account" class="block text-sm font-medium text-foreground mb-1">เลขที่บัญชี</label>
+                                <input type="text" id="account" name="account_number" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
+                                @error('account_number')
+                                    <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
-                        <div>
-                            <label for="account" class="block text-sm font-medium text-foreground mb-1">เลขที่บัญชี</label>
-                            <input type="text" id="account" name="account_number" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
-                            @error('account_number')
-                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
+                    </template>
                     <div>
                         <label for="bal" class="block text-sm font-medium text-foreground mb-1">ยอดเริ่มต้น</label>
                         <input type="number" id="bal" name="opening_balance" step="0.01" min="0" value="0" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background" />
                         @error('opening_balance')
-                            <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="color" class="block text-sm font-medium text-foreground mb-1">สีประจำกระเป๋า</label>
-                        <input type="color" id="color" name="color" :value="typeColor" class="h-10 w-full border border-border rounded-lg cursor-pointer" />
-                        @error('color')
                             <p class="text-sm text-destructive mt-1">{{ $message }}</p>
                         @enderror
                     </div>

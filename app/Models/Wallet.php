@@ -28,8 +28,6 @@ class Wallet extends Model
         'balance',
         'is_active',
         'is_default',
-        'color',
-        'icon',
         'notes',
     ];
 
