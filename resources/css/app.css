@@ -150,22 +150,15 @@
   .shadow-elevated { box-shadow: var(--shadow-md); }
   .shadow-floating { box-shadow: var(--shadow-lg); }
 
-  /* Custom scrollbar */
+  /* Hide scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 0px;
+    height: 0px;
+    background: transparent;
   }
 
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--text-muted));
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 }
