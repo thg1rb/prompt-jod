@@ -1,5 +1,6 @@
 <x-app-layout>
-    <div x-data="categories()" x-init="loadCategories()" class="space-y-6">
+    <div class="py-6" x-data="categories()" x-init="loadCategories()">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <div class="flex items-center justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-bold">หมวดหมู่</h1>
@@ -124,6 +125,7 @@
                     </button>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </x-app-layout>

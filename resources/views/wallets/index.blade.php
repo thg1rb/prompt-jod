@@ -1,5 +1,6 @@
 <x-app-layout>
-    <div class="space-y-6" x-data="{ open: false, draft: { type: 'bank' } }">
+    <div class="py-6" x-data="{ open: false, draft: { type: 'bank' } }">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <!-- Header Section -->
         <div class="flex items-center justify-between gap-3">
             <div>
@@ -175,6 +176,7 @@
                     </div>
                 </form>
             </div>
+        </div>
         </div>
     </div>
 </x-app-layout>
