@@ -16,7 +16,7 @@
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <template x-for="category in categories" :key="category.id">
                 <div class="bg-card border border-border rounded-lg p-4">
-                    <div class="flex items-start gap-3">
+                    <div class="flex items-center gap-3">
                         <div class="h-12 w-12 rounded-lg grid place-items-center text-2xl" :style="{ background: `${category.color}20` }" x-text="category.icon"></div>
                         <div class="flex-1 min-w-0">
                             <div class="font-semibold truncate" x-text="category.name"></div>
