@@ -10,12 +10,11 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy([TransactionObserver::class, TransactionBudgetObserver::class])]
 class Transaction extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids;
 
     /**
      * The attributes that are mass assignable.
@@ -29,10 +28,10 @@ class Transaction extends Model
         'slip_id',
         'type',
         'amount',
-        'description',
+        'sender',
+        'recipient',
+        'note',
         'transacted_at',
-        'notes',
-        'metadata',
     ];
 
     /**
@@ -46,7 +45,6 @@ class Transaction extends Model
             'type' => TransactionType::class,
             'amount' => 'decimal:2',
             'transacted_at' => 'datetime',
-            'metadata' => 'array',
         ];
     }
 

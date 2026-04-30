@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('slips', function (Blueprint $table) {
-            $table->foreign('transaction_id')->references('id')->on('transactions')->onDelete('set null');
+            $table->foreign('duplicate_of')->references('id')->on('slips')->nullOnDelete();
         });
 
         Schema::table('transactions', function (Blueprint $table) {
-            $table->foreign('slip_id')->references('id')->on('slips')->onDelete('set null');
+            $table->foreign('slip_id')->references('id')->on('slips')->nullOnDelete();
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('slips', function (Blueprint $table) {
-            $table->dropForeign(['transaction_id']);
+            $table->dropForeign(['duplicate_of']);
         });
 
         Schema::table('transactions', function (Blueprint $table) {

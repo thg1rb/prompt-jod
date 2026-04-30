@@ -2,17 +2,16 @@
 
 namespace App\Models;
 
-use App\Enums\SlipStatus;
-use App\Enums\VerificationStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Slip extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids;
 
     /**
      * The attributes that are mass assignable.
@@ -21,22 +20,17 @@ class Slip extends Model
      */
     protected $fillable = [
         'user_id',
-        'wallet_id',
-        'category_id',
-        'transaction_id',
-        'status',
-        'verification_status',
-        'duplicate_of',
-        'transaction_id_field',
-        'amount',
-        'transacted_at',
+        'ocr_status',
+        'ocr_raw_text',
+        'transaction_ref',
         'sender',
-        'sender_bank',
         'recipient',
-        'recipient_bank',
-        'raw_ocr_data',
-        'image_path',
-        'notes',
+        'bank',
+        'amount',
+        'transferred_at',
+        'verification_status',
+        'is_duplicate',
+        'duplicate_of',
     ];
 
     /**
@@ -47,11 +41,9 @@ class Slip extends Model
     protected function casts(): array
     {
         return [
-            'status' => SlipStatus::class,
-            'verification_status' => VerificationStatus::class,
             'amount' => 'decimal:2',
-            'transacted_at' => 'datetime',
-            'raw_ocr_data' => 'array',
+            'transferred_at' => 'datetime',
+            'is_duplicate' => 'boolean',
         ];
     }
 
@@ -64,27 +56,11 @@ class Slip extends Model
     }
 
     /**
-     * Get the wallet that owns the slip.
+     * Get the transaction that belongs to this slip.
      */
-    public function wallet(): BelongsTo
+    public function transaction(): HasOne
     {
-        return $this->belongsTo(Wallet::class);
-    }
-
-    /**
-     * Get the category that owns the slip.
-     */
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
-    }
-
-    /**
-     * Get the transaction that owns the slip.
-     */
-    public function transaction(): BelongsTo
-    {
-        return $this->belongsTo(Transaction::class);
+        return $this->hasOne(Transaction::class);
     }
 
     /**
@@ -98,7 +74,7 @@ class Slip extends Model
     /**
      * Get duplicate slips that reference this slip.
      */
-    public function duplicates()
+    public function duplicates(): HasMany
     {
         return $this->hasMany(Slip::class, 'duplicate_of');
     }
@@ -108,7 +84,7 @@ class Slip extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('status', SlipStatus::Pending);
+        return $query->where('ocr_status', 'pending');
     }
 
     /**
@@ -116,7 +92,7 @@ class Slip extends Model
      */
     public function scopeProcessing($query)
     {
-        return $query->where('status', SlipStatus::Processing);
+        return $query->where('ocr_status', 'processing');
     }
 
     /**
@@ -124,7 +100,7 @@ class Slip extends Model
      */
     public function scopeDone($query)
     {
-        return $query->where('status', SlipStatus::Done);
+        return $query->where('ocr_status', 'done');
     }
 
     /**
@@ -132,7 +108,7 @@ class Slip extends Model
      */
     public function scopeFailed($query)
     {
-        return $query->where('status', SlipStatus::Failed);
+        return $query->where('ocr_status', 'failed');
     }
 
     /**
@@ -140,7 +116,7 @@ class Slip extends Model
      */
     public function scopeVerified($query)
     {
-        return $query->where('verification_status', VerificationStatus::Verified);
+        return $query->where('verification_status', 'verified');
     }
 
     /**
@@ -148,7 +124,7 @@ class Slip extends Model
      */
     public function scopeMismatch($query)
     {
-        return $query->where('verification_status', VerificationStatus::Mismatch);
+        return $query->where('verification_status', 'mismatch');
     }
 
     /**
@@ -156,7 +132,7 @@ class Slip extends Model
      */
     public function scopeUnverified($query)
     {
-        return $query->where('verification_status', VerificationStatus::Unverified);
+        return $query->where('verification_status', 'unverified');
     }
 
     /**
@@ -164,7 +140,7 @@ class Slip extends Model
      */
     public function scopeDuplicate($query)
     {
-        return $query->whereNotNull('duplicate_of');
+        return $query->where('is_duplicate', true);
     }
 
     /**
@@ -172,7 +148,7 @@ class Slip extends Model
      */
     public function isVerified(): bool
     {
-        return $this->verification_status === VerificationStatus::Verified;
+        return $this->verification_status === 'verified';
     }
 
     /**
@@ -180,7 +156,7 @@ class Slip extends Model
      */
     public function hasMismatch(): bool
     {
-        return $this->verification_status === VerificationStatus::Mismatch;
+        return $this->verification_status === 'mismatch';
     }
 
     /**
@@ -188,6 +164,6 @@ class Slip extends Model
      */
     public function isDuplicate(): bool
     {
-        return $this->duplicate_of !== null;
+        return $this->is_duplicate;
     }
 }
