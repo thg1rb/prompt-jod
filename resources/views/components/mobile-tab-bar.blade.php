@@ -49,15 +49,15 @@
             <span>หมวดหมู่</span>
         </a>
 
-        <!-- Profile -->
+        <!-- Transactions -->
         <a
-            href="{{ route('profile.edit') }}"
-            class="{{ request()->routeIs('profile.*') ? 'text-primary' : 'text-muted-foreground' }} flex flex-col items-center justify-center py-2.5 text-xs gap-0.5 transition-colors"
+            href="{{ route('transactions.index') }}"
+            class="{{ request()->routeIs('transactions.*') ? 'text-primary' : 'text-muted-foreground' }} flex flex-col items-center justify-center py-2.5 text-xs gap-0.5 transition-colors"
         >
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
-            <span>โปรไฟล์</span>
+            <span>ธุรกรรม</span>
         </a>
     </div>
 </nav>

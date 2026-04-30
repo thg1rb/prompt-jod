@@ -3,6 +3,7 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 import { pieChart, barChart, dashboard } from './components/chart';
 import { categories } from './components/categories';
+import { transactions } from './components/transactions';
 
 window.Alpine = Alpine;
 
@@ -183,6 +184,7 @@ Alpine.data('pieChart', pieChart);
 Alpine.data('barChart', barChart);
 Alpine.data('dashboard', dashboard);
 Alpine.data('categories', categories);
+Alpine.data('transactions', transactions);
 
 // Initialize theme store
 Alpine.store('theme').init();
