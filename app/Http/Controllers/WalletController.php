@@ -87,7 +87,7 @@ class WalletController extends Controller
         $wallet->load(['transactions' => function ($query) {
             $query->with('category')
                 ->latest()
-                ->limit(50);
+                ->limit(10);
         }]);
 
         return view('wallets.show', compact('wallet'));

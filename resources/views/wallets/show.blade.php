@@ -111,7 +111,10 @@
 
                 <!-- Transactions Tab -->
                 <div x-show="activeTab === 'transactions'" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">ธุรกรรมล่าสุด</h3>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">ธุรกรรมล่าสุด</h3>
+                        <a href="{{ route('transactions.index') }}?wallet={{ $wallet->id }}" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">ดูทั้งหมด →</a>
+                    </div>
 
                     @if($wallet->transactions->isEmpty())
                         <div class="text-center py-12">

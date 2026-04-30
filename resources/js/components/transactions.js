@@ -8,6 +8,25 @@ export function transactions(initialData) {
         wal: 'all',
         loading: false,
 
+        init() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('wallet')) {
+                this.wal = params.get('wallet');
+            }
+            if (params.has('category')) {
+                this.cat = params.get('category');
+            }
+            if (params.has('q')) {
+                this.q = params.get('q');
+            }
+
+            this.$watch('q', () => this.refresh());
+            this.$watch('cat', () => this.refresh());
+            this.$watch('wal', () => this.refresh());
+
+            this.refresh();
+        },
+
         get list() {
             return this.transactions.filter((t) => {
                 if (this.cat !== 'all' && t.category_id !== this.cat) return false;
@@ -82,12 +101,6 @@ export function transactions(initialData) {
             } finally {
                 this.loading = false;
             }
-        },
-
-        init() {
-            this.$watch('q', () => this.refresh());
-            this.$watch('cat', () => this.refresh());
-            this.$watch('wal', () => this.refresh());
         },
     };
 }
