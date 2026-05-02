@@ -85,22 +85,11 @@
             <span x-show="!$store.sidebar.collapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">หมวดหมู่</span>
         </a>
 
-        <!-- Profile -->
-        <a
-            href="{{ route('profile.edit') }}"
-            class="{{ request()->routeIs('profile.*') ? '!bg-sidebar-primary !text-sidebar-primary-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent' }} flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
-            :class="$store.sidebar.collapsed ? 'justify-center' : ''"
-        >
-            <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span x-show="!$store.sidebar.collapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">โปรไฟล์</span>
-        </a>
     </nav>
 
     <!-- User profile section -->
     <div class="p-3 border-t border-sidebar-border">
-        <div class="flex items-center gap-3 px-2 py-2" :class="$store.sidebar.collapsed ? 'justify-center' : ''">
+        <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-2 py-2 rounded-lg transition-colors hover:bg-sidebar-accent group" :class="$store.sidebar.collapsed ? 'justify-center' : ''">
             <div class="h-9 w-9 rounded-full bg-primary/10 text-sidebar-primary grid place-items-center font-semibold shrink-0">
                 {{ Auth::user()->name[0] ?? '?' }}
             </div>
@@ -108,7 +97,7 @@
                 <div class="text-sm font-medium text-sidebar-foreground truncate">{{ Auth::user()->name }}</div>
                 <div class="text-xs text-muted-foreground truncate">{{ Auth::user()->email }}</div>
             </div>
-            <form method="POST" action="{{ route('logout') }}" class="inline" x-show="!$store.sidebar.collapsed" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display: none;">
+            <form method="POST" action="{{ route('logout') }}" class="inline" x-show="!$store.sidebar.collapsed" @click.stop x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" style="display: none;">
                 @csrf
                 <button
                     type="submit"
@@ -120,6 +109,6 @@
                     </svg>
                 </button>
             </form>
-        </div>
+        </a>
     </div>
 </aside>
