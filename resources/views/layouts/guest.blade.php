@@ -39,7 +39,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen bg-background text-foreground antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center p-4 sm:p-6">
+        <div class="min-h-screen flex flex-col justify-center items-center p-4 sm:p-6">
             <div class="mb-8 sm:mb-10">
                 <a href="/">
                     <x-application-logo class="w-16 h-16 sm:w-20 sm:h-20 text-primary" />

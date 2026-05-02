@@ -1,6 +1,6 @@
 <x-guest-layout>
     <!-- Page Header -->
-    <div class="p-6 pb-4">
+    <div class="p-6 pb-4 text-center">
         <h1 class="text-2xl font-bold text-foreground">ยินดีต้อนรับกลับ</h1>
         <p class="text-sm text-muted-foreground mt-1">เข้าสู่ระบบเพื่อดำเนินการต่อ</p>
     </div>
