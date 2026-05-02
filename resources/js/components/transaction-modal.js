@@ -57,11 +57,6 @@ export function transactionModal(initialData) {
             this.errors = {};
         },
 
-        triggerFileUpload() {
-            if (this.verifying || this.slipImagePreview) return;
-            document.getElementById('slip-upload').click();
-        },
-
         clearError(field) {
             if (this.errors[field]) {
                 delete this.errors[field];
@@ -112,7 +107,7 @@ export function transactionModal(initialData) {
             const file = event.dataTransfer.files[0];
             if (!file) return;
 
-            const input = document.getElementById('slip-upload');
+            const input = this.$refs.fileInput;
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             input.files = dataTransfer.files;

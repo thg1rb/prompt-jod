@@ -71,19 +71,20 @@
                 <div
                     @dragover.prevent
                     @drop.prevent="handleDrop($event)"
-                    @click="triggerFileUpload()"
                     class="relative border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
                     :class="verifying ? 'opacity-50 pointer-events-none' : ''"
                 >
-                    <input
-                        id="slip-upload"
-                        type="file"
-                        accept="image/jpeg,image/png,image/jpg"
-                        @change="handleFileUpload($event)"
-                        class="hidden"
+                    <label
+                        :class="slipImagePreview ? 'hidden' : 'block cursor-pointer w-full h-full'"
+                        x-show="!slipImagePreview"
                     >
-
-                    <template x-if="!slipImagePreview">
+                        <input
+                            x-ref="fileInput"
+                            type="file"
+                            accept="image/jpeg,image/png,image/jpg"
+                            @change="handleFileUpload($event)"
+                            class="hidden"
+                        >
                         <div class="space-y-2">
                             <svg class="h-10 w-10 mx-auto text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -94,13 +95,13 @@
                             </p>
                             <p class="text-xs text-text-muted">JPEG, PNG, JPG (สูงสุด 5MB)</p>
                         </div>
-                    </template>
+                    </label>
 
                     <template x-if="slipImagePreview">
                         <div class="relative inline-block" @click.stop>
                             <img :src="slipImagePreview" alt="Slip preview" class="max-h-48 rounded-lg mx-auto">
                             <button
-                                @click.prevent="slipImagePreview = null; slipData = null; slipError = null; document.getElementById('slip-upload').value = '';"
+                                @click.prevent="slipImagePreview = null; slipData = null; slipError = null; $refs.fileInput.value = '';"
                                 class="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
                                 aria-label="ลบรูป"
                             >
