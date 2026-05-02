@@ -1,6 +1,7 @@
 @props([
     'wallets',
     'categories',
+    'initialOpen' => false,
 ])
 
 <div
@@ -8,6 +9,7 @@
         json_encode([
             'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name, 'is_default' => $w->is_default])->values(),
             'categories' => $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'icon' => $c->icon])->values(),
+            'initialOpen' => $initialOpen,
         ])
     }})"
     x-show="open"

@@ -82,5 +82,10 @@
             <!-- Mobile bottom tab bar -->
             <x-mobile-tab-bar />
         </div>
+
+        <!-- Transaction Modal (global, excluded from create page) -->
+        @if(auth()->check() && isset($wallets) && isset($categories) && !request()->routeIs('transactions.create'))
+            <x-transaction-modal :wallets="$wallets" :categories="$categories" />
+        @endif
     </body>
 </html>

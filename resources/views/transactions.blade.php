@@ -162,9 +162,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Transaction Modal -->
-    <x-transaction-modal :wallets="$wallets" :categories="$categories" />
 </x-app-layout>
 
 @push('styles')

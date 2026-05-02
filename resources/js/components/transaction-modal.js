@@ -1,6 +1,6 @@
 export function transactionModal(initialData) {
     return {
-        open: false,
+        open: initialData?.initialOpen || false,
         loading: false,
         verifying: false,
         slipData: null,
@@ -30,8 +30,8 @@ export function transactionModal(initialData) {
         },
 
         // Available options
-        wallets: initialData.wallets || [],
-        categories: initialData.categories || [],
+        wallets: initialData?.wallets || [],
+        categories: initialData?.categories || [],
 
         // Errors
         errors: {},
