@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="py-6">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <!-- Page Header -->
             <div class="space-y-1">
                 <h1 class="text-2xl font-bold text-foreground">โปรไฟล์</h1>
