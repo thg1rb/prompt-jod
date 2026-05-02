@@ -57,6 +57,17 @@ export function transactionModal(initialData) {
             this.errors = {};
         },
 
+        triggerFileUpload() {
+            if (this.verifying || this.slipImagePreview) return;
+            document.getElementById('slip-upload').click();
+        },
+
+        clearError(field) {
+            if (this.errors[field]) {
+                delete this.errors[field];
+            }
+        },
+
         async handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -139,28 +150,46 @@ export function transactionModal(initialData) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify(this.form)
                 });
 
-                const data = await response.json();
+                let data;
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    // If JSON parsing fails, try to get text response
+                    const text = await response.text();
+                    console.error('Response not JSON:', text);
+                    this.errors = { _form: 'เกิดข้อผิดพลาดในการบันทึก' };
+                    return;
+                }
 
-                if (data.success) {
+                if (response.ok && data.success) {
                     this.closeModal();
                     // Dispatch event to refresh transaction list
                     window.dispatchEvent(new CustomEvent('transaction-created'));
-                    alert('บันทึกธุรกรรมเรียบร้อย');
                 } else {
-                    if (data.errors) {
-                        this.errors = data.errors;
+                    // Handle validation errors
+                    if (response.status === 422 && data.errors) {
+                        console.log('Validation errors:', data.errors);
+                        // Laravel validation errors format: { field: [error, ...] }
+                        const flattenedErrors = {};
+                        for (const field in data.errors) {
+                            flattenedErrors[field] = Array.isArray(data.errors[field])
+                                ? data.errors[field][0]
+                                : data.errors[field];
+                        }
+                        this.errors = flattenedErrors;
                     } else {
-                        alert(data.message || 'เกิดข้อผิดพลาด');
+                        this.errors = { _form: data.message || 'เกิดข้อผิดพลาดในการบันทึก' };
                     }
                 }
             } catch (error) {
                 console.error('Submit error:', error);
-                alert('เกิดข้อผิดพลาดในการบันทึก');
+                this.errors = { _form: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่' };
             } finally {
                 this.loading = false;
             }

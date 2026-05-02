@@ -60,7 +60,7 @@ class TransactionController extends Controller
         return response()->json([
             'transactions' => $transactions->map(fn ($t) => [
                 'id' => $t->id,
-                'description' => $t->description ?? '-',
+                'description' => $t->recipient ?? $t->note ?? '-',
                 'amount' => (float) $t->amount,
                 'type' => $t->type->value,
                 'category_id' => $t->category_id,
@@ -69,6 +69,7 @@ class TransactionController extends Controller
                 'wallet_id' => $t->wallet_id,
                 'wallet' => $t->wallet?->name ?? '-',
                 'transacted_at' => $t->transacted_at->format('Y-m-d H:i:s'),
+                'recipient' => $t->recipient,
             ])->all(),
         ]);
     }
@@ -127,19 +128,46 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function store(TransactionStoreRequest $request): JsonResponse
+    public function store(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'wallet_id' => ['required', 'uuid', 'exists:wallets,id'],
+            'category_id' => ['required', 'uuid', 'exists:categories,id'],
+            'type' => ['required', 'in:expense,income,adjustment'],
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
+            'sender' => ['required', 'string', 'max:255'],
+            'sender_bank' => ['required', 'string', 'max:50'],
+            'recipient' => ['required', 'string', 'max:255'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'transacted_at' => ['required', 'date', 'before_or_equal:now'],
+            'transaction_ref' => ['nullable', 'string', 'max:100'],
+        ], [
+            'wallet_id.required' => 'กรุณาเลือกกระเป๋าเงิน',
+            'wallet_id.exists' => 'กระเป๋าเงินไม่ถูกต้อง',
+            'category_id.required' => 'กรุณาเลือกหมวดหมู่',
+            'category_id.exists' => 'หมวดหมู่ไม่ถูกต้อง',
+            'type.required' => 'กรุณาระบุประเภทธุรกรรม',
+            'amount.required' => 'กรุณาระบุจำนวนเงิน',
+            'amount.numeric' => 'จำนวนเงินต้องเป็นตัวเลข',
+            'amount.min' => 'จำนวนเงินต้องไม่ต่ำกว่า 0.01',
+            'sender.required' => 'กรุณาระบุชื่อผู้โอน',
+            'sender_bank.required' => 'กรุณาระบุธนาคารผู้โอน',
+            'recipient.required' => 'กรุณาระบุชื่อผู้รับ',
+            'transacted_at.required' => 'กรุณาระบุวันที่ทำรายการ',
+            'transacted_at.before_or_equal' => 'วันที่ทำรายการต้องไม่เกินวันนี้',
+        ]);
+
         $user = Auth::user();
 
         $transaction = $user->transactions()->create([
-            'wallet_id' => $request->wallet_id,
-            'category_id' => $request->category_id,
-            'type' => $request->type,
-            'amount' => $request->amount,
-            'sender' => $request->sender,
-            'recipient' => $request->recipient,
-            'note' => $request->note,
-            'transacted_at' => $request->transacted_at,
+            'wallet_id' => $validated['wallet_id'],
+            'category_id' => $validated['category_id'],
+            'type' => $validated['type'],
+            'amount' => $validated['amount'],
+            'sender' => $validated['sender'],
+            'recipient' => $validated['recipient'],
+            'note' => $validated['note'],
+            'transacted_at' => $validated['transacted_at'],
         ]);
 
         return response()->json([
@@ -190,7 +218,7 @@ class TransactionController extends Controller
             ->get()
             ->map(fn ($t) => [
                 'id' => $t->id,
-                'description' => $t->description ?? '-',
+                'description' => $t->recipient ?? $t->note ?? '-',
                 'amount' => (float) $t->amount,
                 'type' => $t->type->value,
                 'category_id' => $t->category_id,
@@ -199,6 +227,7 @@ class TransactionController extends Controller
                 'wallet_id' => $t->wallet_id,
                 'wallet' => $t->wallet?->name ?? '-',
                 'transacted_at' => $t->transacted_at->format('Y-m-d H:i:s'),
+                'recipient' => $t->recipient,
             ])
             ->all();
     }

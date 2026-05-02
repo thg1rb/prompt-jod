@@ -71,6 +71,7 @@
                 <div
                     @dragover.prevent
                     @drop.prevent="handleDrop($event)"
+                    @click="triggerFileUpload()"
                     class="relative border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
                     :class="verifying ? 'opacity-50 pointer-events-none' : ''"
                 >
@@ -82,35 +83,33 @@
                         class="hidden"
                     >
 
-                    <label for="slip-upload" class="cursor-pointer">
-                        <template x-if="!slipImagePreview">
-                            <div class="space-y-2">
-                                <svg class="h-10 w-10 mx-auto text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                <p class="text-sm text-text-muted">
-                                    ลากไฟล์มาวางที่นี่ หรือ
-                                    <span class="text-primary hover:text-primary/80">คลิกเพื่อเลือกไฟล์</span>
-                                </p>
-                                <p class="text-xs text-text-muted">JPEG, PNG, JPG (สูงสุด 5MB)</p>
-                            </div>
-                        </template>
+                    <template x-if="!slipImagePreview">
+                        <div class="space-y-2">
+                            <svg class="h-10 w-10 mx-auto text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="text-sm text-text-muted">
+                                ลากไฟล์มาวางที่นี่ หรือ
+                                <span class="text-primary hover:text-primary/80">คลิกเพื่อเลือกไฟล์</span>
+                            </p>
+                            <p class="text-xs text-text-muted">JPEG, PNG, JPG (สูงสุด 5MB)</p>
+                        </div>
+                    </template>
 
-                        <template x-if="slipImagePreview">
-                            <div class="relative inline-block">
-                                <img :src="slipImagePreview" alt="Slip preview" class="max-h-48 rounded-lg mx-auto">
-                                <button
-                                    @click.prevent="slipImagePreview = null; slipData = null; slipError = null; document.getElementById('slip-upload').value = '';"
-                                    class="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
-                                    aria-label="ลบรูป"
-                                >
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </template>
-                    </label>
+                    <template x-if="slipImagePreview">
+                        <div class="relative inline-block" @click.stop>
+                            <img :src="slipImagePreview" alt="Slip preview" class="max-h-48 rounded-lg mx-auto">
+                            <button
+                                @click.prevent="slipImagePreview = null; slipData = null; slipError = null; document.getElementById('slip-upload').value = '';"
+                                class="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
+                                aria-label="ลบรูป"
+                            >
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </template>
 
                     <!-- Loading State -->
                     <div x-show="verifying" class="mt-3">
@@ -131,6 +130,11 @@
                         <p class="text-sm text-success">✓ อ่านข้อมูลสลิปสำเร็จ ข้อมูลถูกกรอกอัตโนมัติ</p>
                     </div>
                 </div>
+            </div>
+
+            <!-- Form Error Message -->
+            <div x-show="errors._form" class="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                <p class="text-sm text-destructive" x-text="errors._form"></p>
             </div>
 
             <!-- Form Fields -->
@@ -169,12 +173,14 @@
                 <!-- Wallet & Amount -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="wallet" class="block text-sm font-medium text-foreground mb-1">กระเป๋าเงิน</label>
+                        <label for="wallet" class="block text-sm font-medium text-foreground mb-1">กระเป๋าเงิน <span class="text-destructive">*</span></label>
                         <select
                             id="wallet"
                             x-model="form.wallet_id"
+                            @change="clearError('wallet_id')"
                             class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
                             :class="errors.wallet_id ? 'border-destructive' : ''"
+                            required
                         >
                             <option value="">เลือกกระเป๋าเงิน</option>
                             <template x-for="wallet in wallets" :key="wallet.id">
@@ -185,16 +191,18 @@
                     </div>
 
                     <div>
-                        <label for="amount" class="block text-sm font-medium text-foreground mb-1">จำนวนเงิน (THB)</label>
+                        <label for="amount" class="block text-sm font-medium text-foreground mb-1">จำนวนเงิน (THB) <span class="text-destructive">*</span></label>
                         <input
                             id="amount"
                             type="number"
                             step="0.01"
                             min="0.01"
                             x-model="form.amount"
+                            @input="clearError('amount')"
                             class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
                             :class="errors.amount ? 'border-destructive' : ''"
                             placeholder="0.00"
+                            required
                         >
                         <p x-show="errors.amount" class="mt-1 text-xs text-destructive" x-text="errors.amount"></p>
                     </div>
@@ -202,66 +210,84 @@
 
                 <!-- Date -->
                 <div>
-                    <label for="transacted_at" class="block text-sm font-medium text-foreground mb-1">วันที่ทำรายการ</label>
+                    <label for="transacted_at" class="block text-sm font-medium text-foreground mb-1">วันที่ทำรายการ <span class="text-destructive">*</span></label>
                     <input
                         id="transacted_at"
                         type="date"
                         x-model="form.transacted_at"
+                        @input="clearError('transacted_at')"
                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
                         :class="errors.transacted_at ? 'border-destructive' : ''"
+                        required
                     >
                     <p x-show="errors.transacted_at" class="mt-1 text-xs text-destructive" x-text="errors.transacted_at"></p>
                 </div>
 
                 <!-- Category -->
                 <div>
-                    <label for="category" class="block text-sm font-medium text-foreground mb-1">หมวดหมู่</label>
+                    <label for="category" class="block text-sm font-medium text-foreground mb-1">หมวดหมู่ <span class="text-destructive">*</span></label>
                     <select
                         id="category"
                         x-model="form.category_id"
+                        @change="clearError('category_id')"
                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                        :class="errors.category_id ? 'border-destructive' : ''"
+                        required
                     >
-                        <option value="">ไม่ระบุหมวดหมู่</option>
+                        <option value="">เลือกหมวดหมู่</option>
                         <template x-for="category in categories" :key="category.id">
                             <option :value="category.id" x-text="category.icon + ' ' + category.name"></option>
                         </template>
                     </select>
+                    <p x-show="errors.category_id" class="mt-1 text-xs text-destructive" x-text="errors.category_id"></p>
                 </div>
 
                 <!-- Sender -->
                 <div>
-                    <label for="sender" class="block text-sm font-medium text-foreground mb-1">ผู้โอน</label>
+                    <label for="sender" class="block text-sm font-medium text-foreground mb-1">ผู้โอน <span class="text-destructive">*</span></label>
                     <input
                         id="sender"
                         type="text"
                         x-model="form.sender"
+                        @input="clearError('sender')"
                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                        :class="errors.sender ? 'border-destructive' : ''"
                         placeholder="ชื่อผู้โอน"
+                        required
                     >
+                    <p x-show="errors.sender" class="mt-1 text-xs text-destructive" x-text="errors.sender"></p>
                 </div>
 
                 <!-- Sender Bank -->
                 <div>
-                    <label for="sender_bank" class="block text-sm font-medium text-foreground mb-1">ธนาคารผู้โอน</label>
+                    <label for="sender_bank" class="block text-sm font-medium text-foreground mb-1">ธนาคารผู้โอน <span class="text-destructive">*</span></label>
                     <input
                         id="sender_bank"
                         type="text"
                         x-model="form.sender_bank"
+                        @input="clearError('sender_bank')"
                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                        :class="errors.sender_bank ? 'border-destructive' : ''"
                         placeholder="เช่น SCB, KTB, KBANK"
+                        required
                     >
+                    <p x-show="errors.sender_bank" class="mt-1 text-xs text-destructive" x-text="errors.sender_bank"></p>
                 </div>
 
                 <!-- Recipient -->
                 <div>
-                    <label for="recipient" class="block text-sm font-medium text-foreground mb-1">ผู้รับ</label>
+                    <label for="recipient" class="block text-sm font-medium text-foreground mb-1">ผู้รับ <span class="text-destructive">*</span></label>
                     <input
                         id="recipient"
                         type="text"
                         x-model="form.recipient"
+                        @input="clearError('recipient')"
                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+                        :class="errors.recipient ? 'border-destructive' : ''"
                         placeholder="ชื่อผู้รับ"
+                        required
                     >
+                    <p x-show="errors.recipient" class="mt-1 text-xs text-destructive" x-text="errors.recipient"></p>
                 </div>
 
                 <!-- Transaction Reference -->
