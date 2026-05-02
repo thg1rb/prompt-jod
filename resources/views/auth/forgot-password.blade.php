@@ -1,25 +1,34 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+    <!-- Page Header -->
+    <div class="p-6 pb-4">
+        <h1 class="text-2xl font-bold text-foreground">ลืมรหัสผ่าน?</h1>
+        <p class="text-sm text-muted-foreground mt-1">ไม่เป็นไร เราจะส่งลิงก์รีเซ็ตรหัสผ่านให้คุณ</p>
     </div>
 
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-auth-session-status class="px-6" :status="session('status')" />
 
-    <form method="POST" action="{{ route('password.email') }}">
+    <!-- Email Form -->
+    <form method="POST" action="{{ route('password.email') }}" class="p-6 pt-4 space-y-4">
         @csrf
 
-        <!-- Email Address -->
+        <!-- Email -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="email" :value="__('อีเมล')" />
+            <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus />
+            <x-input-error :messages="$errors->get('email')" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
+        <!-- Submit Button -->
+        <x-primary-button class="w-full">
+            {{ __('ส่งลิงก์รีเซ็ตรหัสผ่าน') }}
+        </x-primary-button>
     </form>
+
+    <!-- Back to Login -->
+    <div class="px-6 pb-6 text-center">
+        <a href="{{ route('login') }}" class="text-sm text-muted-foreground hover:text-foreground">
+            ← {{ __('กลับไปหน้าเข้าสู่ระบบ') }}
+        </a>
+    </div>
 </x-guest-layout>

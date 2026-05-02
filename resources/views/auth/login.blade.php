@@ -1,47 +1,67 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <!-- Page Header -->
+    <div class="p-6 pb-4">
+        <h1 class="text-2xl font-bold text-foreground">ยินดีต้อนรับกลับ</h1>
+        <p class="text-sm text-muted-foreground mt-1">เข้าสู่ระบบเพื่อดำเนินการต่อ</p>
+    </div>
 
-    <form method="POST" action="{{ route('login') }}">
+    <!-- Session Status -->
+    <x-auth-session-status class="px-6" :status="session('status')" />
+
+    <!-- Google OAuth Button -->
+    <div class="px-6 pb-4">
+        <x-google-button type="login" />
+    </div>
+
+    <!-- Divider -->
+    <div class="px-6">
+        <x-divider />
+    </div>
+
+    <!-- Email/Password Form -->
+    <form method="POST" action="{{ route('login') }}" class="p-6 pt-4 space-y-4">
         @csrf
 
-        <!-- Email Address -->
+        <!-- Email -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="email" :value="__('อีเมล')" />
+            <x-text-input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <x-input-label for="password" :value="__('รหัสผ่าน')" />
+            <x-text-input id="password" type="password" name="password" required autocomplete="current-password" />
+            <x-input-error :messages="$errors->get('password')" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+        <!-- Remember Me & Forgot Password -->
+        <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="remember" class="w-4 h-4 rounded border-border text-primary focus:ring-ring">
+                <span class="text-sm text-muted-foreground">{{ __('จดจำฉัน') }}</span>
             </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a href="{{ route('password.request') }}" class="text-sm text-primary hover:underline">
+                    {{ __('ลืมรหัสผ่าน?') }}
                 </a>
             @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
         </div>
+
+        <!-- Submit Button -->
+        <x-primary-button class="w-full">
+            {{ __('เข้าสู่ระบบ') }}
+        </x-primary-button>
     </form>
+
+    <!-- Register Link -->
+    <div class="px-6 pb-6 text-center">
+        <span class="text-sm text-muted-foreground">
+            {{ __('ยังไม่มีบัญชี?') }}
+            <a href="{{ route('register') }}" class="font-medium text-primary hover:underline">
+                {{ __('สมัครสมาชิก') }}
+            </a>
+        </span>
+    </div>
 </x-guest-layout>
