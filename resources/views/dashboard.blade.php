@@ -7,7 +7,7 @@
                     <h1 class="text-2xl font-bold">แดชบอร์ด</h1>
                     <p class="text-text-muted text-sm">ภาพรวมการเงินของคุณ</p>
                 </div>
-                <div class="inline-flex bg-muted p-1 rounded-lg">
+                <div class="inline-flex w-fit bg-muted p-1 rounded-lg">
                     <button
                         @click="setRange('today')"
                         :class="range === 'today' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
