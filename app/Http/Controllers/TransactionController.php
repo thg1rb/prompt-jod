@@ -139,7 +139,7 @@ class TransactionController extends Controller
             'sender_bank' => ['required', 'string', 'max:50'],
             'recipient' => ['required', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:1000'],
-            'transacted_at' => ['required', 'date', 'before_or_equal:now'],
+            'transacted_at' => ['required', 'date'],
             'transaction_ref' => ['nullable', 'string', 'max:100'],
         ], [
             'wallet_id.required' => 'กรุณาเลือกกระเป๋าเงิน',
@@ -154,7 +154,6 @@ class TransactionController extends Controller
             'sender_bank.required' => 'กรุณาระบุธนาคารผู้โอน',
             'recipient.required' => 'กรุณาระบุชื่อผู้รับ',
             'transacted_at.required' => 'กรุณาระบุวันที่ทำรายการ',
-            'transacted_at.before_or_equal' => 'วันที่ทำรายการต้องไม่เกินวันนี้',
         ]);
 
         $user = Auth::user();

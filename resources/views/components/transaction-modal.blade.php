@@ -209,12 +209,12 @@
                     </div>
                 </div>
 
-                <!-- Date -->
+                <!-- Date Time -->
                 <div>
-                    <label for="transacted_at" class="block text-sm font-medium text-foreground mb-1">วันที่ทำรายการ <span class="text-destructive">*</span></label>
+                    <label for="transacted_at" class="block text-sm font-medium text-foreground mb-1">วันเวลาทำรายการ <span class="text-destructive">*</span></label>
                     <input
                         id="transacted_at"
-                        type="date"
+                        type="datetime-local"
                         x-model="form.transacted_at"
                         @input="clearError('transacted_at')"
                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"

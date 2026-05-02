@@ -78,8 +78,8 @@
                                 @foreach($wallet->transactions->take(3) as $transaction)
                                     <li class="flex items-center justify-between gap-2">
                                         <span class="truncate text-secondary-foreground">{{ $transaction->recipient ?? $transaction->category?->name ?? '-' }}</span>
-                                        <span class="font-medium shrink-0 {{ $transaction->type === 'expense' ? 'text-destructive' : 'text-success' }}">
-                                            {{ $transaction->type === 'expense' ? '-' : '+' }}{{ number_format($transaction->amount, 2) }}
+                                        <span class="font-medium shrink-0 {{ $transaction->isExpense() ? 'text-destructive' : 'text-success' }}">
+                                            {{ $transaction->isExpense() ? '-' : '+' }}{{ number_format($transaction->amount, 2) }}
                                         </span>
                                     </li>
                                 @endforeach
@@ -88,7 +88,7 @@
                             @endif
                             @if($wallet->transactions->first())
                                 <li class="text-[10px] text-muted-foreground">
-                                    ล่าสุด: {{ $wallet->transactions->first()->datetime?->diffForHumans() ?? '-' }}
+                                    ล่าสุด: {{ $wallet->transactions->first()->transacted_at?->diffForHumans() ?? '-' }}
                                 </li>
                             @endif
                         </ul>

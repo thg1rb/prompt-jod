@@ -17,7 +17,15 @@ export function transactionModal(initialData) {
             sender_bank: '',
             recipient: '',
             note: '',
-            transacted_at: new Date().toISOString().split('T')[0],
+            transacted_at: (() => {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            })(),
             transaction_ref: '',
         },
 
@@ -48,7 +56,15 @@ export function transactionModal(initialData) {
                 sender_bank: '',
                 recipient: '',
                 note: '',
-                transacted_at: new Date().toISOString().split('T')[0],
+                transacted_at: (() => {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            })(),
                 transaction_ref: '',
             };
             this.slipData = null;
@@ -120,7 +136,21 @@ export function transactionModal(initialData) {
                 this.form.amount = slip.amount;
             }
             if (slip.date) {
-                this.form.transacted_at = slip.date;
+                try {
+                    const isoStr = slip.date;
+                    const [datePart, timePart] = isoStr.split('T');
+                    const [year, month, day] = datePart.split('-');
+                    const timeWithTz = timePart.split('+')[0].split('-')[0];
+                    const [hours, minutes] = timeWithTz.split(':');
+                    if (year && month && day && hours && minutes) {
+                        const newDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+                        this.$nextTick(() => {
+                            this.form.transacted_at = newDateTime;
+                        });
+                    }
+                } catch (e) {
+                    console.error('Date parsing error:', e);
+                }
             }
             if (slip.sender_name) {
                 this.form.sender = slip.sender_name;
