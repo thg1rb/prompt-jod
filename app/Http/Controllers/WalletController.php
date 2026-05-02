@@ -90,7 +90,26 @@ class WalletController extends Controller
                 ->limit(10);
         }]);
 
+        $wallet->load(['balanceAdjustments' => function ($query) {
+            $query->latest('adjusted_at')
+                ->limit(5);
+        }]);
+
         return view('wallets.show', compact('wallet'));
+    }
+
+    /**
+     * Display all balance adjustments for the specified wallet.
+     */
+    public function adjustments(Wallet $wallet): View
+    {
+        $this->authorizeWallet($wallet);
+
+        $adjustments = $wallet->balanceAdjustments()
+            ->latest('adjusted_at')
+            ->paginate(20);
+
+        return view('wallets.adjustments', compact('wallet', 'adjustments'));
     }
 
     /**

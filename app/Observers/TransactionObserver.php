@@ -72,7 +72,7 @@ class TransactionObserver
                 'new_balance' => $newBalance,
                 'adjustment_amount' => $adjustmentAmount,
                 'reason' => 'transaction_' . $transaction->type->value,
-                'notes' => 'Auto-adjusted from transaction #' . $transaction->id,
+                'notes' => 'ปรับยอดจากธุรกรรม #' . $transaction->id,
                 'adjusted_at' => now(),
             ]);
 
@@ -113,7 +113,7 @@ class TransactionObserver
                 'new_balance' => $newBalance,
                 'adjustment_amount' => $adjustmentAmount,
                 'reason' => 'revert_transaction_' . $transaction->type->value,
-                'notes' => 'Reverted from deleted transaction #' . $transaction->id,
+                'notes' => 'ยกเลิกจากธุรกรรมที่ถูกลบ #' . $transaction->id,
                 'adjusted_at' => now(),
             ]);
 

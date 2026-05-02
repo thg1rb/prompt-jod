@@ -140,7 +140,10 @@
 
                 <!-- Adjustments Tab -->
                 <div x-show="activeTab === 'adjustments'" class="bg-card border border-border rounded-lg p-5">
-                    <h3 class="font-semibold mb-4">ประวัติการปรับยอด</h3>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold">ประวัติการปรับยอด</h3>
+                        <a href="{{ route('wallets.adjustments', $wallet) }}" class="text-sm text-primary hover:underline">ดูทั้งหมด →</a>
+                    </div>
                     <ul class="divide-y divide-border">
                         @if($wallet->balanceAdjustments->isEmpty())
                             <li class="py-6 text-center text-text-muted text-sm">ยังไม่มีการปรับยอด</li>

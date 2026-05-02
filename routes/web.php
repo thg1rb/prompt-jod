@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/wallets/create', [WalletController::class, 'create'])->name('wallets.create');
     Route::post('/wallets', [WalletController::class, 'store'])->name('wallets.store');
     Route::get('/wallets/{wallet}', [WalletController::class, 'show'])->name('wallets.show');
+    Route::get('/wallets/{wallet}/adjustments', [WalletController::class, 'adjustments'])->name('wallets.adjustments');
     Route::get('/wallets/{wallet}/edit', [WalletController::class, 'edit'])->name('wallets.edit');
     Route::put('/wallets/{wallet}', [WalletController::class, 'update'])->name('wallets.update');
     Route::delete('/wallets/{wallet}', [WalletController::class, 'destroy'])->name('wallets.destroy');
