@@ -48,6 +48,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    Route::get('/terms', function () { return view('legal.terms'); })->name('terms');
+    Route::get('/privacy', function () { return view('legal.privacy'); })->name('privacy');
+
     // Wallet Routes
     Route::get('/wallets', [WalletController::class, 'index'])->name('wallets.index');
     Route::get('/wallets/create', [WalletController::class, 'create'])->name('wallets.create');
