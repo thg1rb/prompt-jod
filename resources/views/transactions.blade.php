@@ -8,6 +8,7 @@
             ])
         }})"
         x-init="init()"
+        @transaction-created.window="refresh()"
         class="py-6"
     >
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -16,15 +17,26 @@
                     <h1 class="text-2xl font-bold">ธุรกรรมทั้งหมด</h1>
                     <p class="text-text-muted text-sm"><span x-text="list.length"></span> รายการ</p>
                 </div>
-                <button
-                    @click="exportCsv()"
-                    class="inline-flex items-center px-3 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors text-foreground"
-                >
-                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Export CSV
-                </button>
+                <div class="flex gap-2">
+                    <button
+                        @click="$dispatch('open-transaction-modal')"
+                        class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                    >
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        เพิ่มธุรกรรม
+                    </button>
+                    <button
+                        @click="exportCsv()"
+                        class="inline-flex items-center px-3 py-2 border border-border rounded-lg text-sm hover:bg-muted transition-colors text-foreground"
+                    >
+                        <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Export CSV
+                    </button>
+                </div>
             </div>
 
             <div class="grid gap-3 sm:grid-cols-[1fr,200px,200px]">
@@ -150,6 +162,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Transaction Modal -->
+    <x-transaction-modal :wallets="$wallets" :categories="$categories" />
 </x-app-layout>
 
 @push('styles')

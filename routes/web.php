@@ -74,6 +74,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     Route::get('/transactions/data', [TransactionController::class, 'data'])->name('transactions.data');
     Route::get('/transactions/export', [TransactionController::class, 'export'])->name('transactions.export');
+    Route::get('/transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
+    Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
+    Route::post('/transactions/verify-slip', [TransactionController::class, 'verifySlip'])->name('transactions.verify-slip');
 });
 
 require __DIR__.'/auth.php';

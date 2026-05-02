@@ -4,6 +4,7 @@ import Alpine from 'alpinejs';
 import { pieChart, barChart, dashboard } from './components/chart';
 import { categories } from './components/categories';
 import { transactions } from './components/transactions';
+import { transactionModal } from './components/transaction-modal';
 
 window.Alpine = Alpine;
 
@@ -185,6 +186,7 @@ Alpine.data('barChart', barChart);
 Alpine.data('dashboard', dashboard);
 Alpine.data('categories', categories);
 Alpine.data('transactions', transactions);
+Alpine.data('transactionModal', transactionModal);
 
 // Initialize theme store
 Alpine.store('theme').init();

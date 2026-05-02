@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class TransactionStoreRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return auth()->check();
+    }
+
+    public function rules(): array
+    {
+        return [
+            'wallet_id' => ['required', 'uuid', 'exists:wallets,id'],
+            'category_id' => ['nullable', 'uuid', 'exists:categories,id'],
+            'type' => ['required', 'in:expense,income,adjustment'],
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
+            'sender' => ['nullable', 'string', 'max:255'],
+            'sender_bank' => ['nullable', 'string', 'max:50'],
+            'recipient' => ['nullable', 'string', 'max:255'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'transacted_at' => ['required', 'date', 'before_or_equal:now'],
+            'transaction_ref' => ['nullable', 'string', 'max:100'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'wallet_id.required' => 'กรุณาเลือกกระเป๋าเงิน',
+            'wallet_id.exists' => 'กระเป๋าเงินไม่ถูกต้อง',
+            'type.required' => 'กรุณาระบุประเภทธุรกรรม',
+            'amount.required' => 'กรุณาระบุจำนวนเงิน',
+            'amount.numeric' => 'จำนวนเงินต้องเป็นตัวเลข',
+            'amount.min' => 'จำนวนเงินต้องไม่ต่ำกว่า 0.01',
+            'transacted_at.required' => 'กรุณาระบุวันที่ทำรายการ',
+            'transacted_at.before_or_equal' => 'วันที่ทำรายการต้องไม่เกินวันนี้',
+        ];
+    }
+}
