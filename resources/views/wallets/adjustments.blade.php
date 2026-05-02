@@ -58,7 +58,7 @@
                                         </span>
                                     </div>
                                     <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                        <span>{{ $adjustment->adjusted_at->format('d M Y, H:i') }}</span>
+                                        <span>{{ $adjustment->adjusted_at->locale('th')->translatedFormat('j F Y, H:i') }}</span>
                                         <span>ยอด: {{ number_format($adjustment->new_balance, 2) }} บาท</span>
                                     </div>
                                 </div>
