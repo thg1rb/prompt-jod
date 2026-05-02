@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
 Route::get('/', function () {
-    return view('welcome');
+    return auth()->check() ? redirect('/dashboard') : redirect('/login');
 });
 
 Route::get('/auth/redirect', function () {
@@ -84,3 +84,7 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::fallback(function () {
+    return auth()->check() ? redirect('/dashboard') : redirect('/login');
+});
