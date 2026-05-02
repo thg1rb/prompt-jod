@@ -53,14 +53,14 @@
         x-transition:leave-end="opacity-100"
     >
         <!-- Desktop layout: sidebar + content side by side -->
-        <div class="hidden lg:flex min-h-screen">
+        <div class="hidden lg:flex h-screen overflow-hidden">
             <!-- Desktop sidebar -->
             <x-desktop-sidebar />
 
             <!-- Main content area -->
-            <div class="flex-1 flex flex-col min-h-screen bg-background">
+            <div class="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
                 <!-- Page Content -->
-                <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+                <main class="px-4 py-6 sm:px-6 lg:px-8">
                     {{ $slot }}
                 </main>
             </div>

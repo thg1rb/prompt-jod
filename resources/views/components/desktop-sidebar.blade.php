@@ -1,5 +1,5 @@
 <aside
-    class="hidden lg:flex flex-col border-r border-border bg-sidebar transition-all duration-300"
+    class="hidden lg:flex flex-col h-full border-r border-border bg-sidebar transition-all duration-300 overflow-hidden"
     :class="$store.sidebar.collapsed ? 'w-16' : 'w-64'"
     x-init="$store.sidebar.init()"
 >
