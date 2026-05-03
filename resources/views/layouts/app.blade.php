@@ -87,5 +87,25 @@
         @if(auth()->check() && isset($wallets) && isset($categories) && !request()->routeIs('transactions.create'))
             <x-transaction-modal :wallets="$wallets" :categories="$categories" />
         @endif
+
+        <!-- Toast Container -->
+        <x-toast-container />
+
+        <!-- Flash Messages for Toasts -->
+        @if(session('success') || session('error') || session('status'))
+        <script>
+            document.addEventListener('alpine:init', () => {
+                @if(session('success'))
+                    Alpine.store('toast').success({{ \Illuminate\Support\Js::from(session('success')) }});
+                @endif
+                @if(session('error'))
+                    Alpine.store('toast').error({{ \Illuminate\Support\Js::from(session('error')) }});
+                @endif
+                @if(session('status'))
+                    Alpine.store('toast').success({{ \Illuminate\Support\Js::from(session('status')) }});
+                @endif
+            });
+        </script>
+        @endif
     </body>
 </html>

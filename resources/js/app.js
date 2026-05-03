@@ -180,6 +180,21 @@ Alpine.store('sidebar', {
     }
 });
 
+// Toast notification store
+Alpine.store('toast', {
+    items: [],
+    add(type, message) {
+        const id = Date.now() + Math.random().toString(36).substr(2, 9);
+        this.items.unshift({ id, type, message, timestamp: Date.now() });
+        setTimeout(() => window.dispatchEvent(new CustomEvent('toast-hide', { detail: id })), 3000);
+    },
+    remove(id) {
+        this.items = this.items.filter(item => item.id !== id);
+    },
+    success(message) { this.add('success', message); },
+    error(message) { this.add('error', message); }
+});
+
 // Register chart components
 Alpine.data('pieChart', pieChart);
 Alpine.data('barChart', barChart);

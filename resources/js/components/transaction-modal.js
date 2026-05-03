@@ -194,6 +194,7 @@ export function transactionModal(initialData) {
 
                 if (response.ok && data.success) {
                     this.closeModal();
+                    this.$store.toast.success('บันทึกธุรกรรมเรียบร้อยแล้ว');
                     // Dispatch event to refresh transaction list
                     window.dispatchEvent(new CustomEvent('transaction-created'));
                 } else {
@@ -215,6 +216,7 @@ export function transactionModal(initialData) {
             } catch (error) {
                 console.error('Submit error:', error);
                 this.errors = { _form: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่' };
+                this.$store.toast.error('ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่');
             } finally {
                 this.loading = false;
             }

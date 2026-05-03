@@ -48,7 +48,7 @@ export function categories() {
 
         async save() {
             if (!this.editing || !this.editing.name.trim()) {
-                alert('กรุณาตั้งชื่อหมวดหมู่');
+                this.$store.toast.error('กรุณาตั้งชื่อหมวดหมู่');
                 return;
             }
 
@@ -75,12 +75,13 @@ export function categories() {
                 if (data.success) {
                     await this.loadCategories();
                     this.open = false;
+                    this.$store.toast.success(this.editing.id ? 'แก้ไขหมวดหมู่เรียบร้อยแล้ว' : 'เพิ่มหมวดหมู่เรียบร้อยแล้ว');
                 } else {
-                    alert(data.message || 'เกิดข้อผิดพลาด');
+                    this.$store.toast.error(data.message || 'เกิดข้อผิดพลาด');
                 }
             } catch (error) {
                 console.error('Failed to save category:', error);
-                alert('เกิดข้อผิดพลาดในการบันทึก');
+                this.$store.toast.error('เกิดข้อผิดพลาดในการบันทึก');
             }
         },
 
@@ -101,12 +102,13 @@ export function categories() {
 
                 if (data.success) {
                     this.categories = this.categories.filter(c => c.id !== id);
+                    this.$store.toast.success('ลบหมวดหมู่เรียบร้อยแล้ว');
                 } else {
-                    alert(data.message || 'เกิดข้อผิดพลาด');
+                    this.$store.toast.error(data.message || 'เกิดข้อผิดพลาด');
                 }
             } catch (error) {
                 console.error('Failed to delete category:', error);
-                alert('เกิดข้อผิดพลาดในการลบ');
+                this.$store.toast.error('เกิดข้อผิดพลาดในการลบ');
             }
         }
     };
