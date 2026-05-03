@@ -136,14 +136,14 @@ class TransactionController extends Controller
             'type' => ['required', 'in:expense,income,adjustment'],
             'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
             'sender' => ['required', 'string', 'max:255'],
-            'sender_bank' => ['required', 'string', 'max:50'],
             'recipient' => ['required', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:1000'],
             'transacted_at' => ['required', 'date'],
             'transaction_ref' => ['nullable', 'string', 'max:100'],
+            'sender_bank' => ['nullable', 'string', 'max:50'],
         ], [
             'wallet_id.required' => 'กรุณาเลือกกระเป๋าเงิน',
-            'wallet_id.exists' => 'กระเป๋าเงินไม่ถูกต้อง',
+            'wallet_id.exists' => 'กรุเป๋าเงินไม่ถูกต้อง',
             'category_id.required' => 'กรุณาเลือกหมวดหมู่',
             'category_id.exists' => 'หมวดหมู่ไม่ถูกต้อง',
             'type.required' => 'กรุณาระบุประเภทธุรกรรม',
@@ -151,7 +151,6 @@ class TransactionController extends Controller
             'amount.numeric' => 'จำนวนเงินต้องเป็นตัวเลข',
             'amount.min' => 'จำนวนเงินต้องไม่ต่ำกว่า 0.01',
             'sender.required' => 'กรุณาระบุชื่อผู้โอน',
-            'sender_bank.required' => 'กรุณาระบุธนาคารผู้โอน',
             'recipient.required' => 'กรุณาระบุชื่อผู้รับ',
             'transacted_at.required' => 'กรุณาระบุวันที่ทำรายการ',
         ]);
@@ -167,6 +166,10 @@ class TransactionController extends Controller
             'recipient' => $validated['recipient'],
             'note' => $validated['note'],
             'transacted_at' => $validated['transacted_at'],
+            'metadata' => [
+                'sender_bank' => $validated['sender_bank'],
+                'transaction_ref' => $validated['transaction_ref'],
+            ],
         ]);
 
         return response()->json([
@@ -206,6 +209,101 @@ class TransactionController extends Controller
                 'ref1' => $result['data']['ref1'],
                 'ref2' => $result['data']['ref2'],
             ],
+        ]);
+    }
+
+    public function show($id): JsonResponse
+    {
+        $user = Auth::user();
+        $transaction = $user->transactions()
+            ->with(['category', 'wallet'])
+            ->findOrFail($id);
+
+        return response()->json([
+            'transaction' => [
+                'id' => $transaction->id,
+                'wallet_id' => $transaction->wallet_id,
+                'category_id' => $transaction->category_id,
+                'type' => $transaction->type->value,
+                'amount' => (float) $transaction->amount,
+                'sender' => $transaction->sender,
+                'recipient' => $transaction->recipient,
+                'note' => $transaction->note,
+                'transacted_at' => $transaction->transacted_at->format('Y-m-d\TH:i'),
+                'transaction_ref' => $transaction->metadata['transaction_ref'] ?? '',
+            ],
+        ]);
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'wallet_id' => ['required', 'uuid', 'exists:wallets,id'],
+            'category_id' => ['required', 'uuid', 'exists:categories,id'],
+            'type' => ['required', 'in:expense,income,adjustment'],
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
+            'sender' => ['required', 'string', 'max:255'],
+            'sender_bank' => ['nullable', 'string', 'max:50'],
+            'recipient' => ['required', 'string', 'max:255'],
+            'note' => ['nullable', 'string', 'max:1000'],
+            'transacted_at' => ['required', 'date'],
+            'transaction_ref' => ['nullable', 'string', 'max:100'],
+        ], [
+            'wallet_id.required' => 'กรุณาเลือกกระเป๋าเงิน',
+            'wallet_id.exists' => 'กระเป๋าเงินไม่ถูกต้อง',
+            'category_id.required' => 'กรุณาเลือกหมวดหมู่',
+            'category_id.exists' => 'หมวดหมู่ไม่ถูกต้อง',
+            'type.required' => 'กรุณาระบุประเภทธุรกรรม',
+            'amount.required' => 'กรุณาระบุจำนวนเงิน',
+            'amount.numeric' => 'จำนวนเงินต้องเป็นตัวเลข',
+            'amount.min' => 'จำนวนเงินต้องไม่ต่ำกว่า 0.01',
+            'sender.required' => 'กรุณาระบุชื่อผู้โอน',
+            'recipient.required' => 'กรุณาระบุชื่อผู้รับ',
+            'transacted_at.required' => 'กรุณาระบุวันที่ทำรายการ',
+        ]);
+
+        $user = Auth::user();
+        $transaction = $user->transactions()->findOrFail($id);
+
+        $transaction->update([
+            'wallet_id' => $validated['wallet_id'],
+            'category_id' => $validated['category_id'],
+            'type' => $validated['type'],
+            'amount' => $validated['amount'],
+            'sender' => $validated['sender'],
+            'recipient' => $validated['recipient'],
+            'note' => $validated['note'],
+            'transacted_at' => $validated['transacted_at'],
+            'metadata' => array_merge(
+                $transaction->metadata ?? [],
+                [
+                    'sender_bank' => $validated['sender_bank'],
+                    'transaction_ref' => $validated['transaction_ref'],
+                ]
+            ),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'แก้ไขธุรกรรมเรียบร้อย',
+            'transaction' => [
+                'id' => $transaction->id,
+                'amount' => (float) $transaction->amount,
+                'type' => $transaction->type->value,
+                'transacted_at' => $transaction->transacted_at->format('Y-m-d H:i:s'),
+            ],
+        ]);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $user = Auth::user();
+        $transaction = $user->transactions()->findOrFail($id);
+        $transaction->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'ลบธุรกรรมเรียบร้อย',
         ]);
     }
 

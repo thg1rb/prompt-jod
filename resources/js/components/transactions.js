@@ -102,5 +102,17 @@ export function transactions(initialData) {
                 this.loading = false;
             }
         },
+
+        async viewTransaction(transaction) {
+            try {
+                const response = await fetch(`/transactions/${transaction.id}`);
+                const data = await response.json();
+                if (data.transaction) {
+                    window.dispatchEvent(new CustomEvent('open-transaction-modal-view', { detail: data.transaction }));
+                }
+            } catch (error) {
+                console.error('Failed to load transaction:', error);
+            }
+        },
     };
 }

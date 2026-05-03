@@ -1,6 +1,8 @@
 export function transactionModal(initialData) {
     return {
         open: initialData?.initialOpen || false,
+        mode: 'create', // 'create' | 'view' | 'edit'
+        editingId: null,
         loading: false,
         verifying: false,
         slipData: null,
@@ -14,7 +16,6 @@ export function transactionModal(initialData) {
             type: 'expense',
             amount: '',
             sender: '',
-            sender_bank: '',
             recipient: '',
             note: '',
             transacted_at: (() => {
@@ -36,6 +37,28 @@ export function transactionModal(initialData) {
         // Errors
         errors: {},
 
+        get title() {
+            if (this.mode === 'create') return 'เพิ่มธุรกรรมใหม่';
+            if (this.mode === 'view') return 'รายละเอียดธุรกรรม';
+            return 'แก้ไขธุรกรรม';
+        },
+
+        get submitText() {
+            return this.loading ? 'กำลังบันทึก...' : (this.mode === 'edit' ? 'บันทึกการแก้ไข' : 'บันทึก');
+        },
+
+        get isViewMode() {
+            return this.mode === 'view';
+        },
+
+        get isEditMode() {
+            return this.mode === 'edit';
+        },
+
+        get isCreateMode() {
+            return this.mode === 'create';
+        },
+
         openModal() {
             this.open = true;
             this.resetForm();
@@ -43,34 +66,87 @@ export function transactionModal(initialData) {
 
         closeModal() {
             this.open = false;
-            this.resetForm();
+            setTimeout(() => {
+                this.resetForm();
+            }, 150);
         },
 
         resetForm() {
+            this.mode = 'create';
+            this.editingId = null;
             this.form = {
                 wallet_id: this.wallets.find(w => w.is_default)?.id || '',
                 category_id: '',
                 type: 'expense',
                 amount: '',
                 sender: '',
-                sender_bank: '',
                 recipient: '',
                 note: '',
                 transacted_at: (() => {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const day = String(now.getDate()).padStart(2, '0');
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                return `${year}-${month}-${day}T${hours}:${minutes}`;
-            })(),
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hours = String(now.getHours()).padStart(2, '0');
+                    const minutes = String(now.getMinutes()).padStart(2, '0');
+                    return `${year}-${month}-${day}T${hours}:${minutes}`;
+                })(),
                 transaction_ref: '',
             };
             this.slipData = null;
             this.slipImagePreview = null;
             this.slipError = null;
             this.errors = {};
+        },
+
+        openView(transactionData) {
+            this.mode = 'view';
+            this.editingId = transactionData.id;
+            this.form = {
+                wallet_id: transactionData.wallet_id || '',
+                category_id: transactionData.category_id || '',
+                type: transactionData.type || 'expense',
+                amount: transactionData.amount || '',
+                sender: transactionData.sender || '',
+                recipient: transactionData.recipient || '',
+                note: transactionData.note || '',
+                transacted_at: transactionData.transacted_at || '',
+                transaction_ref: transactionData.transaction_ref || '',
+            };
+            this.slipData = null;
+            this.slipImagePreview = null;
+            this.slipError = null;
+            this.errors = {};
+            this.open = true;
+        },
+
+        openEdit(transactionData) {
+            this.mode = 'edit';
+            this.editingId = transactionData.id;
+            this.form = {
+                wallet_id: transactionData.wallet_id || '',
+                category_id: transactionData.category_id || '',
+                type: transactionData.type || 'expense',
+                amount: transactionData.amount || '',
+                sender: transactionData.sender || '',
+                recipient: transactionData.recipient || '',
+                note: transactionData.note || '',
+                transacted_at: transactionData.transacted_at || '',
+                transaction_ref: transactionData.transaction_ref || '',
+            };
+            this.slipData = null;
+            this.slipImagePreview = null;
+            this.slipError = null;
+            this.errors = {};
+            this.open = true;
+        },
+
+        toggleEditMode() {
+            if (this.mode === 'view') {
+                this.mode = 'edit';
+            } else {
+                this.mode = 'view';
+            }
         },
 
         clearError(field) {
@@ -83,7 +159,6 @@ export function transactionModal(initialData) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Show preview
             this.slipImagePreview = URL.createObjectURL(file);
             this.slipError = null;
             this.verifying = true;
@@ -155,9 +230,6 @@ export function transactionModal(initialData) {
             if (slip.sender_name) {
                 this.form.sender = slip.sender_name;
             }
-            if (slip.sender_bank) {
-                this.form.sender_bank = slip.sender_bank;
-            }
             if (slip.receiver_name) {
                 this.form.recipient = slip.receiver_name;
             }
@@ -170,9 +242,12 @@ export function transactionModal(initialData) {
             this.loading = true;
             this.errors = {};
 
+            const url = this.mode === 'edit' ? `/transactions/${this.editingId}` : '/transactions';
+            const method = this.mode === 'edit' ? 'PUT' : 'POST';
+
             try {
-                const response = await fetch('/transactions', {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
@@ -185,7 +260,6 @@ export function transactionModal(initialData) {
                 try {
                     data = await response.json();
                 } catch (e) {
-                    // If JSON parsing fails, try to get text response
                     const text = await response.text();
                     console.error('Response not JSON:', text);
                     this.errors = { _form: 'เกิดข้อผิดพลาดในการบันทึก' };
@@ -193,15 +267,17 @@ export function transactionModal(initialData) {
                 }
 
                 if (response.ok && data.success) {
-                    this.closeModal();
-                    this.$store.toast.success('บันทึกธุรกรรมเรียบร้อยแล้ว');
-                    // Dispatch event to refresh transaction list
-                    window.dispatchEvent(new CustomEvent('transaction-created'));
+                    const event = this.mode === 'edit' ? 'transaction-updated' : 'transaction-created';
+                    this.$store.toast.success(this.mode === 'edit' ? 'แก้ไขธุรกรรมเรียบร้อยแล้ว' : 'บันทึกธุรกรรมเรียบร้อยแล้ว');
+                    window.dispatchEvent(new CustomEvent(event));
+                    if (this.mode === 'edit') {
+                        this.mode = 'view';
+                        this.loading = false;
+                    } else {
+                        this.closeModal();
+                    }
                 } else {
-                    // Handle validation errors
                     if (response.status === 422 && data.errors) {
-                        console.log('Validation errors:', data.errors);
-                        // Laravel validation errors format: { field: [error, ...] }
                         const flattenedErrors = {};
                         for (const field in data.errors) {
                             flattenedErrors[field] = Array.isArray(data.errors[field])
@@ -217,6 +293,40 @@ export function transactionModal(initialData) {
                 console.error('Submit error:', error);
                 this.errors = { _form: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่' };
                 this.$store.toast.error('ไม่สามารถบันทึกข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่');
+            } finally {
+                if (this.mode !== 'edit') {
+                    this.loading = false;
+                }
+            }
+        },
+
+        async delete() {
+            if (!confirm('ยืนยันที่จะลบธุรกรรมนี้?')) {
+                return;
+            }
+
+            this.loading = true;
+
+            try {
+                const response = await fetch(`/transactions/${this.editingId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    this.$store.toast.success('ลบธุรกรรมเรียบร้อยแล้ว');
+                    window.dispatchEvent(new CustomEvent('transaction-deleted'));
+                    this.closeModal();
+                } else {
+                    this.$store.toast.error(data.message || 'ไม่สามารถลบธุรกรรมได้');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                this.$store.toast.error('ไม่สามารถลบธุรกรรมได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
             } finally {
                 this.loading = false;
             }

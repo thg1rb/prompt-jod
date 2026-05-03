@@ -9,6 +9,8 @@
         }})"
         x-init="init()"
         @transaction-created.window="refresh()"
+        @transaction-updated.window="refresh()"
+        @transaction-deleted.window="refresh()"
         class="py-6"
     >
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -144,7 +146,7 @@
             <div x-show="!loading" class="bg-card border border-border rounded-lg overflow-hidden">
                 <ul class="divide-y divide-border">
                     <template x-for="t in list" :key="t.id">
-                        <li class="p-4 flex items-center gap-3">
+                        <li @click="viewTransaction(t)" class="p-4 flex items-center gap-3 cursor-pointer hover:bg-muted/50 transition-colors">
                             <div class="h-10 w-10 rounded-lg bg-surface-subtle grid place-items-center text-lg" x-text="t.category_icon ?? '📌'"></div>
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium truncate" x-text="t.description"></div>
