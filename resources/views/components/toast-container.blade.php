@@ -12,7 +12,7 @@
             x-transition:leave="transition-all duration-300 ease-in"
             x-transition:leave-start="opacity-100 translate-x-0 scale-100"
             x-transition:leave-end="opacity-0 translate-x-4 scale-95"
-            class="pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-lg shadow-elevated min-w-[300px] max-w-md"
+            class="pointer-events-auto flex items-start gap-3 px-4 py-3 rounded-lg shadow-lg min-w-[300px] max-w-md"
             :class="{
                 'bg-primary text-primary-foreground': toast.type === 'success',
                 'bg-destructive text-destructive-foreground': toast.type === 'error'
@@ -29,7 +29,7 @@
                 </svg>
             </template>
 
-            <span class="flex-1 text-sm font-medium" x-text="toast.message"></span>
+            <span class="flex-1 text-sm font-bold" x-text="toast.message"></span>
 
             <button
                 @click="window.dispatchEvent(new CustomEvent('toast-hide', { detail: toast.id }))"
