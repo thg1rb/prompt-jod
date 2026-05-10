@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Models\Transaction;
-use App\Models\Wallet;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -40,6 +38,7 @@ class DashboardController extends Controller
         [$startDate, $endDate] = $this->getDateRange($range);
 
         $transactions = $user->transactions()
+            ->with('category')
             ->whereBetween('transacted_at', [$startDate, $endDate])
             ->expense()
             ->latest()
@@ -87,6 +86,7 @@ class DashboardController extends Controller
         $sevenDaySpending = $this->getSevenDaySpending($user);
 
         $recentTransactions = $user->transactions()
+            ->with(['category', 'wallet'])
             ->latest()
             ->limit(5)
             ->get()

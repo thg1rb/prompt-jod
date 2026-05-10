@@ -9,31 +9,37 @@ Route::get('/', function () {
     return auth()->check() ? redirect('/dashboard') : redirect('/login');
 });
 
-Route::get('/auth/redirect', function () {
-    return Socialite::driver('google')->redirect();
+Route::middleware('throttle:10,1')->group(function () {
+    Route::get('/auth/redirect', function () {
+        return Socialite::driver('google')->redirect();
+    });
+
+    Route::get('/auth/callback', function () {
+        $googleUser = Socialite::driver('google')->user();
+
+        if (! $googleUser->user['email_verified'] ?? true) {
+            return redirect('/login')->with('error', 'Google account email must be verified.');
+        }
+
+        $user = User::updateOrCreate([
+            'google_id' => $googleUser->id,
+        ], [
+            'name' => $googleUser->name,
+            'email' => $googleUser->email,
+            'google_token' => $googleUser->token,
+            'google_refresh_token' => $googleUser->refreshToken,
+        ]);
+
+        Auth::login($user);
+
+        return redirect('/dashboard');
+    });
 });
 
-Route::get('/auth/callback', function () {
-    $googleUser = Socialite::driver('google')->user();
-
-    $user = User::updateOrCreate([
-        'google_id' => $googleUser->id,
-    ], [
-        'name' => $googleUser->name,
-        'email' => $googleUser->email,
-        'google_token' => $googleUser->token,
-        'google_refresh_token' => $googleUser->refreshToken,
-    ]);
-
-    Auth::login($user);
-
-    return redirect('/dashboard');
-});
-
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\WalletController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\WalletController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -48,8 +54,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/terms', function () { return view('legal.terms'); })->name('terms');
-    Route::get('/privacy', function () { return view('legal.privacy'); })->name('privacy');
+    Route::get('/terms', function () {
+        return view('legal.terms');
+    })->name('terms');
+    Route::get('/privacy', function () {
+        return view('legal.privacy');
+    })->name('privacy');
 
     // Wallet Routes
     Route::get('/wallets', [WalletController::class, 'index'])->name('wallets.index');
@@ -80,7 +90,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions/export', [TransactionController::class, 'export'])->name('transactions.export');
     Route::get('/transactions/create', [TransactionController::class, 'create'])->name('transactions.create');
     Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
-    Route::post('/transactions/verify-slip', [TransactionController::class, 'verifySlip'])->name('transactions.verify-slip');
+    Route::post('/transactions/verify-slip', [TransactionController::class, 'verifySlip'])
+        ->middleware('throttle:10,1')
+        ->name('transactions.verify-slip');
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');

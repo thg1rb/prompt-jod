@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use App\Models\Transaction;
-use App\Models\Wallet;
-use App\Http\Requests\TransactionStoreRequest;
 use App\Http\Requests\SlipVerifyRequest;
+use App\Http\Requests\TransactionStoreRequest;
 use App\Services\EasySlipService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +14,7 @@ class TransactionController extends Controller
     public function __construct(
         private EasySlipService $easySlipService
     ) {}
+
     public function index()
     {
         $user = Auth::user();
@@ -48,10 +46,10 @@ class TransactionController extends Controller
         }
 
         if ($q) {
-            $search = strtolower($q);
+            $search = '%'.addcslashes(strtolower($q), '%_').'%';
             $transactions->where(function ($query) use ($search) {
-                $query->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
-                    ->orWhere('metadata', 'ilike', "%{$search}%");
+                $query->whereRaw('LOWER(description) LIKE ?', [$search])
+                    ->orWhere('metadata', 'ilike', $search);
             });
         }
 
@@ -94,10 +92,10 @@ class TransactionController extends Controller
         }
 
         if ($q) {
-            $search = strtolower($q);
+            $search = '%'.addcslashes(strtolower($q), '%_').'%';
             $transactions->where(function ($query) use ($search) {
-                $query->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"])
-                    ->orWhere('metadata', 'ilike', "%{$search}%");
+                $query->whereRaw('LOWER(description) LIKE ?', [$search])
+                    ->orWhere('metadata', 'ilike', $search);
             });
         }
 
@@ -128,33 +126,9 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(TransactionStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'wallet_id' => ['required', 'uuid', 'exists:wallets,id'],
-            'category_id' => ['required', 'uuid', 'exists:categories,id'],
-            'type' => ['required', 'in:expense,income,adjustment'],
-            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
-            'sender' => ['required', 'string', 'max:255'],
-            'recipient' => ['required', 'string', 'max:255'],
-            'note' => ['nullable', 'string', 'max:1000'],
-            'transacted_at' => ['required', 'date'],
-            'transaction_ref' => ['nullable', 'string', 'max:100'],
-            'sender_bank' => ['nullable', 'string', 'max:50'],
-        ], [
-            'wallet_id.required' => 'กรุณาเลือกกระเป๋าเงิน',
-            'wallet_id.exists' => 'กรุเป๋าเงินไม่ถูกต้อง',
-            'category_id.required' => 'กรุณาเลือกหมวดหมู่',
-            'category_id.exists' => 'หมวดหมู่ไม่ถูกต้อง',
-            'type.required' => 'กรุณาระบุประเภทธุรกรรม',
-            'amount.required' => 'กรุณาระบุจำนวนเงิน',
-            'amount.numeric' => 'จำนวนเงินต้องเป็นตัวเลข',
-            'amount.min' => 'จำนวนเงินต้องไม่ต่ำกว่า 0.01',
-            'sender.required' => 'กรุณาระบุชื่อผู้โอน',
-            'recipient.required' => 'กรุณาระบุชื่อผู้รับ',
-            'transacted_at.required' => 'กรุณาระบุวันที่ทำรายการ',
-        ]);
-
+        $validated = $request->validated();
         $user = Auth::user();
 
         $transaction = $user->transactions()->create([
@@ -190,7 +164,7 @@ class TransactionController extends Controller
 
         $result = $this->easySlipService->verifyBankSlip($image);
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return response()->json([
                 'success' => false,
                 'error' => $result['error'],
@@ -235,33 +209,9 @@ class TransactionController extends Controller
         ]);
     }
 
-    public function update(Request $request, $id): JsonResponse
+    public function update(TransactionStoreRequest $request, $id): JsonResponse
     {
-        $validated = $request->validate([
-            'wallet_id' => ['required', 'uuid', 'exists:wallets,id'],
-            'category_id' => ['required', 'uuid', 'exists:categories,id'],
-            'type' => ['required', 'in:expense,income,adjustment'],
-            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
-            'sender' => ['required', 'string', 'max:255'],
-            'sender_bank' => ['nullable', 'string', 'max:50'],
-            'recipient' => ['required', 'string', 'max:255'],
-            'note' => ['nullable', 'string', 'max:1000'],
-            'transacted_at' => ['required', 'date'],
-            'transaction_ref' => ['nullable', 'string', 'max:100'],
-        ], [
-            'wallet_id.required' => 'กรุณาเลือกกระเป๋าเงิน',
-            'wallet_id.exists' => 'กระเป๋าเงินไม่ถูกต้อง',
-            'category_id.required' => 'กรุณาเลือกหมวดหมู่',
-            'category_id.exists' => 'หมวดหมู่ไม่ถูกต้อง',
-            'type.required' => 'กรุณาระบุประเภทธุรกรรม',
-            'amount.required' => 'กรุณาระบุจำนวนเงิน',
-            'amount.numeric' => 'จำนวนเงินต้องเป็นตัวเลข',
-            'amount.min' => 'จำนวนเงินต้องไม่ต่ำกว่า 0.01',
-            'sender.required' => 'กรุณาระบุชื่อผู้โอน',
-            'recipient.required' => 'กรุณาระบุชื่อผู้รับ',
-            'transacted_at.required' => 'กรุณาระบุวันที่ทำรายการ',
-        ]);
-
+        $validated = $request->validated();
         $user = Auth::user();
         $transaction = $user->transactions()->findOrFail($id);
 

@@ -2,28 +2,32 @@
 
 namespace App\Services;
 
+use Carbon\Carbon;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class EasySlipService
 {
     private HttpClient $http;
+
     private string $apiKey;
+
     private string $apiUrl;
 
     public function __construct(HttpClient $http)
     {
         $this->http = $http;
-        $this->apiKey = env('SLIP_VERIFY_API_KEY');
-        $this->apiUrl = env('SLIP_VERIFY_API_URL');
+        $this->apiKey = config('services.easyslip.api_key');
+        $this->apiUrl = config('services.easyslip.api_url');
     }
 
     public function verifyBankSlip(UploadedFile $image): array
     {
         try {
             $response = $this->http->asMultipart()
+                ->timeout(30)
+                ->connectTimeout(10)
                 ->withToken($this->apiKey, 'Bearer')
                 ->attach('image', file_get_contents($image->getPathname()), $image->getClientOriginalName())
                 ->post($this->apiUrl);
@@ -41,7 +45,8 @@ class EasySlipService
                 'status' => $response->status(),
             ];
         } catch (\Exception $e) {
-            Log::error('EasySlip API Error: ' . $e->getMessage());
+            Log::error('EasySlip API Error: '.$e->getMessage());
+
             return [
                 'success' => false,
                 'error' => 'Unable to connect to verification service',
@@ -59,7 +64,7 @@ class EasySlipService
             try {
                 $date = Carbon::parse($rawSlip['date'])->format('Y-m-d');
             } catch (\Exception $e) {
-                Log::error('Failed to parse date: ' . $rawSlip['date']);
+                Log::error('Failed to parse date: '.$rawSlip['date']);
             }
         }
 

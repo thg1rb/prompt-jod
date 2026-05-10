@@ -41,4 +41,9 @@ return [
         'redirect' => env('GOOGLE_CALLBACK_URL'),
     ],
 
+    'easyslip' => [
+        'api_key' => env('SLIP_VERIFY_API_KEY'),
+        'api_url' => env('SLIP_VERIFY_API_URL', 'https://api.easyslip.com/v2/verify/bank'),
+    ],
+
 ];

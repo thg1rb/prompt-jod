@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BalanceAdjustmentRequest;
 use App\Http\Requests\WalletStoreRequest;
 use App\Http\Requests\WalletUpdateRequest;
-use App\Http\Requests\BalanceAdjustmentRequest;
-use App\Models\Wallet;
 use App\Models\BalanceAdjustment;
+use App\Models\Wallet;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class WalletController extends Controller
@@ -56,7 +55,7 @@ class WalletController extends Controller
             auth()->user()->wallets()->update(['is_default' => false]);
         }
 
-        $wallet = Wallet::create($data);
+        $wallet = auth()->user()->wallets()->create($data);
 
         // Create opening balance adjustment if provided
         if (isset($data['opening_balance']) && $data['opening_balance'] > 0) {
@@ -133,7 +132,7 @@ class WalletController extends Controller
         $data['is_default'] = $request->boolean('is_default');
 
         // Handle default wallet change
-        if ($data['is_default'] && !$wallet->is_default) {
+        if ($data['is_default'] && ! $wallet->is_default) {
             auth()->user()->wallets()->where('id', '!=', $wallet->id)->update(['is_default' => false]);
         }
 
