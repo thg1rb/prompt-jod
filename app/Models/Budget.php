@@ -89,7 +89,7 @@ class Budget extends Model
 
         if ($this->period === BudgetPeriod::Monthly) {
             $query->whereYear('transacted_at', $this->year)
-                  ->whereMonth('transacted_at', $this->month);
+                ->whereMonth('transacted_at', $this->month);
         } else {
             $query->whereYear('transacted_at', $this->year);
         }
@@ -139,6 +139,7 @@ class Budget extends Model
         }
 
         $spent = $this->transactions()->sum('amount');
+
         return min(100, round(($spent / $this->amount) * 100, 2));
     }
 
@@ -148,6 +149,7 @@ class Budget extends Model
     public function getRemainingAmountAttribute(): float
     {
         $spent = $this->transactions()->sum('amount');
+
         return max(0, $this->amount - $spent);
     }
 
@@ -190,6 +192,6 @@ class Budget extends Model
             $this->status = BudgetStatus::Active;
         }
 
-        $this->save();
+        $this->saveQuietly();
     }
 }

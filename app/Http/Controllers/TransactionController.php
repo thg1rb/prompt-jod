@@ -48,8 +48,9 @@ class TransactionController extends Controller
         if ($q) {
             $search = '%'.addcslashes(strtolower($q), '%_').'%';
             $transactions->where(function ($query) use ($search) {
-                $query->whereRaw('LOWER(description) LIKE ?', [$search])
-                    ->orWhere('metadata', 'ilike', $search);
+                $query->whereRaw('LOWER(recipient) LIKE ?', [$search])
+                    ->orWhereRaw('LOWER(note) LIKE ?', [$search])
+                    ->orWhereRaw('LOWER(sender) LIKE ?', [$search]);
             });
         }
 
@@ -94,8 +95,9 @@ class TransactionController extends Controller
         if ($q) {
             $search = '%'.addcslashes(strtolower($q), '%_').'%';
             $transactions->where(function ($query) use ($search) {
-                $query->whereRaw('LOWER(description) LIKE ?', [$search])
-                    ->orWhere('metadata', 'ilike', $search);
+                $query->whereRaw('LOWER(recipient) LIKE ?', [$search])
+                    ->orWhereRaw('LOWER(note) LIKE ?', [$search])
+                    ->orWhereRaw('LOWER(sender) LIKE ?', [$search]);
             });
         }
 
@@ -140,10 +142,6 @@ class TransactionController extends Controller
             'recipient' => $validated['recipient'],
             'note' => $validated['note'],
             'transacted_at' => $validated['transacted_at'],
-            'metadata' => [
-                'sender_bank' => $validated['sender_bank'],
-                'transaction_ref' => $validated['transaction_ref'],
-            ],
         ]);
 
         return response()->json([
@@ -204,7 +202,6 @@ class TransactionController extends Controller
                 'recipient' => $transaction->recipient,
                 'note' => $transaction->note,
                 'transacted_at' => $transaction->transacted_at->format('Y-m-d\TH:i'),
-                'transaction_ref' => $transaction->metadata['transaction_ref'] ?? '',
             ],
         ]);
     }
@@ -224,13 +221,6 @@ class TransactionController extends Controller
             'recipient' => $validated['recipient'],
             'note' => $validated['note'],
             'transacted_at' => $validated['transacted_at'],
-            'metadata' => array_merge(
-                $transaction->metadata ?? [],
-                [
-                    'sender_bank' => $validated['sender_bank'],
-                    'transaction_ref' => $validated['transaction_ref'],
-                ]
-            ),
         ]);
 
         return response()->json([

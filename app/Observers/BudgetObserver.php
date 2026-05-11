@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Enums\AlertStatus;
 use App\Enums\AlertType;
+use App\Enums\BudgetStatus;
 use App\Models\Budget;
 use App\Models\BudgetAlert;
 
@@ -30,7 +31,7 @@ class BudgetObserver
      */
     public function checkBudgetThresholds(Budget $budget): void
     {
-        if (!$budget->alert_enabled) {
+        if (! $budget->alert_enabled) {
             return;
         }
 
@@ -41,11 +42,18 @@ class BudgetObserver
 
         // Check for different threshold levels
         $this->createAlertIfNeeded($budget, AlertType::Warning80, 80, $percentageUsed, $amountSpent, $amountRemaining);
-        $this->createAlertIfNeeded($budget, AlertType::Warning100, 100, $percentageUsed, $amountSpent, $amountRemaining);
+        $this->createAlertIfNeeded($budget, AlertType::Warning100, 99.99, $percentageUsed, $amountSpent, $amountRemaining);
         $this->createAlertIfNeeded($budget, AlertType::Exceeded, 100, $percentageUsed, $amountSpent, $amountRemaining, true);
 
-        // Update budget status
-        $budget->updateStatus();
+        if ($percentageUsed >= 100) {
+            $budget->status = BudgetStatus::Exceeded;
+        } elseif ($percentageUsed >= $threshold) {
+            $budget->status = BudgetStatus::Warning;
+        } else {
+            $budget->status = BudgetStatus::Active;
+        }
+
+        $budget->saveQuietly();
     }
 
     /**
@@ -65,7 +73,7 @@ class BudgetObserver
             ? $currentPercent >= $thresholdPercent
             : $currentPercent >= $thresholdPercent && $currentPercent < ($thresholdPercent + 10);
 
-        if (!$thresholdMet) {
+        if (! $thresholdMet) {
             return;
         }
 

@@ -1,0 +1,227 @@
+<?php
+
+use App\Models\Category;
+use App\Models\CategoryRule;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    Auth::login($this->user);
+});
+
+test('user can view categories index', function () {
+    Category::factory()->forUser($this->user)->count(5)->create();
+
+    $response = $this->get(route('categories.index'));
+
+    $response->assertStatus(200);
+    $response->assertViewIs('categories');
+});
+
+test('user can get categories data', function () {
+    Category::factory()->forUser($this->user)
+        ->has(CategoryRule::factory()->count(2), 'rules')
+        ->count(3)
+        ->create();
+
+    $response = $this->get(route('categories.data'));
+
+    $response->assertStatus(200);
+    $response->assertJsonStructure([
+        'categories' => [
+            '*' => [
+                'id',
+                'name',
+                'icon',
+                'color',
+                'is_active',
+                'is_system',
+                'rules',
+            ],
+        ],
+    ]);
+});
+
+test('user can store category', function () {
+    $data = [
+        'name' => 'Food',
+        'icon' => '🍔',
+        'color' => '#FF5733',
+        'keywords' => ['restaurant', 'cafe', 'delivery'],
+    ];
+
+    $response = $this->post(route('categories.store'), $data);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'บันทึกหมวดหมู่เรียบร้อย',
+    ]);
+
+    $category = Category::where('name', 'Food')->first();
+    expect($category->user_id)->toBe($this->user->id);
+    expect($category->rules()->count())->toBe(3);
+
+    $this->assertDatabaseHas('category_rules', [
+        'category_id' => $category->id,
+        'keyword' => 'restaurant',
+    ]);
+});
+
+test('user can update category', function () {
+    $category = Category::factory()->forUser($this->user)->create();
+    CategoryRule::factory()->forCategory($category)->count(2)->create();
+
+    $data = [
+        'name' => 'Updated Food',
+        'icon' => '🍕',
+        'color' => '#00FF00',
+        'keywords' => ['pizza', 'pasta', 'salad'],
+    ];
+
+    $response = $this->put(route('categories.update', $category), $data);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'แก้ไขหมวดหมู่เรียบร้อย',
+    ]);
+
+    $category->refresh();
+    expect($category->name)->toBe('Updated Food');
+    expect($category->rules()->count())->toBe(3);
+});
+
+test('user cannot update system category', function () {
+    $category = Category::factory()->forUser($this->user)->system()->create();
+
+    $data = [
+        'name' => 'Updated',
+        'icon' => '🍕',
+        'color' => '#00FF00',
+        'keywords' => [],
+    ];
+
+    $response = $this->put(route('categories.update', $category), $data);
+
+    $response->assertStatus(403);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ไม่สามารถแก้ไขหมวดหมู่ระบบได้',
+    ]);
+});
+
+test('user cannot update other users category', function () {
+    $otherUser = User::factory()->create();
+    $category = Category::factory()->forUser($otherUser)->create();
+
+    $data = [
+        'name' => 'Updated',
+        'icon' => '🍕',
+        'color' => '#00FF00',
+        'keywords' => [],
+    ];
+
+    $response = $this->put(route('categories.update', $category), $data);
+
+    $response->assertStatus(404);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ไม่พบหมวดหมู่',
+    ]);
+});
+
+test('user can delete category', function () {
+    $category = Category::factory()->forUser($this->user)->create();
+
+    $response = $this->delete(route('categories.destroy', $category));
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'ลบหมวดหมู่เรียบร้อย',
+    ]);
+
+    $this->assertSoftDeleted('categories', ['id' => $category->id]);
+});
+
+test('user cannot delete system category', function () {
+    $category = Category::factory()->forUser($this->user)->system()->create();
+
+    $response = $this->delete(route('categories.destroy', $category));
+
+    $response->assertStatus(403);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ไม่สามารถลบหมวดหมู่ระบบได้',
+    ]);
+
+    $this->assertDatabaseHas('categories', ['id' => $category->id]);
+});
+
+test('user cannot delete other users category', function () {
+    $otherUser = User::factory()->create();
+    $category = Category::factory()->forUser($otherUser)->create();
+
+    $response = $this->delete(route('categories.destroy', $category));
+
+    $response->assertStatus(404);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ไม่พบหมวดหมู่',
+    ]);
+});
+
+test('category factory creates system category', function () {
+    $category = Category::factory()->system()->create();
+
+    expect($category->is_system)->toBeTrue();
+});
+
+test('category factory creates custom category', function () {
+    $category = Category::factory()->custom()->create();
+
+    expect($category->is_system)->toBeFalse();
+});
+
+test('category rule matches keyword case-insensitively', function () {
+    $rule = CategoryRule::factory()->create([
+        'keyword' => 'restaurant',
+        'case_sensitive' => false,
+    ]);
+
+    expect($rule->matches('I went to a RESTAURANT'))->toBeTrue();
+    expect($rule->matches('I went to a cafe'))->toBeFalse();
+});
+
+test('category rule matches keyword case-sensitively', function () {
+    $rule = CategoryRule::factory()->create([
+        'keyword' => 'Restaurant',
+        'case_sensitive' => true,
+    ]);
+
+    expect($rule->matches('I went to a Restaurant'))->toBeTrue();
+    expect($rule->matches('I went to a RESTAURANT'))->toBeFalse();
+});
+
+test('category rule does not match if inactive', function () {
+    $rule = CategoryRule::factory()->inactive()->create([
+        'keyword' => 'restaurant',
+    ]);
+
+    expect($rule->matches('I went to a restaurant'))->toBeFalse();
+});
+
+test('categories are ordered by sort_order then name', function () {
+    Category::factory()->forUser($this->user)->create(['sort_order' => 2, 'name' => 'Zebra']);
+    Category::factory()->forUser($this->user)->create(['sort_order' => 1, 'name' => 'Alpha']);
+    Category::factory()->forUser($this->user)->create(['sort_order' => 1, 'name' => 'Beta']);
+
+    $response = $this->get(route('categories.data'));
+    $categories = $response->json('categories');
+
+    expect($categories[0]['name'])->toBe('Alpha');
+    expect($categories[1]['name'])->toBe('Beta');
+    expect($categories[2]['name'])->toBe('Zebra');
+});

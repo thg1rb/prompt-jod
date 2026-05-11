@@ -37,7 +37,9 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('*', function ($view) {
             if (auth()->check()) {
-                $view->with('wallets', Wallet::where('user_id', auth()->id())->active()->get());
+                $view->with('wallets', Wallet::where('user_id', auth()->id())->active()->with(['transactions' => function ($query) {
+                    $query->latest()->limit(3);
+                }])->get());
                 $view->with('categories', Category::where('user_id', auth()->id())->active()->ordered()->get());
             }
         });
