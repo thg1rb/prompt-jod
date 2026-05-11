@@ -243,37 +243,97 @@
                 </div>
 
                  <!-- Sender -->
-                 <div>
+                 <div class="relative" @click.away="hideSuggestions()">
                      <label for="sender" class="block text-sm font-medium text-foreground mb-1"><span x-text="senderLabel"></span> <span class="text-destructive">*</span></label>
                      <input
                          id="sender"
                          type="text"
                          x-model="form.sender"
-                         @input="clearError('sender')"
+                         @input="onSenderInput()"
+                         @focus="onSenderFocus()"
+                         @keydown="onSenderKeydown($event)"
                          :disabled="isViewMode"
                          class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
                          :class="errors.sender ? 'border-destructive' : ''"
                          :placeholder="isCashWallet ? 'ชื่อผู้จ่าย' : 'ชื่อผู้โอน'"
                          required
+                         autocomplete="off"
                      >
                      <p x-show="errors.sender" class="mt-1 text-xs text-destructive" x-text="errors.sender"></p>
+
+                     <!-- Sender Suggestions Dropdown -->
+                     <div
+                         x-show="showSenderSuggestions && !isViewMode"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                         style="display: none;"
+                     >
+                         <template x-for="(name, index) in senderSuggestions" :key="name">
+                             <button
+                                 type="button"
+                                 @click.prevent="selectSenderSuggestion(name)"
+                                 @mouseenter="senderHighlightedIndex = index"
+                                 class="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors text-foreground"
+                                 :class="index === senderHighlightedIndex ? 'bg-muted' : ''"
+                                 x-text="name"
+                             ></button>
+                         </template>
+                         <div x-show="senderSuggestions.length === 0" class="px-3 py-2 text-sm text-text-muted">
+                             ไม่พบข้อมูล
+                         </div>
+                     </div>
                  </div>
 
                 <!-- Recipient -->
-                <div>
+                <div class="relative" @click.away="hideSuggestions()">
                     <label for="recipient" class="block text-sm font-medium text-foreground mb-1">ผู้รับ <span class="text-destructive">*</span></label>
                     <input
                         id="recipient"
                         type="text"
                         x-model="form.recipient"
-                        @input="clearError('recipient')"
+                        @input="onRecipientInput()"
+                        @focus="onRecipientFocus()"
+                        @keydown="onRecipientKeydown($event)"
                         :disabled="isViewMode"
                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
                         :class="errors.recipient ? 'border-destructive' : ''"
                         placeholder="ชื่อผู้รับ"
                         required
+                        autocomplete="off"
                     >
                     <p x-show="errors.recipient" class="mt-1 text-xs text-destructive" x-text="errors.recipient"></p>
+
+                    <!-- Recipient Suggestions Dropdown -->
+                    <div
+                        x-show="showRecipientSuggestions && !isViewMode"
+                        x-transition:enter="transition ease-out duration-100"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                        style="display: none;"
+                    >
+                        <template x-for="(name, index) in recipientSuggestions" :key="name">
+                            <button
+                                type="button"
+                                @click.prevent="selectRecipientSuggestion(name)"
+                                @mouseenter="recipientHighlightedIndex = index"
+                                class="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors text-foreground"
+                                :class="index === recipientHighlightedIndex ? 'bg-muted' : ''"
+                                x-text="name"
+                            ></button>
+                        </template>
+                        <div x-show="recipientSuggestions.length === 0" class="px-3 py-2 text-sm text-text-muted">
+                            ไม่พบข้อมูล
+                        </div>
+                    </div>
                 </div>
 
                  <!-- Transaction Reference -->

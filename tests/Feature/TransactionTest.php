@@ -362,3 +362,133 @@ test('transaction gets signed amount correctly', function () {
     expect($expense->getSignedAmountAttribute())->toBe(-100.0);
     expect($income->getSignedAmountAttribute())->toBe(100.0);
 });
+
+test('user can search sender names', function () {
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+    $category = Category::factory()->forUser($this->user)->create();
+
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'sender' => 'John Doe',
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'sender' => 'John Smith',
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'sender' => 'Jane Doe',
+    ]);
+
+    $response = $this->get(route('transactions.search-names', ['q' => 'John', 'field' => 'sender']));
+
+    $response->assertStatus(200);
+    $response->assertJsonStructure([
+        'names' => [],
+    ]);
+
+    $names = $response->json('names');
+    expect($names)->toContain('John Doe');
+    expect($names)->toContain('John Smith');
+    expect($names)->not->toContain('Jane Doe');
+});
+
+test('user can search recipient names', function () {
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+    $category = Category::factory()->forUser($this->user)->create();
+
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'recipient' => 'Coffee Shop',
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'recipient' => 'Coffee Corner',
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'recipient' => 'Tea House',
+    ]);
+
+    $response = $this->get(route('transactions.search-names', ['q' => 'Coffee', 'field' => 'recipient']));
+
+    $response->assertStatus(200);
+    $response->assertJsonStructure([
+        'names' => [],
+    ]);
+
+    $names = $response->json('names');
+    expect($names)->toContain('Coffee Shop');
+    expect($names)->toContain('Coffee Corner');
+    expect($names)->not->toContain('Tea House');
+});
+
+test('search names requires valid field parameter', function () {
+    $response = $this->getJson(route('transactions.search-names', ['q' => 'test', 'field' => 'invalid']));
+
+    $response->assertUnprocessable();
+});
+
+test('search names returns recent names on empty query', function () {
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+    $category = Category::factory()->forUser($this->user)->create();
+
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'sender' => 'First Sender',
+        'transacted_at' => now()->subDays(3),
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'sender' => 'Second Sender',
+        'transacted_at' => now()->subDays(2),
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'sender' => 'Third Sender',
+        'transacted_at' => now()->subDay(),
+    ]);
+
+    $response = $this->getJson(route('transactions.search-names', ['q' => '', 'field' => 'sender']));
+
+    $response->assertStatus(200);
+    $names = $response->json('names');
+
+    expect($names)->toHaveCount(3);
+    expect($names[0])->toBe('Third Sender');
+    expect($names[1])->toBe('Second Sender');
+    expect($names[2])->toBe('First Sender');
+});
+
+test('search names returns only user transactions', function () {
+    $otherUser = User::factory()->create();
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+    $otherWallet = Wallet::factory()->forUser($otherUser)->create();
+    $category = Category::factory()->forUser($this->user)->create();
+
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'sender' => 'My Sender',
+    ]);
+    Transaction::factory()->forUser($otherUser)->create([
+        'wallet_id' => $otherWallet->id,
+        'category_id' => Category::factory()->forUser($otherUser)->create()->id,
+        'sender' => 'Other Sender',
+    ]);
+
+    $response = $this->get(route('transactions.search-names', ['q' => 'Sender', 'field' => 'sender']));
+
+    $names = $response->json('names');
+    expect($names)->toContain('My Sender');
+    expect($names)->not->toContain('Other Sender');
+});

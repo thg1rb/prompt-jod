@@ -9,6 +9,16 @@ export function transactionModal(initialData) {
         slipError: null,
         slipImagePreview: null,
 
+        // Suggestions
+        senderSuggestions: [],
+        recipientSuggestions: [],
+        showSenderSuggestions: false,
+        showRecipientSuggestions: false,
+        senderSearchTimeout: null,
+        recipientSearchTimeout: null,
+        senderHighlightedIndex: -1,
+        recipientHighlightedIndex: -1,
+
         // Form data
         form: {
             wallet_id: '',
@@ -355,6 +365,158 @@ export function transactionModal(initialData) {
                 currency: 'THB',
                 minimumFractionDigits: 2
             }).format(amount).replace('THB', '').trim();
+        },
+
+        onSenderInput() {
+            this.clearError('sender');
+            this.senderHighlightedIndex = -1;
+
+            if (!this.form.sender || this.form.sender.length < 1) {
+                this.showSenderSuggestions = false;
+                this.senderSuggestions = [];
+                return;
+            }
+
+            clearTimeout(this.senderSearchTimeout);
+            this.senderSearchTimeout = setTimeout(() => {
+                this.searchNames(this.form.sender, 'sender');
+            }, 300);
+        },
+
+        onSenderFocus() {
+            this.senderHighlightedIndex = -1;
+            this.searchNames('', 'sender');
+        },
+
+        onRecipientInput() {
+            this.clearError('recipient');
+            this.recipientHighlightedIndex = -1;
+
+            if (!this.form.recipient || this.form.recipient.length < 1) {
+                this.showRecipientSuggestions = false;
+                this.recipientSuggestions = [];
+                return;
+            }
+
+            clearTimeout(this.recipientSearchTimeout);
+            this.recipientSearchTimeout = setTimeout(() => {
+                this.searchNames(this.form.recipient, 'recipient');
+            }, 300);
+        },
+
+        onRecipientFocus() {
+            this.recipientHighlightedIndex = -1;
+            this.searchNames('', 'recipient');
+        },
+
+        async searchNames(query, field) {
+            try {
+                const url = new URL('/transactions/search-names', window.location.origin);
+                url.searchParams.append('q', query);
+                url.searchParams.append('field', field);
+
+                const response = await fetch(url, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                });
+
+                const data = await response.json();
+
+                if (field === 'sender') {
+                    this.senderSuggestions = data.names || [];
+                    this.senderHighlightedIndex = -1;
+                    this.showSenderSuggestions = this.senderSuggestions.length > 0;
+                } else {
+                    this.recipientSuggestions = data.names || [];
+                    this.recipientHighlightedIndex = -1;
+                    this.showRecipientSuggestions = this.recipientSuggestions.length > 0;
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        },
+
+        selectSenderSuggestion(name) {
+            this.form.sender = name;
+            this.showSenderSuggestions = false;
+            this.senderSuggestions = [];
+            this.senderHighlightedIndex = -1;
+        },
+
+        selectRecipientSuggestion(name) {
+            this.form.recipient = name;
+            this.showRecipientSuggestions = false;
+            this.recipientSuggestions = [];
+            this.recipientHighlightedIndex = -1;
+        },
+
+        hideSuggestions() {
+            setTimeout(() => {
+                this.showSenderSuggestions = false;
+                this.showRecipientSuggestions = false;
+                this.senderHighlightedIndex = -1;
+                this.recipientHighlightedIndex = -1;
+            }, 200);
+        },
+
+        onSenderKeydown(event) {
+            if (!this.showSenderSuggestions || this.senderSuggestions.length === 0) return;
+
+            switch (event.key) {
+                case 'ArrowDown':
+                    event.preventDefault();
+                    this.senderHighlightedIndex = Math.min(
+                        this.senderHighlightedIndex + 1,
+                        this.senderSuggestions.length - 1
+                    );
+                    break;
+                case 'ArrowUp':
+                    event.preventDefault();
+                    this.senderHighlightedIndex = Math.max(this.senderHighlightedIndex - 1, 0);
+                    break;
+                case 'Enter':
+                    event.preventDefault();
+                    if (this.senderHighlightedIndex >= 0 && this.senderHighlightedIndex < this.senderSuggestions.length) {
+                        this.selectSenderSuggestion(this.senderSuggestions[this.senderHighlightedIndex]);
+                    }
+                    break;
+                case 'Escape':
+                    event.preventDefault();
+                    this.showSenderSuggestions = false;
+                    this.senderHighlightedIndex = -1;
+                    break;
+            }
+        },
+
+        onRecipientKeydown(event) {
+            if (!this.showRecipientSuggestions || this.recipientSuggestions.length === 0) return;
+
+            switch (event.key) {
+                case 'ArrowDown':
+                    event.preventDefault();
+                    this.recipientHighlightedIndex = Math.min(
+                        this.recipientHighlightedIndex + 1,
+                        this.recipientSuggestions.length - 1
+                    );
+                    break;
+                case 'ArrowUp':
+                    event.preventDefault();
+                    this.recipientHighlightedIndex = Math.max(this.recipientHighlightedIndex - 1, 0);
+                    break;
+                case 'Enter':
+                    event.preventDefault();
+                    if (this.recipientHighlightedIndex >= 0 && this.recipientHighlightedIndex < this.recipientSuggestions.length) {
+                        this.selectRecipientSuggestion(this.recipientSuggestions[this.recipientHighlightedIndex]);
+                    }
+                    break;
+                case 'Escape':
+                    event.preventDefault();
+                    this.showRecipientSuggestions = false;
+                    this.recipientHighlightedIndex = -1;
+                    break;
+            }
         },
     };
 }

@@ -93,6 +93,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/transactions/verify-slip', [TransactionController::class, 'verifySlip'])
         ->middleware('throttle:10,1')
         ->name('transactions.verify-slip');
+    Route::get('/transactions/search-names', [TransactionController::class, 'searchNames'])->name('transactions.search-names');
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');

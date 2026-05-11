@@ -249,6 +249,39 @@ class TransactionController extends Controller
         ]);
     }
 
+    public function searchNames(Request $request): JsonResponse
+    {
+        $request->validate([
+            'q' => 'nullable|string',
+            'field' => 'required|in:sender,recipient',
+        ]);
+
+        $user = Auth::user();
+        $query = $request->input('q', '');
+        $field = $request->input('field');
+
+        $transactionQuery = $user->transactions()
+            ->whereNotNull($field);
+
+        if (! empty($query)) {
+            $transactionQuery->where($field, 'like', '%'.$query.'%');
+        }
+
+        $names = $transactionQuery
+            ->orderByDesc('transacted_at')
+            ->limit(10)
+            ->pluck($field)
+            ->unique()
+            ->values()
+            ->filter(fn ($name) => ! empty($name))
+            ->take(8)
+            ->values();
+
+        return response()->json([
+            'names' => $names,
+        ]);
+    }
+
     private function getTransactions($user)
     {
         return $user->transactions()
