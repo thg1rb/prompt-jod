@@ -59,6 +59,22 @@ export function transactionModal(initialData) {
             return this.mode === 'create';
         },
 
+        get selectedWallet() {
+            return this.wallets.find(w => w.id === this.form.wallet_id);
+        },
+
+        get selectedWalletType() {
+            return this.selectedWallet?.type || '';
+        },
+
+        get isCashWallet() {
+            return this.selectedWalletType === 'cash';
+        },
+
+        get senderLabel() {
+            return this.isCashWallet ? 'ผู้จ่าย' : 'ผู้โอน';
+        },
+
         openModal() {
             this.open = true;
             this.resetForm();

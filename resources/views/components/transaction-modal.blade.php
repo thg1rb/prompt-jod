@@ -7,7 +7,7 @@
 <div
     x-data="transactionModal({{
         json_encode([
-            'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name, 'is_default' => $w->is_default])->values(),
+            'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name, 'is_default' => $w->is_default, 'type' => $w->type->value])->values(),
             'categories' => $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'icon' => $c->icon])->values(),
             'initialOpen' => $initialOpen,
         ])
@@ -242,22 +242,22 @@
                     <p x-show="errors.category_id" class="mt-1 text-xs text-destructive" x-text="errors.category_id"></p>
                 </div>
 
-                <!-- Sender -->
-                <div>
-                    <label for="sender" class="block text-sm font-medium text-foreground mb-1">ผู้โอน <span class="text-destructive">*</span></label>
-                    <input
-                        id="sender"
-                        type="text"
-                        x-model="form.sender"
-                        @input="clearError('sender')"
-                        :disabled="isViewMode"
-                        class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
-                        :class="errors.sender ? 'border-destructive' : ''"
-                        placeholder="ชื่อผู้โอน"
-                        required
-                    >
-                    <p x-show="errors.sender" class="mt-1 text-xs text-destructive" x-text="errors.sender"></p>
-                </div>
+                 <!-- Sender -->
+                 <div>
+                     <label for="sender" class="block text-sm font-medium text-foreground mb-1"><span x-text="senderLabel"></span> <span class="text-destructive">*</span></label>
+                     <input
+                         id="sender"
+                         type="text"
+                         x-model="form.sender"
+                         @input="clearError('sender')"
+                         :disabled="isViewMode"
+                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
+                         :class="errors.sender ? 'border-destructive' : ''"
+                         :placeholder="isCashWallet ? 'ชื่อผู้จ่าย' : 'ชื่อผู้โอน'"
+                         required
+                     >
+                     <p x-show="errors.sender" class="mt-1 text-xs text-destructive" x-text="errors.sender"></p>
+                 </div>
 
                 <!-- Recipient -->
                 <div>
@@ -276,27 +276,27 @@
                     <p x-show="errors.recipient" class="mt-1 text-xs text-destructive" x-text="errors.recipient"></p>
                 </div>
 
-                <!-- Transaction Reference -->
-                <div>
-                    <label for="transaction_ref" class="block text-sm font-medium text-foreground mb-1">เลขอ้างอิง</label>
-                    <input
-                        id="transaction_ref"
-                        type="text"
-                        x-model="form.transaction_ref"
-                        :disabled="isViewMode"
-                        class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
-                        placeholder="เลขอ้างอิงธุรกรรม"
-                        x-show="isCreateMode"
-                        style="display: none;"
-                    >
-                    <div
-                        x-show="!isCreateMode"
-                        class="w-full px-3 py-2 border border-border rounded-lg bg-muted/50 text-foreground"
-                        style="display: none;"
-                    >
-                        <span x-text="form.transaction_ref || '-'"></span>
-                    </div>
-                </div>
+                 <!-- Transaction Reference -->
+                 <div x-show="!isCashWallet" style="display: none;">
+                     <label for="transaction_ref" class="block text-sm font-medium text-foreground mb-1">เลขอ้างอิง</label>
+                     <input
+                         id="transaction_ref"
+                         type="text"
+                         x-model="form.transaction_ref"
+                         :disabled="isViewMode"
+                         class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed"
+                         placeholder="เลขอ้างอิงธุรกรรม"
+                         x-show="isCreateMode"
+                         style="display: none;"
+                     >
+                     <div
+                         x-show="!isCreateMode"
+                         class="w-full px-3 py-2 border border-border rounded-lg bg-muted/50 text-foreground"
+                         style="display: none;"
+                     >
+                         <span x-text="form.transaction_ref || '-'"></span>
+                     </div>
+                 </div>
 
                 <!-- Note -->
                 <div>
