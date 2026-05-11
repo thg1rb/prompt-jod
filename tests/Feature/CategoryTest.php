@@ -3,6 +3,7 @@
 use App\Models\Category;
 use App\Models\CategoryRule;
 use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
@@ -171,6 +172,30 @@ test('user cannot delete other users category', function () {
         'success' => false,
         'message' => 'ไม่พบหมวดหมู่',
     ]);
+});
+
+test('user cannot delete category with transactions', function () {
+    $category = Category::factory()->forUser($this->user)->create();
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+
+    $category->transactions()->create([
+        'user_id' => $this->user->id,
+        'wallet_id' => $wallet->id,
+        'type' => 'expense',
+        'amount' => 100,
+        'sender' => 'Test',
+        'recipient' => 'Test',
+        'transacted_at' => now(),
+    ]);
+
+    $response = $this->delete(route('categories.destroy', $category));
+
+    $response->assertStatus(400);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ไม่สามารถลบหมวดหมู่ที่มีธุรกรรมได้',
+    ]);
+    $this->assertDatabaseHas('categories', ['id' => $category->id]);
 });
 
 test('category factory creates system category', function () {

@@ -130,7 +130,11 @@ test('user can delete wallet without transactions', function () {
 
     $response = $this->delete(route('wallets.destroy', $wallet));
 
-    $response->assertRedirect(route('wallets.index'));
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'message' => 'ลบบัญชีเรียบร้อยแล้ว',
+    ]);
     $this->assertSoftDeleted('wallets', ['id' => $wallet->id]);
 });
 
@@ -148,7 +152,11 @@ test('user cannot delete wallet with transactions', function () {
 
     $response = $this->delete(route('wallets.destroy', $wallet));
 
-    $response->assertRedirect();
+    $response->assertStatus(400);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ไม่สามารถลบกระเป๋าเงินที่มีธุรกรรมได้',
+    ]);
     $this->assertDatabaseHas('wallets', ['id' => $wallet->id]);
 });
 

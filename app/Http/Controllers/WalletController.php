@@ -7,6 +7,7 @@ use App\Http\Requests\WalletStoreRequest;
 use App\Http\Requests\WalletUpdateRequest;
 use App\Models\BalanceAdjustment;
 use App\Models\Wallet;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -146,20 +147,23 @@ class WalletController extends Controller
     /**
      * Remove the specified wallet from storage (soft delete).
      */
-    public function destroy(Wallet $wallet): RedirectResponse
+    public function destroy(Wallet $wallet): JsonResponse
     {
         $this->authorizeWallet($wallet);
 
-        // Prevent deletion if wallet has transactions
         if ($wallet->transactions()->exists()) {
-            return back()->with('error', 'ไม่สามารถลบบัญชีที่มีธุรกรรมได้');
+            return response()->json([
+                'success' => false,
+                'message' => 'ไม่สามารถลบกระเป๋าเงินที่มีธุรกรรมได้',
+            ], 400);
         }
 
         $wallet->delete();
 
-        return redirect()
-            ->route('wallets.index')
-            ->with('success', 'ลบบัญชีเรียบร้อยแล้ว');
+        return response()->json([
+            'success' => true,
+            'message' => 'ลบบัญชีเรียบร้อยแล้ว',
+        ]);
     }
 
     /**

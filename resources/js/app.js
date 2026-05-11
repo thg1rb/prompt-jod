@@ -5,6 +5,7 @@ import { pieChart, barChart, dashboard } from './components/chart';
 import { categories } from './components/categories';
 import { transactions } from './components/transactions';
 import { transactionModal } from './components/transaction-modal';
+import { walletShow } from './components/wallet-show';
 
 window.Alpine = Alpine;
 
@@ -202,6 +203,7 @@ Alpine.data('dashboard', dashboard);
 Alpine.data('categories', categories);
 Alpine.data('transactions', transactions);
 Alpine.data('transactionModal', transactionModal);
+Alpine.data('walletShow', walletShow);
 
 // Initialize theme store
 Alpine.store('theme').init();

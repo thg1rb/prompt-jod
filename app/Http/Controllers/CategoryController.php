@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Models\CategoryRule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
@@ -46,9 +44,9 @@ class CategoryController extends Controller
             'sort_order' => Category::where('user_id', Auth::id())->count(),
         ]);
 
-        if (!empty($validated['keywords'])) {
+        if (! empty($validated['keywords'])) {
             foreach ($validated['keywords'] as $keyword) {
-                if (!empty(trim($keyword))) {
+                if (! empty(trim($keyword))) {
                     $category->rules()->create([
                         'keyword' => trim($keyword),
                         'priority' => 1,
@@ -92,9 +90,9 @@ class CategoryController extends Controller
 
         $category->rules()->delete();
 
-        if (!empty($validated['keywords'])) {
+        if (! empty($validated['keywords'])) {
             foreach ($validated['keywords'] as $keyword) {
-                if (!empty(trim($keyword))) {
+                if (! empty(trim($keyword))) {
                     $category->rules()->create([
                         'keyword' => trim($keyword),
                         'priority' => 1,
@@ -120,6 +118,13 @@ class CategoryController extends Controller
 
         if ($category->is_system) {
             return response()->json(['success' => false, 'message' => 'ไม่สามารถลบหมวดหมู่ระบบได้'], 403);
+        }
+
+        if ($category->transactions()->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ไม่สามารถลบหมวดหมู่ที่มีธุรกรรมได้',
+            ], 400);
         }
 
         $category->delete();
