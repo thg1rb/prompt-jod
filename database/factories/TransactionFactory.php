@@ -19,6 +19,7 @@ class TransactionFactory extends Factory
             'user_id' => User::factory(),
             'wallet_id' => Wallet::factory(),
             'category_id' => Category::factory(),
+            'transaction_ref' => fake()->numerify('##########'),
             'type' => TransactionType::from(fake()->randomElement(['expense', 'income', 'adjustment'])),
             'amount' => fake()->randomFloat(2, 1, 10000),
             'sender' => fake()->name(),

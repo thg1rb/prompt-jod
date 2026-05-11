@@ -136,6 +136,7 @@ class TransactionController extends Controller
         $transaction = $user->transactions()->create([
             'wallet_id' => $validated['wallet_id'],
             'category_id' => $validated['category_id'],
+            'transaction_ref' => $validated['transaction_ref'] ?? null,
             'type' => $validated['type'],
             'amount' => $validated['amount'],
             'sender' => $validated['sender'],
@@ -215,6 +216,7 @@ class TransactionController extends Controller
         $transaction->update([
             'wallet_id' => $validated['wallet_id'],
             'category_id' => $validated['category_id'],
+            'transaction_ref' => $validated['transaction_ref'] ?? null,
             'type' => $validated['type'],
             'amount' => $validated['amount'],
             'sender' => $validated['sender'],

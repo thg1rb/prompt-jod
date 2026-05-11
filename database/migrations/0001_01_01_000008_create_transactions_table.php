@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('wallet_id')->constrained()->restrictOnDelete();
             $table->foreignUuid('category_id')->nullable()->constrained()->nullOnDelete();
-            $table->uuid('slip_id')->nullable(); // null = manual entry
+            $table->string('transaction_ref')->nullable(); // เลขอ้างอิงจากสลิป ใช้ตรวจ duplicate
             $table->string('type'); // expense | income | adjustment
             $table->decimal('amount', 15, 2);
             $table->string('sender')->nullable(); // pre-filled จาก slip หรือกรอกเอง
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->index(['user_id', 'transacted_at'], 'idx_txn_user_date');
             $table->index(['wallet_id', 'transacted_at']);
             $table->index('category_id');
-            $table->index('slip_id');
+            $table->index('transaction_ref', 'idx_txn_ref');
         });
     }
 

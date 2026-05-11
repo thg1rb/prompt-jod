@@ -11,7 +11,9 @@ class CategoryRuleSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::statement('SET CONSTRAINTS ALL DEFERRED');
+        if (config('database.default') !== 'sqlite') {
+            DB::statement('SET CONSTRAINTS ALL DEFERRED');
+        }
 
         $categoryRules = [
             'อาหาร & เครื่องดื่ม' => [
@@ -71,7 +73,7 @@ class CategoryRuleSeeder extends Seeder
                         ->where('keyword', $rule['keyword'])
                         ->first();
 
-                    if (!$existing) {
+                    if (! $existing) {
                         CategoryRule::create([
                             'category_id' => $category->id,
                             'keyword' => $rule['keyword'],
@@ -84,6 +86,8 @@ class CategoryRuleSeeder extends Seeder
             }
         }
 
-        DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+        if (config('database.default') !== 'sqlite') {
+            DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+        }
     }
 }

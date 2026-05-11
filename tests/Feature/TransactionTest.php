@@ -167,7 +167,6 @@ test('user can store transaction', function () {
         'note' => 'Morning coffee',
         'transacted_at' => now()->toDateString(),
         'transaction_ref' => 'REF123',
-        'sender_bank' => 'KBANK',
     ];
 
     $response = $this->post(route('transactions.store'), $data);
@@ -283,7 +282,6 @@ test('user can update transaction', function () {
         'recipient' => 'Updated Recipient',
         'note' => 'Updated note',
         'transacted_at' => now()->toDateString(),
-        'sender_bank' => 'SCB',
     ];
 
     $response = $this->put(route('transactions.update', $transaction), $data);

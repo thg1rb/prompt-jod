@@ -10,7 +10,9 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        DB::statement('SET CONSTRAINTS ALL DEFERRED');
+        if (config('database.default') !== 'sqlite') {
+            DB::statement('SET CONSTRAINTS ALL DEFERRED');
+        }
 
         $defaultCategories = [
             [
@@ -78,7 +80,7 @@ class CategorySeeder extends Seeder
                     ->where('name', $category['name'])
                     ->first();
 
-                if (!$existing) {
+                if (! $existing) {
                     Category::create([
                         'user_id' => $userId,
                         'name' => $category['name'],
@@ -93,6 +95,8 @@ class CategorySeeder extends Seeder
             }
         }
 
-        DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+        if (config('database.default') !== 'sqlite') {
+            DB::statement('SET CONSTRAINTS ALL IMMEDIATE');
+        }
     }
 }

@@ -78,14 +78,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all slips for the user.
-     */
-    public function slips(): HasMany
-    {
-        return $this->hasMany(Slip::class);
-    }
-
-    /**
      * Get all budgets for the user.
      */
     public function budgets(): HasMany

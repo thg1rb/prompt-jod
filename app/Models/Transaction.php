@@ -25,7 +25,7 @@ class Transaction extends Model
         'user_id',
         'wallet_id',
         'category_id',
-        'slip_id',
+        'transaction_ref',
         'type',
         'amount',
         'sender',
@@ -70,14 +70,6 @@ class Transaction extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
-    }
-
-    /**
-     * Get the slip that owns the transaction.
-     */
-    public function slip(): BelongsTo
-    {
-        return $this->belongsTo(Slip::class);
     }
 
     /**

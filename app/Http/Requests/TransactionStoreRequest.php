@@ -23,7 +23,6 @@ class TransactionStoreRequest extends FormRequest
             'type' => ['required', 'in:expense,income,adjustment'],
             'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
             'sender' => ['nullable', 'string', 'max:255'],
-            'sender_bank' => ['nullable', 'string', 'max:50'],
             'recipient' => ['nullable', 'string', 'max:255'],
             'note' => ['nullable', 'string', 'max:1000'],
             'transacted_at' => ['required', 'date', 'before_or_equal:now'],
