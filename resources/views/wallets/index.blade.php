@@ -163,7 +163,7 @@
                         @enderror
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="checkbox" id="is_default" name="is_default" class="rounded border-border text-primary focus:ring-ring" />
+                        <input type="checkbox" id="is_default" name="is_default" value="1" class="rounded border-border text-primary focus:ring-ring" @checked(old('is_default')) />
                         <label for="is_default" class="text-sm text-foreground">ตั้งเป็นกระเป๋าหลัก</label>
                     </div>
                     <div class="flex gap-3 pt-4">

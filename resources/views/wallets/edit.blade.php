@@ -60,7 +60,7 @@
                         </div>
 
                         <div class="flex items-center">
-                            <input type="checkbox" id="is_default" name="is_default" class="rounded border-gray-300 text-indigo-600 shadow-sm" {{ $wallet->is_default ? 'checked' : '' }} />
+                            <input type="checkbox" id="is_default" name="is_default" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm" @checked(old('is_default', $wallet->is_default)) />
                             <label for="is_default" class="ml-2 text-sm text-gray-700 dark:text-gray-300">ตั้งเป็นกระเป๋าเงินหลัก</label>
                         </div>
 

@@ -163,14 +163,6 @@
                         >
                             รายรับ
                         </button>
-                        <button
-                            type="button"
-                            @click="form.type = 'adjustment'"
-                            class="flex-1 px-4 py-2 border rounded-lg text-sm font-medium transition-colors"
-                            :class="form.type === 'adjustment' ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:bg-muted text-foreground'"
-                        >
-                            ปรับ
-                        </button>
                     </div>
                 </div>
 

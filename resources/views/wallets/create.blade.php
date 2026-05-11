@@ -59,7 +59,7 @@
                             <x-input-error class="mt-2" :messages="$errors->get('notes')" />
                         </div>
                         <div class="flex items-center">
-                            <input type="checkbox" id="is_default" name="is_default" class="rounded border-gray-300 text-indigo-600 shadow-sm" {{ old('is_default') ? 'checked' : '' }} />
+                            <input type="checkbox" id="is_default" name="is_default" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm" @checked(old('is_default')) />
                             <label for="is_default" class="ml-2 text-sm text-gray-700 dark:text-gray-300">ตั้งเป็นกระเป๋าเงินหลัก</label>
                         </div>
                         <div class="flex gap-3 pt-4">

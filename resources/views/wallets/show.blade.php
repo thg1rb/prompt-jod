@@ -272,7 +272,7 @@
                         @enderror
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="checkbox" id="edit_is_default" name="is_default" class="rounded border-border text-primary focus:ring-ring" {{ $wallet->is_default ? 'checked' : '' }} />
+                        <input type="checkbox" id="edit_is_default" name="is_default" value="1" class="rounded border-border text-primary focus:ring-ring" @checked(old('is_default', $wallet->is_default)) />
                         <label for="edit_is_default" class="text-sm text-foreground">ตั้งเป็นกระเป๋าหลัก</label>
                     </div>
                     <div class="flex gap-3 pt-4">
