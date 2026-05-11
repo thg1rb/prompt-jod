@@ -184,14 +184,53 @@ Alpine.store('sidebar', {
 // Toast notification store
 Alpine.store('toast', {
     items: [],
+
+    init() {
+        // Restore toasts from localStorage on page load
+        const savedToasts = localStorage.getItem('toasts');
+        if (savedToasts) {
+            try {
+                const toasts = JSON.parse(savedToasts);
+                toasts.forEach(toast => {
+                    const age = Date.now() - toast.timestamp;
+                    if (age < 3000) {
+                        this.items.push(toast);
+                        setTimeout(() => window.dispatchEvent(new CustomEvent('toast-hide', { detail: toast.id })), 3000 - age);
+                    }
+                });
+                localStorage.removeItem('toasts');
+            } catch (e) {
+                localStorage.removeItem('toasts');
+            }
+        }
+    },
+
     add(type, message) {
         const id = Date.now() + Math.random().toString(36).substr(2, 9);
-        this.items.unshift({ id, type, message, timestamp: Date.now() });
+        const toast = { id, type, message, timestamp: Date.now() };
+        this.items.unshift(toast);
+
+        // Save to localStorage for persistence across page navigations
+        const savedToasts = localStorage.getItem('toasts') || '[]';
+        const toasts = JSON.parse(savedToasts);
+        toasts.push(toast);
+        localStorage.setItem('toasts', JSON.stringify(toasts));
+
         setTimeout(() => window.dispatchEvent(new CustomEvent('toast-hide', { detail: id })), 3000);
     },
+
     remove(id) {
         this.items = this.items.filter(item => item.id !== id);
+        // Update localStorage
+        const savedToasts = localStorage.getItem('toasts') || '[]';
+        const toasts = JSON.parse(savedToasts).filter(item => item.id !== id);
+        if (toasts.length > 0) {
+            localStorage.setItem('toasts', JSON.stringify(toasts));
+        } else {
+            localStorage.removeItem('toasts');
+        }
     },
+
     success(message) { this.add('success', message); },
     error(message) { this.add('error', message); }
 });
@@ -205,7 +244,8 @@ Alpine.data('transactions', transactions);
 Alpine.data('transactionModal', transactionModal);
 Alpine.data('walletShow', walletShow);
 
-// Initialize theme store
+// Initialize stores
 Alpine.store('theme').init();
+Alpine.store('toast').init();
 
 Alpine.start();
