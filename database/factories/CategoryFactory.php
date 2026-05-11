@@ -14,7 +14,7 @@ class CategoryFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'name' => fake()->word(),
+            'name' => fake()->unique()->word(),
             'description' => fake()->sentence(),
             'color' => fake()->hexColor(),
             'icon' => fake()->randomElement(['pin', 'cart', 'car', 'food', 'home', 'cash']),

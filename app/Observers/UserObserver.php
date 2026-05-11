@@ -1,0 +1,84 @@
+<?php
+
+namespace App\Observers;
+
+use App\Models\Category;
+use App\Models\User;
+
+class UserObserver
+{
+    public function created(User $user): void
+    {
+        $defaultCategories = [
+            [
+                'name' => 'อาหาร & เครื่องดื่ม',
+                'description' => 'ร้านอาหาร คาเฟ่ ซูเปอร์มาร์เก็ต และอาหารส่ง',
+                'color' => '#EC4899',
+                'icon' => '🍜',
+                'sort_order' => 1,
+            ],
+            [
+                'name' => 'ช้อปปิ้ง',
+                'description' => 'เสื้อผ้า อิเล็กทรอนิกส์ และการซื้อของ',
+                'color' => '#F59E0B',
+                'icon' => '🛍️',
+                'sort_order' => 2,
+            ],
+            [
+                'name' => 'เดินทาง',
+                'description' => 'น้ำมัน การเดินทางสาธารณะ และที่จอดรถ',
+                'color' => '#EC4899',
+                'icon' => '🚗',
+                'sort_order' => 3,
+            ],
+            [
+                'name' => 'ค่าสาธารณูปโภค',
+                'description' => 'ไฟฟ้า น้ำ อินเทอร์เน็ต และโทรศัพท์',
+                'color' => '#EF4444',
+                'icon' => '💡',
+                'sort_order' => 4,
+            ],
+            [
+                'name' => 'บันเทิง',
+                'description' => 'ภาพยนตร์ เกม สตรีมมิ่ง และงานอดิเรก',
+                'color' => '#F59E0B',
+                'icon' => '🎬',
+                'sort_order' => 5,
+            ],
+            [
+                'name' => 'สุขภาพ',
+                'description' => 'การแพทย์ ร้านขายยา ฟิตเนส และสุขภาพ',
+                'color' => '#F59E0B',
+                'icon' => '🏥',
+                'sort_order' => 6,
+            ],
+            [
+                'name' => 'การเงิน',
+                'description' => 'ประกัน การลงทุน และค่าธรรมเนียมธนาคาร',
+                'color' => '#10B981',
+                'icon' => '🏦',
+                'sort_order' => 7,
+            ],
+            [
+                'name' => 'อื่น ๆ',
+                'description' => 'ค่าใช้จ่ายอื่นๆ',
+                'color' => '#3B82F6',
+                'icon' => '📌',
+                'sort_order' => 99,
+            ],
+        ];
+
+        foreach ($defaultCategories as $category) {
+            Category::create([
+                'user_id' => $user->id,
+                'name' => $category['name'],
+                'description' => $category['description'],
+                'color' => $category['color'],
+                'icon' => $category['icon'],
+                'is_active' => true,
+                'is_system' => true,
+                'sort_order' => $category['sort_order'],
+            ]);
+        }
+    }
+}

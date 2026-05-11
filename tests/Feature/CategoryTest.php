@@ -21,10 +21,13 @@ test('user can view categories index', function () {
 });
 
 test('user can get categories data', function () {
-    Category::factory()->forUser($this->user)
-        ->has(CategoryRule::factory()->count(2), 'rules')
-        ->count(3)
-        ->create();
+    $existingCategories = Category::where('user_id', $this->user->id)->pluck('name')->toArray();
+    $testCategories = ['TestCategory1', 'TestCategory2', 'TestCategory3'];
+
+    foreach ($testCategories as $i => $name) {
+        $category = Category::factory()->forUser($this->user)->create(['name' => $name]);
+        CategoryRule::factory()->forCategory($category)->count(2)->create();
+    }
 
     $response = $this->get(route('categories.data'));
 
@@ -246,7 +249,37 @@ test('categories are ordered by sort_order then name', function () {
     $response = $this->get(route('categories.data'));
     $categories = $response->json('categories');
 
-    expect($categories[0]['name'])->toBe('Alpha');
-    expect($categories[1]['name'])->toBe('Beta');
-    expect($categories[2]['name'])->toBe('Zebra');
+    $customCategories = array_filter($categories, fn ($c) => ! $c['is_system']);
+    $customCategories = array_values($customCategories);
+
+    expect($customCategories[0]['name'])->toBe('Alpha');
+    expect($customCategories[1]['name'])->toBe('Beta');
+    expect($customCategories[2]['name'])->toBe('Zebra');
+});
+
+test('new user gets default categories', function () {
+    $user = User::factory()->create();
+
+    $defaultCategories = [
+        'อาหาร & เครื่องดื่ม',
+        'ช้อปปิ้ง',
+        'เดินทาง',
+        'ค่าสาธารณูปโภค',
+        'บันเทิง',
+        'สุขภาพ',
+        'การเงิน',
+        'อื่น ๆ',
+    ];
+
+    foreach ($defaultCategories as $categoryName) {
+        $category = Category::where('user_id', $user->id)
+            ->where('name', $categoryName)
+            ->first();
+
+        expect($category)->not->toBeNull();
+        expect($category->is_system)->toBeTrue();
+        expect($category->is_active)->toBeTrue();
+    }
+
+    expect(Category::where('user_id', $user->id)->count())->toBe(8);
 });
