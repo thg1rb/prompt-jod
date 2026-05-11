@@ -7,7 +7,6 @@
                 'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name])->values(),
             ])
         }})"
-        x-init="init()"
         @transaction-created.window="refresh()"
         @transaction-updated.window="refresh()"
         @transaction-deleted.window="refresh()"

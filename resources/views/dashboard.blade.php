@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div x-data="dashboard({{ json_encode($dashboardData) }})" x-init="init()" class="py-6">
+    <div x-data="dashboard({{ json_encode($dashboardData) }})" class="py-6">
         <!-- Debug: {{ json_encode($dashboardData) }} -->
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -96,7 +96,7 @@
                         <h3 class="font-semibold mb-4">สัดส่วนรายจ่ายตามหมวดหมู่</h3>
                         <div x-show="categoryData.length === 0" class="h-64 grid place-items-center text-text-muted text-sm">ยังไม่มีรายจ่ายในช่วงนี้</div>
                         <div x-show="categoryData.length > 0">
-                            <div x-data="pieChart({ categories: categoryData })" x-init="init()" class="h-64"></div>
+                            <div x-data="pieChart({ categories: categoryData })" class="h-64"></div>
                             <ul class="mt-4 space-y-2">
                                 <template x-for="cat in categoryData.slice(0, 5)" :key="cat.id">
                                     <li class="flex items-center justify-between text-sm">
@@ -113,7 +113,7 @@
 
                     <div class="bg-card border border-border rounded-lg p-5">
                         <h3 class="font-semibold mb-4">รายจ่าย 7 วันที่ผ่านมา</h3>
-                        <div x-data="barChart({ data: sevenDaySpending })" x-init="init()" class="h-64"></div>
+                        <div x-data="barChart({ data: sevenDaySpending })" class="h-64"></div>
                     </div>
                 </div>
 

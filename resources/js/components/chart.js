@@ -1,9 +1,8 @@
-import ApexCharts from 'apexcharts';
+async function getApexCharts() {
+    const { default: ApexCharts } = await import('apexcharts');
+    return ApexCharts;
+}
 
-/**
- * Pie Chart Component
- * Usage: x-data="pieChart({ categories: [...] })"
- */
 export function pieChart(initialData = {}) {
     return {
         chart: null,
@@ -15,7 +14,8 @@ export function pieChart(initialData = {}) {
             this.$watch('darkMode', () => this.updateChart());
         },
 
-        renderChart() {
+        async renderChart() {
+            const ApexCharts = await getApexCharts();
             const colors = this.categories.map(c => c.color || '#6366f1');
             const labels = this.categories.map(c => c.name);
             const values = this.categories.map(c => c.value);
@@ -99,10 +99,6 @@ export function pieChart(initialData = {}) {
     };
 }
 
-/**
- * Bar Chart Component
- * Usage: x-data="barChart({ data: [...] })"
- */
 export function barChart(initialData = {}) {
     return {
         chart: null,
@@ -114,7 +110,8 @@ export function barChart(initialData = {}) {
             this.$watch('darkMode', () => this.updateChart());
         },
 
-        renderChart() {
+        async renderChart() {
+            const ApexCharts = await getApexCharts();
             const days = this.data.map(d => d.day);
             const amounts = this.data.map(d => d.amount);
 
