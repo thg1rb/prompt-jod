@@ -29,6 +29,7 @@ class Wallet extends Model
         'is_active',
         'is_default',
         'notes',
+        'sort_order',
     ];
 
     /**
@@ -43,6 +44,7 @@ class Wallet extends Model
             'balance' => 'decimal:2',
             'is_active' => 'boolean',
             'is_default' => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 

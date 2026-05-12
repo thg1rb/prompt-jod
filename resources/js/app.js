@@ -6,6 +6,7 @@ import { categories } from './components/categories';
 import { transactions } from './components/transactions';
 import { transactionModal } from './components/transaction-modal';
 import { walletShow } from './components/wallet-show';
+import { walletReorder } from './components/wallet-reorder';
 
 window.Alpine = Alpine;
 
@@ -243,6 +244,7 @@ Alpine.data('categories', categories);
 Alpine.data('transactions', transactions);
 Alpine.data('transactionModal', transactionModal);
 Alpine.data('walletShow', walletShow);
+Alpine.data('walletReorder', walletReorder);
 
 // Initialize stores
 Alpine.store('theme').init();

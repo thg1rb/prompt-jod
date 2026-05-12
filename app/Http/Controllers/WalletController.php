@@ -9,6 +9,7 @@ use App\Models\BalanceAdjustment;
 use App\Models\Wallet;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class WalletController extends Controller
@@ -24,7 +25,7 @@ class WalletController extends Controller
                 $query->latest()->limit(3);
             }])
             ->withCount(['transactions', 'balanceAdjustments'])
-            ->orderBy('is_default', 'desc')
+            ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
 
@@ -216,6 +217,31 @@ class WalletController extends Controller
     /**
      * Authorize that the user owns the wallet.
      */
+    public function reorder(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'uuid'],
+        ]);
+
+        $userIds = auth()->user()->wallets()->pluck('id')->toArray();
+
+        $submittedIds = $data['ids'];
+
+        if (count(array_diff($submittedIds, $userIds)) > 0) {
+            abort(403);
+        }
+
+        foreach ($submittedIds as $index => $id) {
+            Wallet::where('id', $id)->update(['sort_order' => $index + 1]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'จัดเรียงกระเป๋าเงินเรียบร้อยแล้ว',
+        ]);
+    }
+
     protected function authorizeWallet(Wallet $wallet): void
     {
         abort_if($wallet->user_id !== auth()->id(), 403);

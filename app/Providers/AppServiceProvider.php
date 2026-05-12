@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
             if (auth()->check()) {
                 $view->with('wallets', Wallet::where('user_id', auth()->id())->active()->with(['transactions' => function ($query) {
                     $query->latest()->limit(3);
-                }])->get());
+                }])->orderBy('sort_order')->orderBy('name')->get());
                 $view->with('categories', Category::where('user_id', auth()->id())->active()->ordered()->get());
             }
         });

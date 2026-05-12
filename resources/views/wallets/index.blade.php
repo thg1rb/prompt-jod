@@ -26,7 +26,7 @@
             </div>
         @else
             <!-- Wallets Grid -->
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div x-data="walletReorder()" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" x-ref="grid">
                 @foreach($wallets as $wallet)
                     @php
                         $typeMeta = match($wallet->type->value) {
@@ -47,7 +47,7 @@
                             ],
                         };
                     @endphp
-                    <div class="bg-card rounded-xl border border-border p-5 flex flex-col">
+                    <div class="bg-card rounded-xl border border-border p-5 flex flex-col" data-wallet-id="{{ $wallet->id }}">
                         <!-- Wallet Header -->
                         <div class="flex items-start justify-between">
                             <div class="flex items-center gap-3">
@@ -64,6 +64,11 @@
                                     </div>
                                 </div>
                             </div>
+                            <button data-drag-handle class="cursor-grab active:cursor-grabbing p-1 text-muted-foreground hover:text-foreground transition-colors" x-tooltip="'ลากเพื่อจัดเรียง'">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                                </svg>
+                            </button>
                         </div>
 
                         <!-- Balance -->

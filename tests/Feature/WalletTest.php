@@ -235,3 +235,60 @@ test('wallet factory creates cash type correctly', function () {
     expect($wallet->bank_name)->toBeNull();
     expect($wallet->account_number)->toBeNull();
 });
+
+test('user can reorder wallets', function () {
+    $wallet1 = Wallet::factory()->forUser($this->user)->create(['sort_order' => 1]);
+    $wallet2 = Wallet::factory()->forUser($this->user)->create(['sort_order' => 2]);
+    $wallet3 = Wallet::factory()->forUser($this->user)->create(['sort_order' => 3]);
+
+    $response = $this->patchJson(route('wallets.reorder'), [
+        'ids' => [$wallet3->id, $wallet1->id, $wallet2->id],
+    ]);
+
+    $response->assertSuccessful();
+    $response->assertJson(['success' => true]);
+
+    expect($wallet3->fresh()->sort_order)->toBe(1);
+    expect($wallet1->fresh()->sort_order)->toBe(2);
+    expect($wallet2->fresh()->sort_order)->toBe(3);
+});
+
+test('reorder validates ids are required', function () {
+    $response = $this->patchJson(route('wallets.reorder'), []);
+
+    $response->assertUnprocessable();
+});
+
+test('reorder rejects non-uuid ids', function () {
+    $response = $this->patchJson(route('wallets.reorder'), [
+        'ids' => ['not-a-uuid'],
+    ]);
+
+    $response->assertUnprocessable();
+});
+
+test('user cannot reorder wallets belonging to another user', function () {
+    $otherUser = User::factory()->create();
+    $otherWallet = Wallet::factory()->forUser($otherUser)->create();
+
+    $response = $this->patchJson(route('wallets.reorder'), [
+        'ids' => [$otherWallet->id],
+    ]);
+
+    $response->assertForbidden();
+});
+
+test('wallets are ordered by sort_order on index', function () {
+    Wallet::factory()->forUser($this->user)->create(['name' => 'Alpha', 'sort_order' => 3]);
+    Wallet::factory()->forUser($this->user)->create(['name' => 'Bravo', 'sort_order' => 1]);
+    Wallet::factory()->forUser($this->user)->create(['name' => 'Charlie', 'sort_order' => 2]);
+
+    $response = $this->get(route('wallets.index'));
+
+    $response->assertSuccessful();
+    $wallets = $response->viewData('wallets');
+
+    expect($wallets->get(0)->name)->toBe('Bravo');
+    expect($wallets->get(1)->name)->toBe('Charlie');
+    expect($wallets->get(2)->name)->toBe('Alpha');
+});
