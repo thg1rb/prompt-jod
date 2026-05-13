@@ -23,6 +23,7 @@ class Transaction extends Model
      */
     protected $fillable = [
         'user_id',
+        'created_by',
         'wallet_id',
         'category_id',
         'transaction_ref',
@@ -70,6 +71,14 @@ class Transaction extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the user who created the transaction (may differ from user_id for shared wallets).
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**

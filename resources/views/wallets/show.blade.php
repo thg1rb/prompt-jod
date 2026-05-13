@@ -60,6 +60,20 @@
                                 </p>
                             </div>
                             <div class="flex gap-2">
+                                @if($wallet->isOwner(auth()->user()))
+                                    <button
+                                        @click="$dispatch('open-share-modal')"
+                                        class="inline-flex items-center px-4 py-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors font-medium"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                        </svg>
+                                        แชร์
+                                        @if($wallet->member_count > 0)
+                                            <span class="ml-1 px-1.5 py-0.5 text-xs rounded-full bg-purple-100 dark:bg-purple-900/30">{{ $wallet->member_count }}</span>
+                                        @endif
+                                    </button>
+                                @endif
                                 <button
                                     @click="adjustOpen = true"
                                     class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors"
@@ -288,4 +302,12 @@
         </div>
 
     </div>
+
+    <!-- Wallet Share Modal (local to this page) -->
+    <x-wallet-share :wallet-id="$wallet->id" :is-owner="$wallet->isOwner(auth()->user())" />
+
+    @php
+        $walletShareId = $wallet->id;
+        $walletShareIsOwner = $wallet->isOwner(auth()->user());
+    @endphp
 </x-app-layout>

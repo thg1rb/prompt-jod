@@ -14,7 +14,11 @@ class TransactionPolicy
 
     public function view(User $user, Transaction $transaction): bool
     {
-        return $transaction->user_id === $user->id;
+        if ($transaction->user_id === $user->id) {
+            return true;
+        }
+
+        return $transaction->wallet && $transaction->wallet->isOwner($user);
     }
 
     public function create(User $user): bool
@@ -24,22 +28,54 @@ class TransactionPolicy
 
     public function update(User $user, Transaction $transaction): bool
     {
-        return $transaction->user_id === $user->id;
+        if ($transaction->created_by === $user->id) {
+            return true;
+        }
+
+        if ($transaction->wallet && $transaction->wallet->isOwner($user)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function delete(User $user, Transaction $transaction): bool
     {
-        return $transaction->user_id === $user->id;
+        if ($transaction->created_by === $user->id) {
+            return true;
+        }
+
+        if ($transaction->wallet && $transaction->wallet->isOwner($user)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function restore(User $user, Transaction $transaction): bool
     {
-        return $transaction->user_id === $user->id;
+        if ($transaction->created_by === $user->id) {
+            return true;
+        }
+
+        if ($transaction->wallet && $transaction->wallet->isOwner($user)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function forceDelete(User $user, Transaction $transaction): bool
     {
-        return $transaction->user_id === $user->id;
+        if ($transaction->created_by === $user->id) {
+            return true;
+        }
+
+        if ($transaction->wallet && $transaction->wallet->isOwner($user)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function verifySlip(User $user): bool

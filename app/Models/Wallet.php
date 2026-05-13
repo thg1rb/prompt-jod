@@ -73,6 +73,62 @@ class Wallet extends Model
     }
 
     /**
+     * Get the members for the wallet.
+     */
+    public function members(): HasMany
+    {
+        return $this->hasMany(WalletMember::class);
+    }
+
+    /**
+     * Get the accepted members for the wallet.
+     */
+    public function acceptedMembers(): HasMany
+    {
+        return $this->members()->accepted();
+    }
+
+    /**
+     * Get the pending invitations for the wallet.
+     */
+    public function invitations(): HasMany
+    {
+        return $this->members()->pending();
+    }
+
+    /**
+     * Check if the given user is the owner of the wallet.
+     */
+    public function isOwner(?User $user): bool
+    {
+        return $user && $this->user_id === $user->id;
+    }
+
+    /**
+     * Check if the given user is a member of the wallet.
+     */
+    public function hasMember(?User $user): bool
+    {
+        return $user && $this->members()->where('user_id', $user->id)->accepted()->exists();
+    }
+
+    /**
+     * Check if the given user can access the wallet (owner or member).
+     */
+    public function hasAccess(?User $user): bool
+    {
+        return $this->isOwner($user) || $this->hasMember($user);
+    }
+
+    /**
+     * Get the member count for the wallet.
+     */
+    public function getMemberCountAttribute(): int
+    {
+        return $this->members()->accepted()->count();
+    }
+
+    /**
      * Scope a query to only include active wallets.
      */
     public function scopeActive($query)

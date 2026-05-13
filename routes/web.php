@@ -41,6 +41,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\WalletMemberController;
 use App\Http\Controllers\WebhookController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -79,6 +80,16 @@ Route::middleware('auth')->group(function () {
 
     // Set Default
     Route::post('/wallets/{wallet}/set-default', [WalletController::class, 'setDefault'])->name('wallets.set-default');
+
+    // Wallet Member Routes
+    Route::get('/wallets/{wallet}/members', [WalletMemberController::class, 'members'])->name('wallets.members');
+    Route::get('/wallets/{wallet}/invitations', [WalletMemberController::class, 'invitations'])->name('wallets.invitations');
+    Route::post('/wallets/{wallet}/invitations', [WalletMemberController::class, 'createInvitation'])->name('wallets.invitations.create');
+    Route::delete('/wallets/{wallet}/members/{user}', [WalletMemberController::class, 'removeMember'])->name('wallets.members.remove');
+
+    // Invitation Routes
+    Route::get('/invitations/{token}', [WalletMemberController::class, 'showInvitation'])->name('invitations.accept');
+    Route::post('/invitations/{token}/accept', [WalletMemberController::class, 'acceptInvitation'])->name('invitations.accept.store');
 
     // Category Routes
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SlipVerifyRequest;
 use App\Http\Requests\TransactionStoreRequest;
+use App\Models\Transaction;
 use App\Services\EasySlipService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class TransactionController extends Controller
         return view('transactions', [
             'transactions' => $this->getTransactions($user),
             'categories' => $user->categories()->orderBy('name')->get(),
-            'wallets' => $user->wallets()->orderBy('name')->get(),
+            'wallets' => $user->allWallets(),
         ]);
     }
 
@@ -33,8 +34,17 @@ class TransactionController extends Controller
         $cat = $request->input('category', 'all');
         $wal = $request->input('wallet', 'all');
 
+        $sharedWalletIds = $user->sharedWallets()->pluck('wallets.id');
+
         $transactions = $user->transactions()
-            ->with(['category', 'wallet'])
+            ->with(['category', 'wallet', 'creator'])
+            ->where(function ($query) use ($sharedWalletIds, $user) {
+                $query->where('user_id', $user->id)
+                    ->orWhere(function ($q) use ($sharedWalletIds, $user) {
+                        $q->whereIn('wallet_id', $sharedWalletIds)
+                            ->where('created_by', $user->id);
+                    });
+            })
             ->latest('transacted_at');
 
         if ($cat !== 'all') {
@@ -69,6 +79,8 @@ class TransactionController extends Controller
                 'wallet' => $t->wallet?->name ?? '-',
                 'transacted_at' => $t->transacted_at->format('Y-m-d H:i:s'),
                 'recipient' => $t->recipient,
+                'created_by' => $t->created_by,
+                'creator_name' => $t->creator?->name ?? null,
             ])->all(),
         ]);
     }
@@ -139,10 +151,11 @@ class TransactionController extends Controller
             'transaction_ref' => $validated['transaction_ref'] ?? null,
             'type' => $validated['type'],
             'amount' => $validated['amount'],
-            'sender' => $validated['sender'],
-            'recipient' => $validated['recipient'],
-            'note' => $validated['note'],
+            'sender' => $validated['sender'] ?? null,
+            'recipient' => $validated['recipient'] ?? null,
+            'note' => $validated['note'] ?? null,
             'transacted_at' => $validated['transacted_at'],
+            'created_by' => $user->id,
         ]);
 
         return response()->json([
@@ -188,9 +201,11 @@ class TransactionController extends Controller
     public function show($id): JsonResponse
     {
         $user = Auth::user();
-        $transaction = $user->transactions()
-            ->with(['category', 'wallet'])
-            ->findOrFail($id);
+        $transaction = $this->findAccessibleTransaction($user, $id);
+
+        if (! $transaction) {
+            return response()->json(['error' => 'Transaction not found'], 404);
+        }
 
         return response()->json([
             'transaction' => [
@@ -211,7 +226,11 @@ class TransactionController extends Controller
     {
         $validated = $request->validated();
         $user = Auth::user();
-        $transaction = $user->transactions()->findOrFail($id);
+        $transaction = $this->findAccessibleTransaction($user, $id);
+
+        if (! $transaction) {
+            return response()->json(['error' => 'Transaction not found'], 404);
+        }
 
         $transaction->update([
             'wallet_id' => $validated['wallet_id'],
@@ -240,13 +259,31 @@ class TransactionController extends Controller
     public function destroy($id): JsonResponse
     {
         $user = Auth::user();
-        $transaction = $user->transactions()->findOrFail($id);
+        $transaction = $this->findAccessibleTransaction($user, $id);
+
+        if (! $transaction) {
+            return response()->json(['error' => 'Transaction not found'], 404);
+        }
+
         $transaction->delete();
 
         return response()->json([
             'success' => true,
             'message' => 'ลบธุรกรรมเรียบร้อย',
         ]);
+    }
+
+    private function findAccessibleTransaction($user, string $id)
+    {
+        $sharedWalletIds = $user->sharedWallets()->pluck('wallets.id');
+
+        return Transaction::where(function ($query) use ($user, $sharedWalletIds) {
+            $query->where('user_id', $user->id)
+                ->orWhere(function ($q) use ($sharedWalletIds, $user) {
+                    $q->whereIn('wallet_id', $sharedWalletIds)
+                        ->where('created_by', $user->id);
+                });
+        })->find($id);
     }
 
     public function searchNames(Request $request): JsonResponse
@@ -284,8 +321,17 @@ class TransactionController extends Controller
 
     private function getTransactions($user)
     {
+        $sharedWalletIds = $user->sharedWallets()->pluck('wallets.id');
+
         return $user->transactions()
-            ->with(['category', 'wallet'])
+            ->with(['category', 'wallet', 'creator'])
+            ->where(function ($query) use ($sharedWalletIds, $user) {
+                $query->where('user_id', $user->id)
+                    ->orWhere(function ($q) use ($sharedWalletIds, $user) {
+                        $q->whereIn('wallet_id', $sharedWalletIds)
+                            ->where('created_by', $user->id);
+                    });
+            })
             ->latest('transacted_at')
             ->get()
             ->map(fn ($t) => [
@@ -300,6 +346,8 @@ class TransactionController extends Controller
                 'wallet' => $t->wallet?->name ?? '-',
                 'transacted_at' => $t->transacted_at->format('Y-m-d H:i:s'),
                 'recipient' => $t->recipient,
+                'created_by' => $t->created_by,
+                'creator_name' => $t->creator?->name ?? null,
             ])
             ->all();
     }

@@ -3,7 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Category;
-use App\Models\Wallet;
+use App\Models\WalletMember;
+use App\Observers\WalletMemberObserver;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\LazyLoadingViolationException;
@@ -48,14 +49,14 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('*', function ($view) {
             if (auth()->check()) {
-                $view->with('wallets', Wallet::where('user_id', auth()->id())->active()->with(['transactions' => function ($query) {
-                    $query->latest()->limit(3);
-                }])->orderBy('sort_order')->orderBy('name')->get());
+                $view->with('wallets', auth()->user()->allWallets()->filter(fn ($w) => $w->is_active));
                 $view->with('categories', Category::where('user_id', auth()->id())->active()->ordered()->get());
                 $view->with('subscription', auth()->user()->subscription);
             }
         });
 
         Gate::define('subscribed', fn ($user) => $user->subscription?->isActive() ?? false);
+
+        WalletMember::observe(WalletMemberObserver::class);
     }
 }

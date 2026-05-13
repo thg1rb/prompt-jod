@@ -68,8 +68,16 @@ class TransactionFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'user_id' => $user->id,
-            'wallet_id' => Wallet::factory()->forUser($user),
-            'category_id' => Category::factory()->forUser($user),
+            'created_by' => $user->id,
+        ]);
+    }
+
+    public function forWallet(Wallet $wallet): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'wallet_id' => $wallet->id,
+            'user_id' => $wallet->user_id,
+            'created_by' => $wallet->user_id,
         ]);
     }
 }

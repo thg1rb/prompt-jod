@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\User;
 use App\Models\Wallet;
 
-class WalletPolicy
+class WalletMemberPolicy
 {
     public function viewAny(User $user): bool
     {
@@ -58,6 +58,11 @@ class WalletPolicy
     }
 
     public function manageMembers(User $user, Wallet $wallet): bool
+    {
+        return $wallet->isOwner($user);
+    }
+
+    public function createInvitation(User $user, Wallet $wallet): bool
     {
         return $wallet->isOwner($user);
     }

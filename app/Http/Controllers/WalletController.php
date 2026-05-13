@@ -19,8 +19,9 @@ class WalletController extends Controller
      */
     public function index(): View
     {
-        $wallets = auth()->user()
-            ->wallets()
+        $user = auth()->user();
+
+        $ownedWallets = $user->wallets()
             ->with(['transactions' => function ($query) {
                 $query->latest()->limit(3);
             }])
@@ -28,6 +29,16 @@ class WalletController extends Controller
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
+
+        $sharedWallets = $user->sharedWallets()
+            ->with(['transactions' => function ($query) {
+                $query->latest()->limit(3);
+            }])
+            ->withCount('transactions')
+            ->orderBy('name')
+            ->get();
+
+        $wallets = $ownedWallets->merge($sharedWallets);
 
         $totalBalance = $wallets->sum('balance');
 
@@ -83,10 +94,10 @@ class WalletController extends Controller
      */
     public function show(Wallet $wallet): View
     {
-        $this->authorizeWallet($wallet);
+        abort_if(! $wallet->hasAccess(auth()->user()), 403);
 
         $wallet->load(['transactions' => function ($query) {
-            $query->with('category')
+            $query->with(['category', 'creator'])
                 ->latest()
                 ->limit(10);
         }]);
@@ -244,6 +255,6 @@ class WalletController extends Controller
 
     protected function authorizeWallet(Wallet $wallet): void
     {
-        abort_if($wallet->user_id !== auth()->id(), 403);
+        abort_if(! $wallet->isOwner(auth()->user()), 403);
     }
 }

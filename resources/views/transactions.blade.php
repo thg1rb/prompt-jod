@@ -149,7 +149,14 @@
                             <div class="h-10 w-10 rounded-lg bg-surface-subtle grid place-items-center text-lg" x-text="t.category_icon ?? '📌'"></div>
                             <div class="flex-1 min-w-0">
                                 <div class="font-medium truncate" x-text="t.description"></div>
-                                <div class="text-xs text-text-muted" x-text="`${t.category} · ${t.wallet} · ${formatDateTime(t.transacted_at)}`"></div>
+                                <div class="text-xs text-text-muted flex items-center gap-1">
+                                    <span x-text="`${t.category} · ${t.wallet} · ${formatDateTime(t.transacted_at)}`"></span>
+                                    <template x-if="t.creator_name">
+                                        <span class="ml-1 px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs">
+                                            <span x-text="`โดย ${t.creator_name}`"></span>
+                                        </span>
+                                    </template>
+                                </div>
                             </div>
                             <div
                                 class="font-semibold whitespace-nowrap"

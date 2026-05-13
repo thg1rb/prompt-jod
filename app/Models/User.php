@@ -7,8 +7,10 @@ use App\Observers\UserObserver;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -122,6 +124,48 @@ class User extends Authenticatable
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get all wallet memberships for the user.
+     */
+    public function walletMemberships(): HasMany
+    {
+        return $this->hasMany(WalletMember::class);
+    }
+
+    /**
+     * Get all shared wallets the user is a member of.
+     */
+    public function sharedWallets(): BelongsToMany
+    {
+        return $this->belongsToMany(Wallet::class, 'wallet_members', 'user_id', 'wallet_id')
+            ->whereNotNull('wallet_members.accepted_at')
+            ->wherePivotNotNull('accepted_at');
+    }
+
+    /**
+     * Get all wallets (owned + shared memberships).
+     */
+    public function allWallets(): Collection
+    {
+        $ownedWallets = $this->wallets()->get();
+        $sharedWallets = $this->sharedWallets()->get();
+
+        return $ownedWallets->merge($sharedWallets)->sortBy('name')->values();
+    }
+
+    /**
+     * Get all transactions the user can access (own transactions + transactions in shared wallets).
+     */
+    public function accessibleTransactions(): HasMany
+    {
+        $sharedWalletIds = $this->sharedWallets()->pluck('id');
+
+        return $this->transactions()->orWhere(function ($query) use ($sharedWalletIds) {
+            $query->whereIn('wallet_id', $sharedWalletIds)
+                ->where('created_by', $this->id);
+        });
     }
 
     public function needsSubscription(): bool

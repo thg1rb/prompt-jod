@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Wallet;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -18,7 +19,17 @@ class TransactionStoreRequest extends FormRequest
         $userId = Auth::id();
 
         return [
-            'wallet_id' => ['required', 'uuid', Rule::exists('wallets', 'id')->where('user_id', $userId)],
+            'wallet_id' => ['required', 'uuid', function ($attribute, $value, $fail) {
+                $wallet = Wallet::find($value);
+                if (! $wallet) {
+                    $fail('กระเป๋าเงินไม่ถูกต้อง');
+
+                    return;
+                }
+                if (! $wallet->hasAccess(auth()->user())) {
+                    $fail('กระเป๋าเงินไม่ถูกต้อง');
+                }
+            }],
             'category_id' => ['required', 'uuid', Rule::exists('categories', 'id')->where('user_id', $userId)],
             'type' => ['required', 'in:expense,income,adjustment'],
             'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
