@@ -2,6 +2,7 @@
     'wallets',
     'categories',
     'initialOpen' => false,
+    'currentUserId' => null,
 ])
 
 <div
@@ -10,6 +11,7 @@
             'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name, 'is_default' => $w->is_default, 'type' => $w->type->value])->values(),
             'categories' => $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'icon' => $c->icon])->values(),
             'initialOpen' => $initialOpen,
+            'currentUserId' => $currentUserId,
         ])
     }})"
     x-show="open"
@@ -374,7 +376,10 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex gap-3 p-6 border-t border-border bg-muted/50">
+        <div
+            x-show="isCreateMode || isEditMode || (isViewMode && isOwner)"
+            class="flex gap-3 p-6 border-t border-border bg-muted/50"
+        >
             <!-- Create Mode Footer -->
             <template x-if="isCreateMode">
                 <div class="flex gap-3 w-full">
@@ -407,7 +412,7 @@
             </template>
 
             <!-- View Mode Footer -->
-            <template x-if="isViewMode">
+            <template x-if="isViewMode && isOwner">
                 <div class="flex gap-3 w-full">
                     <button
                         @click="toggleEditMode()"

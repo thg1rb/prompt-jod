@@ -115,7 +115,7 @@ class WalletController extends Controller
      */
     public function adjustments(Wallet $wallet): View
     {
-        $this->authorizeWallet($wallet);
+        abort_if(! $wallet->hasAccess(auth()->user()), 403);
 
         $adjustments = $wallet->balanceAdjustments()
             ->latest('adjusted_at')

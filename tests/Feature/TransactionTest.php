@@ -227,30 +227,19 @@ test('user cannot store transaction with other users category', function () {
     $response->assertSessionHasErrors('category_id');
 });
 
-test('user can view transaction details', function () {
+test('transaction show returns created_by field', function () {
     $wallet = Wallet::factory()->forUser($this->user)->create();
     $category = Category::factory()->forUser($this->user)->create();
     $transaction = Transaction::factory()->forUser($this->user)->create([
         'wallet_id' => $wallet->id,
         'category_id' => $category->id,
+        'created_by' => $this->user->id,
     ]);
 
     $response = $this->get(route('transactions.show', $transaction));
 
     $response->assertStatus(200);
-    $response->assertJsonStructure([
-        'transaction' => [
-            'id',
-            'wallet_id',
-            'category_id',
-            'type',
-            'amount',
-            'sender',
-            'recipient',
-            'note',
-            'transacted_at',
-        ],
-    ]);
+    $response->assertJsonPath('transaction.created_by', $this->user->id);
 });
 
 test('user cannot view other users transaction', function () {

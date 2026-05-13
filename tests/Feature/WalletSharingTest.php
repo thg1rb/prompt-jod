@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\WalletAccess;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
@@ -219,5 +220,40 @@ describe('Member Removal Deletes Transactions', function () {
         $memberRecord->delete();
 
         $this->assertDatabaseMissing('transactions', ['id' => $transaction->id]);
+    });
+});
+
+describe('Wallet Adjustments Access', function () {
+    test('owner can access wallet adjustments page', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+
+        $response = $this->get(route('wallets.adjustments', $wallet));
+
+        $response->assertStatus(200);
+    });
+
+    test('member can access shared wallet adjustments page', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        WalletMember::factory()->forWallet($wallet)->accepted()->forUser($this->member)->create();
+
+        Auth::login($this->member);
+
+        $response = $this->get(route('wallets.adjustments', $wallet));
+
+        $response->assertStatus(200);
+    });
+
+    test('non-member cannot access wallet adjustments page', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+
+        Auth::login($this->member);
+
+        $response = $this->get(route('wallets.adjustments', $wallet));
+
+        $response->assertStatus(403);
     });
 });

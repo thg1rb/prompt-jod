@@ -228,6 +228,7 @@ class TransactionController extends Controller
                 'recipient' => $transaction->recipient,
                 'note' => $transaction->note,
                 'transacted_at' => $transaction->transacted_at->format('Y-m-d\TH:i'),
+                'created_by' => $transaction->created_by,
             ],
         ]);
     }

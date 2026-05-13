@@ -87,7 +87,7 @@
 
         <!-- Transaction Modal (global, excluded from create page) -->
         @if(auth()->check() && isset($wallets) && isset($categories) && !request()->routeIs('transactions.create'))
-            <x-transaction-modal :wallets="$wallets" :categories="$categories" />
+            <x-transaction-modal :wallets="$wallets" :categories="$categories" :current-user-id="auth()->id()" />
         @endif
 
         <!-- Toast Container -->

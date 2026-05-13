@@ -8,6 +8,7 @@ export function transactionModal(initialData) {
         slipData: null,
         slipError: null,
         slipImagePreview: null,
+        currentUserId: initialData?.currentUserId || null,
 
         // Suggestions
         senderSuggestions: [],
@@ -47,6 +48,9 @@ export function transactionModal(initialData) {
         // Errors
         errors: {},
 
+        // Creator tracking
+        transactionCreatorId: null,
+
         get title() {
             if (this.mode === 'create') return 'เพิ่มธุรกรรมใหม่';
             if (this.mode === 'view') return 'รายละเอียดธุรกรรม';
@@ -67,6 +71,10 @@ export function transactionModal(initialData) {
 
         get isCreateMode() {
             return this.mode === 'create';
+        },
+
+        get isOwner() {
+            return this.transactionCreatorId === this.currentUserId;
         },
 
         get selectedWallet() {
@@ -128,6 +136,7 @@ export function transactionModal(initialData) {
         openView(transactionData) {
             this.mode = 'view';
             this.editingId = transactionData.id;
+            this.transactionCreatorId = transactionData.created_by;
             this.form = {
                 wallet_id: transactionData.wallet_id || '',
                 category_id: transactionData.category_id || '',
