@@ -1,9 +1,11 @@
 <?php
 
+use App\Enums\WalletAccess;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\WalletMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -491,4 +493,90 @@ test('search names returns only user transactions', function () {
     $names = $response->json('names');
     expect($names)->toContain('My Sender');
     expect($names)->not->toContain('Other Sender');
+});
+
+describe('Shared Wallet Visibility', function () {
+    test('member can see transactions created by other members in shared wallet', function () {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $wallet = Wallet::factory()->forUser($owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        WalletMember::factory()->forWallet($wallet)->accepted()->forUser($member)->create();
+
+        $category = Category::factory()->forUser($owner)->create();
+        $ownerTx = Transaction::factory()->forUser($owner)->create([
+            'wallet_id' => $wallet->id,
+            'category_id' => $category->id,
+            'created_by' => $owner->id,
+        ]);
+        $memberTx = Transaction::factory()->forUser($member)->create([
+            'wallet_id' => $wallet->id,
+            'category_id' => $category->id,
+            'created_by' => $member->id,
+        ]);
+
+        Auth::login($member);
+
+        $response = $this->get(route('transactions.index'));
+        $transactions = $response->viewData('transactions');
+
+        $txIds = collect($transactions)->pluck('id')->all();
+        expect($txIds)->toContain($ownerTx->id);
+        expect($txIds)->toContain($memberTx->id);
+    });
+
+    test('member can see other members transactions via data endpoint', function () {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $wallet = Wallet::factory()->forUser($owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        WalletMember::factory()->forWallet($wallet)->accepted()->forUser($member)->create();
+
+        $category = Category::factory()->forUser($owner)->create();
+        Transaction::factory()->forUser($owner)->create([
+            'wallet_id' => $wallet->id,
+            'category_id' => $category->id,
+            'created_by' => $owner->id,
+            'recipient' => 'Owner Transaction',
+        ]);
+        Transaction::factory()->forUser($member)->create([
+            'wallet_id' => $wallet->id,
+            'category_id' => $category->id,
+            'created_by' => $member->id,
+            'recipient' => 'Member Transaction',
+        ]);
+
+        Auth::login($member);
+
+        $response = $this->getJson(route('transactions.data'));
+        $txIds = collect($response->json('transactions'))->pluck('id')->all();
+
+        expect(count($txIds))->toBe(2);
+    });
+
+    test('owner can see transactions created by member in shared wallet', function () {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $wallet = Wallet::factory()->forUser($owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        WalletMember::factory()->forWallet($wallet)->accepted()->forUser($member)->create();
+
+        $category = Category::factory()->forUser($owner)->create();
+        $memberTx = Transaction::factory()->forUser($member)->create([
+            'wallet_id' => $wallet->id,
+            'category_id' => $category->id,
+            'created_by' => $member->id,
+        ]);
+
+        Auth::login($owner);
+
+        $response = $this->get(route('transactions.index'));
+        $transactions = $response->viewData('transactions');
+
+        $txIds = collect($transactions)->pluck('id')->all();
+        expect($txIds)->toContain($memberTx->id);
+    });
 });

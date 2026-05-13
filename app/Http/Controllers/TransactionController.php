@@ -16,6 +16,14 @@ class TransactionController extends Controller
         private EasySlipService $easySlipService
     ) {}
 
+    private function sharedWalletIds($user)
+    {
+        return $user->sharedWallets()->where('access_type', 'shared')->pluck('wallets.id')
+            ->merge(
+                $user->wallets()->where('access_type', 'shared')->pluck('id')
+            )->unique();
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -34,16 +42,12 @@ class TransactionController extends Controller
         $cat = $request->input('category', 'all');
         $wal = $request->input('wallet', 'all');
 
-        $sharedWalletIds = $user->sharedWallets()->pluck('wallets.id');
+        $sharedWalletIds = $this->sharedWalletIds($user);
 
-        $transactions = $user->transactions()
-            ->with(['category', 'wallet', 'creator'])
+        $transactions = Transaction::with(['category', 'wallet', 'creator'])
             ->where(function ($query) use ($sharedWalletIds, $user) {
                 $query->where('user_id', $user->id)
-                    ->orWhere(function ($q) use ($sharedWalletIds, $user) {
-                        $q->whereIn('wallet_id', $sharedWalletIds)
-                            ->where('created_by', $user->id);
-                    });
+                    ->orWhereIn('wallet_id', $sharedWalletIds);
             })
             ->latest('transacted_at');
 
@@ -77,6 +81,7 @@ class TransactionController extends Controller
                 'category_icon' => $t->category?->icon ?? '📌',
                 'wallet_id' => $t->wallet_id,
                 'wallet' => $t->wallet?->name ?? '-',
+                'wallet_access_type' => $t->wallet?->access_type?->value,
                 'transacted_at' => $t->transacted_at->format('Y-m-d H:i:s'),
                 'recipient' => $t->recipient,
                 'created_by' => $t->created_by,
@@ -92,8 +97,13 @@ class TransactionController extends Controller
         $cat = $request->input('category', 'all');
         $wal = $request->input('wallet', 'all');
 
-        $transactions = $user->transactions()
-            ->with(['category', 'wallet'])
+        $sharedWalletIds = $this->sharedWalletIds($user);
+
+        $transactions = Transaction::with(['category', 'wallet'])
+            ->where(function ($query) use ($sharedWalletIds, $user) {
+                $query->where('user_id', $user->id)
+                    ->orWhereIn('wallet_id', $sharedWalletIds);
+            })
             ->orderBy('transacted_at', 'desc');
 
         if ($cat !== 'all') {
@@ -275,14 +285,11 @@ class TransactionController extends Controller
 
     private function findAccessibleTransaction($user, string $id)
     {
-        $sharedWalletIds = $user->sharedWallets()->pluck('wallets.id');
+        $sharedWalletIds = $this->sharedWalletIds($user);
 
         return Transaction::where(function ($query) use ($user, $sharedWalletIds) {
             $query->where('user_id', $user->id)
-                ->orWhere(function ($q) use ($sharedWalletIds, $user) {
-                    $q->whereIn('wallet_id', $sharedWalletIds)
-                        ->where('created_by', $user->id);
-                });
+                ->orWhereIn('wallet_id', $sharedWalletIds);
         })->find($id);
     }
 
@@ -321,16 +328,12 @@ class TransactionController extends Controller
 
     private function getTransactions($user)
     {
-        $sharedWalletIds = $user->sharedWallets()->pluck('wallets.id');
+        $sharedWalletIds = $this->sharedWalletIds($user);
 
-        return $user->transactions()
-            ->with(['category', 'wallet', 'creator'])
+        return Transaction::with(['category', 'wallet', 'creator'])
             ->where(function ($query) use ($sharedWalletIds, $user) {
                 $query->where('user_id', $user->id)
-                    ->orWhere(function ($q) use ($sharedWalletIds, $user) {
-                        $q->whereIn('wallet_id', $sharedWalletIds)
-                            ->where('created_by', $user->id);
-                    });
+                    ->orWhereIn('wallet_id', $sharedWalletIds);
             })
             ->latest('transacted_at')
             ->get()
@@ -344,6 +347,7 @@ class TransactionController extends Controller
                 'category_icon' => $t->category?->icon ?? '📌',
                 'wallet_id' => $t->wallet_id,
                 'wallet' => $t->wallet?->name ?? '-',
+                'wallet_access_type' => $t->wallet?->access_type?->value,
                 'transacted_at' => $t->transacted_at->format('Y-m-d H:i:s'),
                 'recipient' => $t->recipient,
                 'created_by' => $t->created_by,
