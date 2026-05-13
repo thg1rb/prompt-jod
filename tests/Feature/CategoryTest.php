@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Category;
-use App\Models\CategoryRule;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Auth;
@@ -21,12 +20,10 @@ test('user can view categories index', function () {
 });
 
 test('user can get categories data', function () {
-    $existingCategories = Category::where('user_id', $this->user->id)->pluck('name')->toArray();
     $testCategories = ['TestCategory1', 'TestCategory2', 'TestCategory3'];
 
     foreach ($testCategories as $i => $name) {
-        $category = Category::factory()->forUser($this->user)->create(['name' => $name]);
-        CategoryRule::factory()->forCategory($category)->count(2)->create();
+        Category::factory()->forUser($this->user)->create(['name' => $name]);
     }
 
     $response = $this->get(route('categories.data'));
@@ -41,7 +38,6 @@ test('user can get categories data', function () {
                 'color',
                 'is_active',
                 'is_system',
-                'rules',
             ],
         ],
     ]);
@@ -52,7 +48,6 @@ test('user can store category', function () {
         'name' => 'Food',
         'icon' => '🍔',
         'color' => '#FF5733',
-        'keywords' => ['restaurant', 'cafe', 'delivery'],
     ];
 
     $response = $this->post(route('categories.store'), $data);
@@ -65,23 +60,15 @@ test('user can store category', function () {
 
     $category = Category::where('name', 'Food')->first();
     expect($category->user_id)->toBe($this->user->id);
-    expect($category->rules()->count())->toBe(3);
-
-    $this->assertDatabaseHas('category_rules', [
-        'category_id' => $category->id,
-        'keyword' => 'restaurant',
-    ]);
 });
 
 test('user can update category', function () {
     $category = Category::factory()->forUser($this->user)->create();
-    CategoryRule::factory()->forCategory($category)->count(2)->create();
 
     $data = [
         'name' => 'Updated Food',
         'icon' => '🍕',
         'color' => '#00FF00',
-        'keywords' => ['pizza', 'pasta', 'salad'],
     ];
 
     $response = $this->put(route('categories.update', $category), $data);
@@ -94,7 +81,6 @@ test('user can update category', function () {
 
     $category->refresh();
     expect($category->name)->toBe('Updated Food');
-    expect($category->rules()->count())->toBe(3);
 });
 
 test('user cannot update system category', function () {
@@ -104,7 +90,6 @@ test('user cannot update system category', function () {
         'name' => 'Updated',
         'icon' => '🍕',
         'color' => '#00FF00',
-        'keywords' => [],
     ];
 
     $response = $this->put(route('categories.update', $category), $data);
@@ -124,7 +109,6 @@ test('user cannot update other users category', function () {
         'name' => 'Updated',
         'icon' => '🍕',
         'color' => '#00FF00',
-        'keywords' => [],
     ];
 
     $response = $this->put(route('categories.update', $category), $data);
@@ -211,34 +195,6 @@ test('category factory creates custom category', function () {
     $category = Category::factory()->custom()->create();
 
     expect($category->is_system)->toBeFalse();
-});
-
-test('category rule matches keyword case-insensitively', function () {
-    $rule = CategoryRule::factory()->create([
-        'keyword' => 'restaurant',
-        'case_sensitive' => false,
-    ]);
-
-    expect($rule->matches('I went to a RESTAURANT'))->toBeTrue();
-    expect($rule->matches('I went to a cafe'))->toBeFalse();
-});
-
-test('category rule matches keyword case-sensitively', function () {
-    $rule = CategoryRule::factory()->create([
-        'keyword' => 'Restaurant',
-        'case_sensitive' => true,
-    ]);
-
-    expect($rule->matches('I went to a Restaurant'))->toBeTrue();
-    expect($rule->matches('I went to a RESTAURANT'))->toBeFalse();
-});
-
-test('category rule does not match if inactive', function () {
-    $rule = CategoryRule::factory()->inactive()->create([
-        'keyword' => 'restaurant',
-    ]);
-
-    expect($rule->matches('I went to a restaurant'))->toBeFalse();
 });
 
 test('categories are ordered by sort_order then name', function () {

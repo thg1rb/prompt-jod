@@ -18,7 +18,6 @@ class CategoryController extends Controller
     public function data()
     {
         $categories = Auth::user()->categories()
-            ->with('rules')
             ->ordered()
             ->get();
 
@@ -40,23 +39,10 @@ class CategoryController extends Controller
             'sort_order' => Category::where('user_id', Auth::id())->count(),
         ]);
 
-        if (! empty($validated['keywords'])) {
-            foreach ($validated['keywords'] as $keyword) {
-                if (! empty(trim($keyword))) {
-                    $category->rules()->create([
-                        'keyword' => trim($keyword),
-                        'priority' => 1,
-                        'is_active' => true,
-                        'case_sensitive' => false,
-                    ]);
-                }
-            }
-        }
-
         return response()->json([
             'success' => true,
             'message' => 'บันทึกหมวดหมู่เรียบร้อย',
-            'category' => $category->load('rules'),
+            'category' => $category,
         ]);
     }
 
@@ -78,25 +64,10 @@ class CategoryController extends Controller
             'color' => $validated['color'],
         ]);
 
-        $category->rules()->delete();
-
-        if (! empty($validated['keywords'])) {
-            foreach ($validated['keywords'] as $keyword) {
-                if (! empty(trim($keyword))) {
-                    $category->rules()->create([
-                        'keyword' => trim($keyword),
-                        'priority' => 1,
-                        'is_active' => true,
-                        'case_sensitive' => false,
-                    ]);
-                }
-            }
-        }
-
         return response()->json([
             'success' => true,
             'message' => 'แก้ไขหมวดหมู่เรียบร้อย',
-            'category' => $category->load('rules'),
+            'category' => $category,
         ]);
     }
 

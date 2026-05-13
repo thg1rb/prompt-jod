@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-bold">หมวดหมู่</h1>
-                <p class="text-text-muted text-sm">จัดการหมวดหมู่และคำสำคัญสำหรับการจัดประเภทอัตโนมัติ</p>
+                <p class="text-text-muted text-sm">จัดการหมวดหมู่สำหรับการจัดประเภทอัตโนมัติ</p>
             </div>
             <button @click="startNew()" class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
                 <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -21,17 +21,6 @@
                         <div class="h-12 w-12 rounded-lg grid place-items-center text-2xl" :style="{ background: `${category.color}20` }" x-text="category.icon"></div>
                         <div class="flex-1 min-w-0">
                             <div class="font-semibold truncate" x-text="category.name"></div>
-                            <div class="flex flex-wrap gap-1 mt-2">
-                                <template x-for="keyword in category.keywords.slice(0, 4)" :key="keyword">
-                                    <span class="inline-flex items-center px-2 py-0.5 bg-secondary text-secondary-foreground rounded text-[10px]" x-text="keyword"></span>
-                                </template>
-                                <template x-if="category.keywords.length > 4">
-                                    <span class="inline-flex items-center px-2 py-0.5 border border-border rounded text-[10px]" x-text="`+${category.keywords.length - 4}`"></span>
-                                </template>
-                                <template x-if="category.keywords.length === 0">
-                                    <span class="text-xs text-text-muted">ไม่มีคำสำคัญ</span>
-                                </template>
-                            </div>
                         </div>
                         <div class="flex flex-col gap-1">
                             <button @click="startEdit(category)" class="inline-flex items-center justify-center p-1.5 hover:bg-muted rounded-lg transition-colors" aria-label="แก้ไข">
@@ -102,17 +91,6 @@
                                     ></button>
                                 </template>
                             </div>
-                        </div>
-                        <div>
-                            <label for="kw" class="block text-sm font-medium text-foreground mb-1">คำสำคัญ (คั่นด้วยจุลภาค)</label>
-                            <input
-                                id="kw"
-                                type="text"
-                                x-model="keywordInput"
-                                @input="updateKeywords"
-                                placeholder="7-eleven, mk, grab"
-                                class="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
-                            />
                         </div>
                     </div>
                 </template>

@@ -44,7 +44,7 @@ php artisan migrate:fresh --seed
 ### Key Directories
 
 - `app/Services/EasySlipService.php` — OCR slip verification via EasySlip API
-- `app/Models/` — User, Wallet, Transaction, Category, CategoryRule, Slip, Budget, BudgetAlert, BalanceAdjustment
+- `app/Models/` — User, Wallet, Transaction, Category, Slip, Budget, BudgetAlert, BalanceAdjustment
 - `app/Enums/` — TransactionType, WalletType, SlipStatus, BudgetPeriod, BudgetStatus, AlertType, AlertStatus, VerificationStatus
 - `app/Observers/` — TransactionObserver, BudgetObserver, TransactionBudgetObserver
 - `app/Http/Requests/` — Form requests for validation (TransactionStoreRequest, SlipVerifyRequest, WalletStoreRequest, etc.)

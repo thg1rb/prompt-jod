@@ -3,17 +3,13 @@ export function categories() {
         categories: [],
         editing: null,
         open: false,
-        keywordInput: '',
         PALETTE: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#0EA5E9', '#64748B', '#14B8A6'],
 
         async loadCategories() {
             try {
                 const response = await fetch('/categories/data');
                 const data = await response.json();
-                this.categories = data.categories.map(c => ({
-                    ...c,
-                    keywords: c.rules ? c.rules.map(r => r.keyword) : []
-                }));
+                this.categories = data.categories;
             } catch (error) {
                 console.error('Failed to load categories:', error);
             }
@@ -25,25 +21,13 @@ export function categories() {
                 name: '',
                 icon: '📌',
                 color: this.PALETTE[0],
-                keywords: []
             };
-            this.keywordInput = '';
             this.open = true;
         },
 
         startEdit(category) {
             this.editing = { ...category };
-            this.keywordInput = category.keywords.join(', ');
             this.open = true;
-        },
-
-        updateKeywords() {
-            if (this.editing) {
-                this.editing.keywords = this.keywordInput
-                    .split(',')
-                    .map(s => s.trim())
-                    .filter(Boolean);
-            }
         },
 
         async save() {
@@ -66,7 +50,6 @@ export function categories() {
                         name: this.editing.name,
                         icon: this.editing.icon,
                         color: this.editing.color,
-                        keywords: this.editing.keywords
                     })
                 });
 

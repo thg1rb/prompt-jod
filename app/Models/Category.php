@@ -52,14 +52,6 @@ class Category extends Model
     }
 
     /**
-     * Get the category rules for the category.
-     */
-    public function rules(): HasMany
-    {
-        return $this->hasMany(CategoryRule::class);
-    }
-
-    /**
      * Get the transactions for the category.
      */
     public function transactions(): HasMany
