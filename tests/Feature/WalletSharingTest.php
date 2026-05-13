@@ -2,6 +2,7 @@
 
 use App\Enums\WalletAccess;
 use App\Models\Category;
+use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
@@ -139,6 +140,7 @@ describe('Invitation Flow', function () {
     });
 
     test('logged in user can accept invitation', function () {
+        Subscription::factory()->forUser($this->owner)->active()->create();
         $wallet = Wallet::factory()->forUser($this->owner)->create();
         $token = Str::random(64);
         WalletMember::factory()->create([
@@ -233,6 +235,7 @@ describe('Wallet Adjustments Access', function () {
     });
 
     test('member can access shared wallet adjustments page', function () {
+        Subscription::factory()->forUser($this->member)->active()->create();
         $wallet = Wallet::factory()->forUser($this->owner)->create([
             'access_type' => WalletAccess::Shared,
         ]);

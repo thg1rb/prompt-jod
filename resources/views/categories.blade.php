@@ -1,18 +1,40 @@
 <x-app-layout>
-    <div class="py-6" x-data="categories()" x-init="loadCategories()">
+    @php
+        $user = auth()->user();
+        $isFree = $user->isFree();
+    @endphp
+    <div class="py-6" x-data="categories()" x-init="loadCategories(); isPremium = {{ $isFree ? 'false' : 'true' }}">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <div class="flex items-center justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-bold">หมวดหมู่</h1>
                 <p class="text-text-muted text-sm">จัดการหมวดหมู่สำหรับการจัดประเภทอัตโนมัติ</p>
             </div>
-            <button @click="startNew()" class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                เพิ่มหมวดหมู่
-            </button>
+            @if($isFree)
+                <button @click="$paywall?.open()" class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    เพิ่มหมวดหมู่
+                </button>
+            @else
+                <button @click="startNew()" class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    เพิ่มหมวดหมู่
+                </button>
+            @endif
         </div>
+
+        @if($isFree)
+        <div class="bg-muted/50 border border-border rounded-lg p-4 text-center">
+            <p class="text-sm text-muted-foreground">
+                สมัครสมาชิก Premium เพื่อสร้างและแก้ไขหมวดหมู่
+                <button @click="$paywall?.open()" class="text-primary hover:underline">สมัครสมาชิก Premium</button>
+            </p>
+        </div>
+        @endif
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <template x-for="category in categories" :key="category.id">
@@ -22,6 +44,7 @@
                         <div class="flex-1 min-w-0">
                             <div class="font-semibold truncate" x-text="category.name"></div>
                         </div>
+                        @if(!$isFree)
                         <div class="flex flex-col gap-1">
                             <button @click="startEdit(category)" class="inline-flex items-center justify-center p-1.5 hover:bg-muted rounded-lg transition-colors" aria-label="แก้ไข">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -34,6 +57,7 @@
                                 </svg>
                             </button>
                         </div>
+                        @endif
                     </div>
                 </div>
             </template>

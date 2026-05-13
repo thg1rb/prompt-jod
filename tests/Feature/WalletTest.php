@@ -293,3 +293,76 @@ test('wallets are ordered by sort_order on index', function () {
     expect($wallets->get(1)->name)->toBe('Charlie');
     expect($wallets->get(2)->name)->toBe('Alpha');
 });
+
+test('free user cannot create wallet when at limit', function () {
+    Wallet::factory()->forUser($this->user)->count(5)->create();
+
+    $data = [
+        'name' => 'Extra Wallet',
+        'type' => 'bank',
+        'access_type' => 'personal',
+        'bank_name' => 'SCB',
+    ];
+
+    $response = $this->postJson(route('wallets.store'), $data);
+
+    $response->assertStatus(403);
+    $response->assertJson([
+        'success' => false,
+        'requires_subscription' => true,
+    ]);
+});
+
+test('free user cannot create shared wallet', function () {
+    $data = [
+        'name' => 'Shared Wallet',
+        'type' => 'bank',
+        'access_type' => 'shared',
+        'bank_name' => 'SCB',
+    ];
+
+    $response = $this->post(route('wallets.store'), $data);
+
+    $response->assertRedirect(route('wallets.index'));
+    $wallet = Wallet::where('name', 'Shared Wallet')->first();
+    expect($wallet)->not->toBeNull();
+    expect($wallet->access_type->value)->toBe('personal');
+});
+
+test('free user cannot access shared wallet details', function () {
+    $owner = User::factory()->create();
+    $wallet = Wallet::factory()->forUser($owner)->create(['access_type' => 'shared']);
+
+    $response = $this->getJson(route('wallets.show', $wallet));
+
+    $response->assertStatus(403);
+    $response->assertJson([
+        'success' => false,
+        'message' => 'ไม่มีสิทธิ์เข้าถึงกระเป๋าเงินนี้',
+    ]);
+});
+
+test('free user can access owned wallet details', function () {
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+
+    $response = $this->get(route('wallets.show', $wallet));
+
+    $response->assertStatus(200);
+});
+
+test('wallet access type is forced to personal for free user', function () {
+    $data = [
+        'name' => 'Test Wallet',
+        'type' => 'bank',
+        'access_type' => 'shared',
+        'bank_name' => 'SCB',
+    ];
+
+    $response = $this->post(route('wallets.store'), $data);
+
+    $response->assertRedirect(route('wallets.index'));
+
+    $wallet = Wallet::where('name', 'Test Wallet')->first();
+    expect($wallet)->not->toBeNull();
+    expect($wallet->access_type->value)->toBe('personal');
+});

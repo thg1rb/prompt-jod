@@ -56,25 +56,52 @@ class WalletController extends Controller
     /**
      * Store a newly created wallet in storage.
      */
-    public function store(WalletStoreRequest $request): RedirectResponse
+    public function store(WalletStoreRequest $request): RedirectResponse|JsonResponse
     {
+        $user = auth()->user();
+
+        if (! $user->canCreateWallet()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'กรุณาสมัครสมาชิก Premium เพื่อสร้างกระเป๋าเงินเพิ่มเติม',
+                    'requires_subscription' => true,
+                ], 403);
+            }
+
+            return redirect()->back()
+                ->with('error', 'กรุณาสมัครสมาชิก Premium เพื่อสร้างกระเป๋าเงินเพิ่มเติม');
+        }
+
         $data = $request->validated();
-        $data['user_id'] = auth()->id();
+
+        if ($user->isFree() && ($data['access_type'] ?? null) === 'shared') {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'กรุณาสมัครสมาชิก Premium เพื่อสร้างกระเป๋าเงินแชร์',
+                    'requires_subscription' => true,
+                ], 403);
+            }
+
+            return redirect()->back()
+                ->with('error', 'กรุณาสมัครสมาชิก Premium เพื่อสร้างกระเป๋าเงินแชร์');
+        }
+
+        $data['user_id'] = $user->id;
         $data['balance'] = $data['opening_balance'] ?? 0;
         $data['is_default'] = $request->boolean('is_default');
 
-        // If this is set as default, remove default from other wallets
         if ($data['is_default']) {
-            auth()->user()->wallets()->update(['is_default' => false]);
+            $user->wallets()->update(['is_default' => false]);
         }
 
-        $wallet = auth()->user()->wallets()->create($data);
+        $wallet = $user->wallets()->create($data);
 
-        // Create opening balance adjustment if provided
         if (isset($data['opening_balance']) && $data['opening_balance'] > 0) {
             BalanceAdjustment::create([
                 'wallet_id' => $wallet->id,
-                'user_id' => auth()->id(),
+                'user_id' => $user->id,
                 'previous_balance' => 0,
                 'new_balance' => $data['opening_balance'],
                 'adjustment_amount' => $data['opening_balance'],
@@ -92,9 +119,33 @@ class WalletController extends Controller
     /**
      * Display the specified wallet with transaction history.
      */
-    public function show(Wallet $wallet): View
+    public function show(Wallet $wallet): View|RedirectResponse|JsonResponse
     {
-        abort_if(! $wallet->hasAccess(auth()->user()), 403);
+        $user = auth()->user();
+
+        if (! $wallet->hasAccess($user)) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ไม่มีสิทธิ์เข้าถึงกระเป๋าเงินนี้',
+                ], 403);
+            }
+
+            abort(403);
+        }
+
+        if (! $user->canAccessWallet($wallet)) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'กรุณาสมัครสมาชิก Premium เพื่อเข้าถึงกระเป๋าเงินแชร์',
+                    'requires_subscription' => true,
+                ], 403);
+            }
+
+            return redirect()->route('wallets.index')
+                ->with('error', 'กรุณาสมัครสมาชิก Premium เพื่อเข้าถึงกระเป๋าเงินแชร์');
+        }
 
         $wallet->load(['transactions' => function ($query) {
             $query->with(['category', 'creator'])
@@ -113,9 +164,33 @@ class WalletController extends Controller
     /**
      * Display all balance adjustments for the specified wallet.
      */
-    public function adjustments(Wallet $wallet): View
+    public function adjustments(Wallet $wallet): View|RedirectResponse|JsonResponse
     {
-        abort_if(! $wallet->hasAccess(auth()->user()), 403);
+        $user = auth()->user();
+
+        if (! $wallet->hasAccess($user)) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ไม่มีสิทธิ์เข้าถึงกระเป๋าเงินนี้',
+                ], 403);
+            }
+
+            abort(403);
+        }
+
+        if (! $user->canAccessWallet($wallet)) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'กรุณาสมัครสมาชิก Premium เพื่อเข้าถึงกระเป๋าเงินแชร์',
+                    'requires_subscription' => true,
+                ], 403);
+            }
+
+            return redirect()->route('wallets.index')
+                ->with('error', 'กรุณาสมัครสมาชิก Premium เพื่อเข้าถึงกระเป๋าเงินแชร์');
+        }
 
         $adjustments = $wallet->balanceAdjustments()
             ->latest('adjusted_at')

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\WalletAccess;
 use Illuminate\Foundation\Http\FormRequest;
 
 class WalletStoreRequest extends FormRequest
@@ -9,6 +10,17 @@ class WalletStoreRequest extends FormRequest
     public function authorize(): bool
     {
         return auth()->check();
+    }
+
+    public function prepareForValidation(): void
+    {
+        $user = auth()->user();
+
+        if ($user->isFree()) {
+            $this->merge([
+                'access_type' => WalletAccess::Personal->value,
+            ]);
+        }
     }
 
     public function rules(): array

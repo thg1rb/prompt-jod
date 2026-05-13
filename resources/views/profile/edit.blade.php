@@ -154,17 +154,17 @@
                         </button>
                     </div>
                 @elseif($subscription && $subscription->status === \App\Enums\SubscriptionStatus::Canceled)
-                    <div class="text-center py-4">
+                    <div class="text-center py-4" x-data>
                         <p class="text-muted-foreground mb-2">การสมัครสมาชิกถูกยกเลิกแล้ว</p>
-                        <button onclick="$dispatch('open-subscription-modal')"
+                        <button @click="$paywall?.open()"
                                 class="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
                             สมัครใหม่
                         </button>
                     </div>
                 @else
-                    <div class="text-center py-4">
+                    <div class="text-center py-4" x-data>
                         <p class="text-muted-foreground mb-2">ยังไม่ได้สมัครสมาชิก</p>
-                        <button onclick="$dispatch('open-subscription-modal')"
+                        <button @click="$paywall?.open()"
                                 class="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
                             เลือกแพ็กเกจ
                         </button>

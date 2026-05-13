@@ -509,3 +509,58 @@ test('user does not need subscription when canceled', function () {
 
     expect($this->user->needsSubscription())->toBeFalse();
 });
+
+test('user is premium when subscription is active', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
+
+    expect($this->user->isPremium())->toBeTrue();
+    expect($this->user->isFree())->toBeFalse();
+});
+
+test('user is free when no subscription', function () {
+    expect($this->user->isPremium())->toBeFalse();
+    expect($this->user->isFree())->toBeTrue();
+});
+
+test('user is free when subscription is expired', function () {
+    Subscription::factory()->forUser($this->user)->expired()->create();
+
+    expect($this->user->isPremium())->toBeFalse();
+    expect($this->user->isFree())->toBeTrue();
+});
+
+test('user can create wallet when premium', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
+
+    expect($this->user->canCreateWallet())->toBeTrue();
+});
+
+test('user cannot create shared wallet when free', function () {
+    expect($this->user->canCreateSharedWallet())->toBeFalse();
+});
+
+test('user can create shared wallet when premium', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
+
+    expect($this->user->canCreateSharedWallet())->toBeTrue();
+});
+
+test('user cannot create category when free', function () {
+    expect($this->user->canCreateCategory())->toBeFalse();
+});
+
+test('user can create category when premium', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
+
+    expect($this->user->canCreateCategory())->toBeTrue();
+});
+
+test('user cannot use slip upload when free', function () {
+    expect($this->user->canUseSlipUpload())->toBeFalse();
+});
+
+test('user can use slip upload when premium', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
+
+    expect($this->user->canUseSlipUpload())->toBeTrue();
+});

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SlipVerifyRequest;
 use App\Http\Requests\TransactionStoreRequest;
 use App\Models\Transaction;
+use App\Models\Wallet;
 use App\Services\EasySlipService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -155,6 +156,16 @@ class TransactionController extends Controller
         $validated = $request->validated();
         $user = Auth::user();
 
+        $wallet = Wallet::find($validated['wallet_id']);
+
+        if ($wallet && $wallet->access_type->value === 'shared' && ! $wallet->isOwner($user) && $user->isFree()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'กรุณาสมัครสมาชิก Premium เพื่อใช้งานธุรกรรมในกระเป๋าแชร์',
+                'requires_subscription' => true,
+            ], 403);
+        }
+
         $transaction = $user->transactions()->create([
             'wallet_id' => $validated['wallet_id'],
             'category_id' => $validated['category_id'],
@@ -182,6 +193,14 @@ class TransactionController extends Controller
 
     public function verifySlip(SlipVerifyRequest $request): JsonResponse
     {
+        if (Auth::user()->isFree()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'กรุณาสมัครสมาชิก Premium เพื่อใช้งาน OCR สลิป',
+                'requires_subscription' => true,
+            ], 403);
+        }
+
         $image = $request->file('image');
 
         $result = $this->easySlipService->verifyBankSlip($image);
@@ -217,6 +236,14 @@ class TransactionController extends Controller
             return response()->json(['error' => 'Transaction not found'], 404);
         }
 
+        if (! $user->canAccessTransaction($transaction)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'กรุณาสมัครสมาชิก Premium เพื่อเข้าถึงธุรกรรมในกระเป๋าแชร์',
+                'requires_subscription' => true,
+            ], 403);
+        }
+
         return response()->json([
             'transaction' => [
                 'id' => $transaction->id,
@@ -241,6 +268,14 @@ class TransactionController extends Controller
 
         if (! $transaction) {
             return response()->json(['error' => 'Transaction not found'], 404);
+        }
+
+        if (! $user->canAccessTransaction($transaction)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'กรุณาสมัครสมาชิก Premium เพื่อแก้ไขธุรกรรมในกระเป๋าแชร์',
+                'requires_subscription' => true,
+            ], 403);
         }
 
         $transaction->update([
@@ -274,6 +309,14 @@ class TransactionController extends Controller
 
         if (! $transaction) {
             return response()->json(['error' => 'Transaction not found'], 404);
+        }
+
+        if (! $user->canAccessTransaction($transaction)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'กรุณาสมัครสมาชิก Premium เพื่อลบธุรกรรมในกระเป๋าแชร์',
+                'requires_subscription' => true,
+            ], 403);
         }
 
         $transaction->delete();

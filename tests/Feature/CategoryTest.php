@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\Auth;
@@ -44,6 +45,8 @@ test('user can get categories data', function () {
 });
 
 test('user can store category', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
+
     $data = [
         'name' => 'Food',
         'icon' => '🍔',
@@ -63,6 +66,7 @@ test('user can store category', function () {
 });
 
 test('user can update category', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
     $category = Category::factory()->forUser($this->user)->create();
 
     $data = [
@@ -84,6 +88,7 @@ test('user can update category', function () {
 });
 
 test('user cannot update system category', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
     $category = Category::factory()->forUser($this->user)->system()->create();
 
     $data = [
@@ -102,6 +107,7 @@ test('user cannot update system category', function () {
 });
 
 test('user cannot update other users category', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
     $otherUser = User::factory()->create();
     $category = Category::factory()->forUser($otherUser)->create();
 
@@ -121,6 +127,7 @@ test('user cannot update other users category', function () {
 });
 
 test('user can delete category', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
     $category = Category::factory()->forUser($this->user)->create();
 
     $response = $this->delete(route('categories.destroy', $category));
@@ -135,6 +142,7 @@ test('user can delete category', function () {
 });
 
 test('user cannot delete system category', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
     $category = Category::factory()->forUser($this->user)->system()->create();
 
     $response = $this->delete(route('categories.destroy', $category));
@@ -149,6 +157,7 @@ test('user cannot delete system category', function () {
 });
 
 test('user cannot delete other users category', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
     $otherUser = User::factory()->create();
     $category = Category::factory()->forUser($otherUser)->create();
 
@@ -162,6 +171,7 @@ test('user cannot delete other users category', function () {
 });
 
 test('user cannot delete category with transactions', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
     $category = Category::factory()->forUser($this->user)->create();
     $wallet = Wallet::factory()->forUser($this->user)->create();
 

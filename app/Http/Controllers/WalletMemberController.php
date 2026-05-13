@@ -143,23 +143,57 @@ class WalletMemberController extends Controller
         ]);
     }
 
-    public function acceptInvitation(string $token): RedirectResponse
+    public function acceptInvitation(string $token): RedirectResponse|JsonResponse
     {
         $member = WalletMember::where('token', $token)
             ->validToken()
             ->first();
 
         if (! $member) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'ลิงก์เชิญไม่ถูกต้องหรือหมดอายุแล้ว',
+                ], 404);
+            }
+
             return redirect()->route('dashboard')
                 ->with('error', 'ลิงก์เชิญไม่ถูกต้องหรือหมดอายุแล้ว');
         }
 
         if (! auth()->check()) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'กรุณาเข้าสู่ระบบก่อนเข้าร่วมกระเป๋าเงิน',
+                ], 401);
+            }
+
             return redirect()->route('login')
                 ->with('info', 'กรุณาเข้าสู่ระบบก่อนเข้าร่วมกระเป๋าเงิน');
         }
 
+        if (auth()->user()->isFree()) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'กรุณาสมัครสมาชิก Premium เพื่อเข้าร่วมกระเป๋าเงินแชร์',
+                    'requires_subscription' => true,
+                ], 403);
+            }
+
+            return redirect()->route('dashboard')
+                ->with('error', 'กรุณาสมัครสมาชิก Premium เพื่อเข้าร่วมกระเป๋าเงินแชร์');
+        }
+
         if ($member->isAccepted()) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'คุณเป็นสมาชิกของกระเป๋าเงินนี้แล้ว',
+                ], 400);
+            }
+
             return redirect()->route('wallets.show', $member->wallet)
                 ->with('info', 'คุณเป็นสมาชิกของกระเป๋าเงินนี้แล้ว');
         }
@@ -168,6 +202,13 @@ class WalletMemberController extends Controller
             'user_id' => auth()->id(),
             'accepted_at' => now(),
         ]);
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'เข้าร่วมกระเป๋าเงิน '.$member->wallet->name.' เรียบร้อยแล้ว',
+            ]);
+        }
 
         return redirect()->route('wallets.show', $member->wallet)
             ->with('success', 'เข้าร่วมกระเป๋าเงิน '.$member->wallet->name.' เรียบร้อยแล้ว');

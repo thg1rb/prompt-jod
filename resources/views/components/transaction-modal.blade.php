@@ -3,15 +3,17 @@
     'categories',
     'initialOpen' => false,
     'currentUserId' => null,
+    'isPremium' => true,
 ])
 
 <div
     x-data="transactionModal({{
         json_encode([
-            'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name, 'is_default' => $w->is_default, 'type' => $w->type->value])->values(),
+            'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name, 'is_default' => $w->is_default, 'type' => $w->type->value, 'access_type' => $w->access_type->value])->values(),
             'categories' => $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'icon' => $c->icon])->values(),
             'initialOpen' => $initialOpen,
             'currentUserId' => $currentUserId,
+            'isPremium' => $isPremium,
         ])
     }})"
     x-show="open"
@@ -68,75 +70,87 @@
 
         <!-- Body -->
         <div class="p-6 space-y-6">
-            <!-- Slip Upload Section (Create Mode Only) -->
-            <div class="space-y-3" x-show="isCreateMode" style="display: none;">
-                <label class="block text-sm font-medium text-foreground">อัพโหลดสลิป (อัตโนมัติกรอกข้อมูล)</label>
+            <!-- Slip Upload Section (Create Mode Only, Premium Only) -->
+            <template x-if="isCreateMode && isPremium">
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-foreground">อัพโหลดสลิป (อัตโนมัติกรอกข้อมูล)</label>
 
-                <!-- Dropzone -->
-                <div
-                    @dragover.prevent
-                    @drop.prevent="handleDrop($event)"
-                    class="relative border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
-                    :class="verifying ? 'opacity-50 pointer-events-none' : ''"
-                >
-                    <label
-                        :class="slipImagePreview ? 'hidden' : 'block cursor-pointer w-full h-full'"
-                        x-show="!slipImagePreview"
+                    <!-- Dropzone -->
+                    <div
+                        @dragover.prevent
+                        @drop.prevent="handleDrop($event)"
+                        class="relative border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors cursor-pointer"
+                        :class="verifying ? 'opacity-50 pointer-events-none' : ''"
                     >
-                        <input
-                            x-ref="fileInput"
-                            type="file"
-                            accept="image/jpeg,image/png,image/jpg"
-                            @change="handleFileUpload($event)"
-                            class="hidden"
+                        <label
+                            :class="slipImagePreview ? 'hidden' : 'block cursor-pointer w-full h-full'"
+                            x-show="!slipImagePreview"
                         >
-                        <div class="space-y-2">
-                            <svg class="h-10 w-10 mx-auto text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <p class="text-sm text-text-muted">
-                                ลากไฟล์มาวางที่นี่ หรือ
-                                <span class="text-primary hover:text-primary/80">คลิกเพื่อเลือกไฟล์</span>
-                            </p>
-                            <p class="text-xs text-text-muted">JPEG, PNG, JPG (สูงสุด 5MB)</p>
-                        </div>
-                    </label>
-
-                    <template x-if="slipImagePreview">
-                        <div class="relative inline-block" @click.stop>
-                            <img :src="slipImagePreview" alt="Slip preview" class="max-h-48 rounded-lg mx-auto">
-                            <button
-                                @click.prevent="slipImagePreview = null; slipData = null; slipError = null; $refs.fileInput.value = '';"
-                                class="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
-                                aria-label="ลบรูป"
+                            <input
+                                x-ref="fileInput"
+                                type="file"
+                                accept="image/jpeg,image/png,image/jpg"
+                                @change="handleFileUpload($event)"
+                                class="hidden"
                             >
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            <div class="space-y-2">
+                                <svg class="h-10 w-10 mx-auto text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                            </button>
+                                <p class="text-sm text-text-muted">
+                                    ลากไฟล์มาวางที่นี่ หรือ
+                                    <span class="text-primary hover:text-primary/80">คลิกเพื่อเลือกไฟล์</span>
+                                </p>
+                                <p class="text-xs text-text-muted">JPEG, PNG, JPG (สูงสุด 5MB)</p>
+                            </div>
+                        </label>
+
+                        <template x-if="slipImagePreview">
+                            <div class="relative inline-block" @click.stop>
+                                <img :src="slipImagePreview" alt="Slip preview" class="max-h-48 rounded-lg mx-auto">
+                                <button
+                                    @click.prevent="slipImagePreview = null; slipData = null; slipError = null; $refs.fileInput.value = '';"
+                                    class="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors"
+                                    aria-label="ลบรูป"
+                                >
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+
+                        <!-- Loading State -->
+                        <div x-show="verifying" class="mt-3">
+                            <svg class="animate-spin h-5 w-5 text-primary mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <p class="text-xs text-text-muted mt-1">กำลังอ่านข้อมูล...</p>
                         </div>
-                    </template>
 
-                    <!-- Loading State -->
-                    <div x-show="verifying" class="mt-3">
-                        <svg class="animate-spin h-5 w-5 text-primary mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <p class="text-xs text-text-muted mt-1">กำลังอ่านข้อมูล...</p>
-                    </div>
+                        <!-- Error State -->
+                        <div x-show="slipError" class="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                            <p class="text-sm text-destructive" x-text="slipError"></p>
+                        </div>
 
-                    <!-- Error State -->
-                    <div x-show="slipError" class="mt-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                        <p class="text-sm text-destructive" x-text="slipError"></p>
-                    </div>
-
-                    <!-- Success State -->
-                    <div x-show="slipData && !slipError" class="mt-3 p-3 bg-success/10 border border-success/20 rounded-lg">
-                        <p class="text-sm text-success">✓ อ่านข้อมูลสลิปสำเร็จ ข้อมูลถูกกรอกอัตโนมัติ</p>
+                        <!-- Success State -->
+                        <div x-show="slipData && !slipError" class="mt-3 p-3 bg-success/10 border border-success/20 rounded-lg">
+                            <p class="text-sm text-success">✓ อ่านข้อมูลสลิปสำเร็จ ข้อมูลถูกกรอกอัตโนมัติ</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
+
+            <!-- Free User Slip Upload Notice -->
+            <template x-if="isCreateMode && !isPremium">
+                <div class="p-4 border border-border rounded-lg bg-muted/30">
+                    <p class="text-sm text-muted-foreground text-center">
+                        ระบบไม่รองรับการอัพโหลดสลิปสำหรับผู้ใช้ฟรี
+                        <button @click="$paywall?.open()" class="text-primary hover:underline">สมัครสมาชิก Premium</button>
+                    </p>
+                </div>
+            </template>
 
             <!-- Form Error Message -->
             <div x-show="errors._form" class="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">

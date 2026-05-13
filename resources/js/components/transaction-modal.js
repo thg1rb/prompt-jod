@@ -1,7 +1,7 @@
 export function transactionModal(initialData) {
     return {
         open: initialData?.initialOpen || false,
-        mode: 'create', // 'create' | 'view' | 'edit'
+        mode: 'create',
         editingId: null,
         loading: false,
         verifying: false,
@@ -9,8 +9,8 @@ export function transactionModal(initialData) {
         slipError: null,
         slipImagePreview: null,
         currentUserId: initialData?.currentUserId || null,
+        isPremium: initialData?.isPremium || false,
 
-        // Suggestions
         senderSuggestions: [],
         recipientSuggestions: [],
         showSenderSuggestions: false,
@@ -20,7 +20,6 @@ export function transactionModal(initialData) {
         senderHighlightedIndex: -1,
         recipientHighlightedIndex: -1,
 
-        // Form data
         form: {
             wallet_id: '',
             category_id: '',
@@ -41,15 +40,46 @@ export function transactionModal(initialData) {
             transaction_ref: '',
         },
 
-        // Available options
         wallets: initialData?.wallets || [],
         categories: initialData?.categories || [],
 
-        // Errors
         errors: {},
 
-        // Creator tracking
         transactionCreatorId: null,
+
+        get selectedWallet() {
+            return this.wallets.find(w => w.id === this.form.wallet_id);
+        },
+
+        get selectedWalletType() {
+            return this.selectedWallet?.type || '';
+        },
+
+        get selectedWalletAccessType() {
+            return this.selectedWallet?.access_type || 'personal';
+        },
+
+        get isSharedWallet() {
+            return this.selectedWalletAccessType === 'shared';
+        },
+
+        get isCashWallet() {
+            return this.selectedWalletType === 'cash';
+        },
+
+        get canSubmitTransaction() {
+            if (this.isSharedWallet && !this.isPremium) {
+                return false;
+            }
+            return true;
+        },
+
+        get sharedWalletBlockedMessage() {
+            if (this.isSharedWallet && !this.isPremium) {
+                return 'กรุณาสมัครสมาชิก Premium เพื่อใช้งานธุรกรรมในกระเป๋าแชร์';
+            }
+            return null;
+        },
 
         get title() {
             if (this.mode === 'create') return 'เพิ่มธุรกรรมใหม่';
@@ -75,18 +105,6 @@ export function transactionModal(initialData) {
 
         get isOwner() {
             return this.transactionCreatorId === this.currentUserId;
-        },
-
-        get selectedWallet() {
-            return this.wallets.find(w => w.id === this.form.wallet_id);
-        },
-
-        get selectedWalletType() {
-            return this.selectedWallet?.type || '';
-        },
-
-        get isCashWallet() {
-            return this.selectedWalletType === 'cash';
         },
 
         get senderLabel() {
@@ -216,7 +234,12 @@ export function transactionModal(initialData) {
                     this.slipData = data.slip;
                     this.autoFillFromSlip(data.slip);
                 } else {
-                    this.slipError = data.error || 'ไม่สามารถอ่านข้อมูลจากสลิปได้';
+                    if (data.requires_subscription) {
+                        this.$paywall?.open();
+                        this.slipError = 'กรุณาสมัครสมาชิก Premium เพื่อใช้งาน OCR สลิป';
+                    } else {
+                        this.slipError = data.error || 'ไม่สามารถอ่านข้อมูลจากสลิปได้';
+                    }
                 }
             } catch (error) {
                 console.error('Upload error:', error);
@@ -274,6 +297,12 @@ export function transactionModal(initialData) {
         },
 
         async submit() {
+            if (!this.canSubmitTransaction) {
+                this.$paywall?.open();
+                this.errors = { _form: this.sharedWalletBlockedMessage };
+                return;
+            }
+
             this.loading = true;
             this.errors = {};
 
@@ -312,7 +341,10 @@ export function transactionModal(initialData) {
                         this.closeModal();
                     }
                 } else {
-                    if (response.status === 422 && data.errors) {
+                    if (data.requires_subscription) {
+                        this.$paywall?.open();
+                        this.errors = { _form: data.message };
+                    } else if (response.status === 422 && data.errors) {
                         const flattenedErrors = {};
                         for (const field in data.errors) {
                             flattenedErrors[field] = Array.isArray(data.errors[field])

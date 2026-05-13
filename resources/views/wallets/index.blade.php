@@ -1,5 +1,11 @@
 <x-app-layout>
-    <div class="py-6" x-data="{ open: false, draft: { type: 'bank' } }">
+    @php
+        $user = auth()->user();
+        $isFree = $user->isFree();
+        $ownedWalletCount = $user->ownedWalletCount();
+        $atWalletLimit = $isFree && $ownedWalletCount >= 5;
+    @endphp
+    <div class="py-6" x-data="{ open: false, draft: { type: 'bank' }, atLimit: {{ $atWalletLimit ? 'true' : 'false' }} }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <!-- Header Section -->
         <div class="flex items-center justify-between gap-3">
@@ -7,7 +13,7 @@
                 <h1 class="text-2xl font-bold text-foreground">กระเป๋าเงิน</h1>
                 <p class="text-muted-foreground text-sm">{{ $wallets->count() }} กระเป๋า · ยอดรวม {{ number_format($totalBalance, 2) }} บาท</p>
             </div>
-            <button @click="open = true" class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors">
+            <button @click="{{ $atWalletLimit ? '$paywall?.open()' : 'open = true' }}" class="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
@@ -99,9 +105,15 @@
                         </ul>
 
                         <!-- Action Button -->
-                        <a href="{{ route('wallets.show', $wallet) }}" class="mt-4 w-full inline-flex items-center justify-center px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm font-medium text-foreground">
-                            ดูทั้งหมด / ปรับยอด
-                        </a>
+                        @if($wallet->isOwner($user) || !$isFree)
+                            <a href="{{ route('wallets.show', $wallet) }}" class="mt-4 w-full inline-flex items-center justify-center px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm font-medium text-foreground">
+                                ดูทั้งหมด / ปรับยอด
+                            </a>
+                        @else
+                            <button @click="$paywall?.open()" class="mt-4 w-full inline-flex items-center justify-center px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-sm font-medium text-foreground">
+                                ดูทั้งหมด / ปรับยอด
+                            </button>
+                        @endif
                     </div>
                 @endforeach
             </div>
@@ -138,9 +150,16 @@
                     <div>
                         <label class="block text-sm font-medium text-foreground mb-1">การเข้าถึง</label>
                         <select id="access_type" name="access_type" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background">
-                            <option value="personal">ส่วนตัว</option>
-                            <option value="shared">แชร์กับเพื่อน</option>
+                            @if($isFree)
+                                <option value="personal" selected>ส่วนตัว</option>
+                            @else
+                                <option value="personal">ส่วนตัว</option>
+                                <option value="shared">แชร์กับเพื่อน</option>
+                            @endif
                         </select>
+                        @if($isFree)
+                            <p class="text-xs text-muted-foreground mt-1">สมัครสมาชิก Premium เพื่อสร้างกระเป๋าแชร์</p>
+                        @endif
                         @error('access_type')
                             <p class="text-sm text-destructive mt-1">{{ $message }}</p>
                         @enderror

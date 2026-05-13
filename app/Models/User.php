@@ -178,4 +178,63 @@ class User extends Authenticatable
 
         return $subscription->status === SubscriptionStatus::Expired;
     }
+
+    public function isPremium(): bool
+    {
+        return $this->subscription?->isActive() ?? false;
+    }
+
+    public function isFree(): bool
+    {
+        return ! $this->isPremium();
+    }
+
+    public function ownedWalletCount(): int
+    {
+        return $this->wallets()->count();
+    }
+
+    public function canCreateWallet(): bool
+    {
+        if ($this->isPremium()) {
+            return true;
+        }
+
+        return $this->ownedWalletCount() < 5;
+    }
+
+    public function canCreateSharedWallet(): bool
+    {
+        return $this->isPremium();
+    }
+
+    public function canCreateCategory(): bool
+    {
+        return $this->isPremium();
+    }
+
+    public function canUseSlipUpload(): bool
+    {
+        return $this->isPremium();
+    }
+
+    public function canAccessWallet(Wallet $wallet): bool
+    {
+        if ($wallet->isOwner($this)) {
+            return true;
+        }
+
+        return $this->isPremium();
+    }
+
+    public function canAccessTransaction(Transaction $transaction): bool
+    {
+        $wallet = $transaction->wallet;
+
+        if ($wallet->isOwner($this)) {
+            return true;
+        }
+
+        return $this->isPremium();
+    }
 }

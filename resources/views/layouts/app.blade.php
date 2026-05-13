@@ -87,14 +87,14 @@
 
         <!-- Transaction Modal (global, excluded from create page) -->
         @if(auth()->check() && isset($wallets) && isset($categories) && !request()->routeIs('transactions.create'))
-            <x-transaction-modal :wallets="$wallets" :categories="$categories" :current-user-id="auth()->id()" />
+            <x-transaction-modal :wallets="$wallets" :categories="$categories" :current-user-id="auth()->id()" :is-premium="auth()->user()->isPremium()" />
         @endif
 
         <!-- Toast Container -->
         <x-toast-container />
 
         @auth
-            <x-subscription-modal :show="auth()->user()->needsSubscription()" />
+            <x-subscription-modal :show="false" />
         @endauth
 
         <!-- Flash Messages for Toasts -->

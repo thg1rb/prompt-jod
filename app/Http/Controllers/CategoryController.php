@@ -28,6 +28,14 @@ class CategoryController extends Controller
 
     public function store(CategoryStoreRequest $request): JsonResponse
     {
+        if (Auth::user()->isFree()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'กรุณาสมัครสมาชิก Premium เพื่อสร้างหมวดหมู่',
+                'requires_subscription' => true,
+            ], 403);
+        }
+
         $validated = $request->validated();
 
         $category = Auth::user()->categories()->create([
@@ -48,6 +56,14 @@ class CategoryController extends Controller
 
     public function update(CategoryUpdateRequest $request, Category $category): JsonResponse
     {
+        if (Auth::user()->isFree()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'กรุณาสมัครสมาชิก Premium เพื่อแก้ไขหมวดหมู่',
+                'requires_subscription' => true,
+            ], 403);
+        }
+
         if ($category->user_id !== Auth::id()) {
             return response()->json(['success' => false, 'message' => 'ไม่พบหมวดหมู่'], 404);
         }
@@ -73,6 +89,14 @@ class CategoryController extends Controller
 
     public function destroy(Category $category): JsonResponse
     {
+        if (Auth::user()->isFree()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'กรุณาสมัครสมาชิก Premium เพื่อลบหมวดหมู่',
+                'requires_subscription' => true,
+            ], 403);
+        }
+
         if ($category->user_id !== Auth::id()) {
             return response()->json(['success' => false, 'message' => 'ไม่พบหมวดหมู่'], 404);
         }

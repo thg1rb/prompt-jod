@@ -47,6 +47,16 @@
             <a href="{{ route('wallets.show', $wallet) }}" class="block w-full text-center px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium">
                 ไปยังกระเป๋าเงิน
             </a>
+        @elseif(auth()->check() && auth()->user()->isFree())
+            <div class="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-4 text-center">
+                <p class="text-sm text-foreground mb-3">กรุณาสมัครสมาชิก Premium เพื่อเข้าร่วมกระเป๋าเงินแชร์</p>
+                <button onclick="window.$paywall?.open(); return false;" class="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors font-medium">
+                    สมัครสมาชิก Premium
+                </button>
+            </div>
+            <a href="{{ route('dashboard') }}" class="block w-full text-center px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors text-foreground text-center">
+                กลับไปยังหน้าหลัก
+            </a>
         @else
             <form method="POST" action="{{ route('invitations.accept.store', $token) }}">
                 @csrf

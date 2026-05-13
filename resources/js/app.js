@@ -238,6 +238,35 @@ Alpine.store('toast', {
     error(message) { this.add('error', message); }
 });
 
+// Paywall store for freemium users
+Alpine.store('paywall', {
+    dismissed: false,
+    timestamp: null,
+
+    init() {
+        const savedDismissed = localStorage.getItem('paywallDismissed');
+        this.dismissed = savedDismissed === 'true';
+        const savedTimestamp = localStorage.getItem('paywallDismissedAt');
+        this.timestamp = savedTimestamp ? parseInt(savedTimestamp) : null;
+    },
+
+    open() {
+        this.dismissed = false;
+        window.dispatchEvent(new CustomEvent('open-subscription-modal'));
+    },
+
+    dismiss() {
+        this.dismissed = true;
+        this.timestamp = Date.now();
+        localStorage.setItem('paywallDismissed', 'true');
+        localStorage.setItem('paywallDismissedAt', this.timestamp.toString());
+    },
+
+    shouldShow() {
+        return !this.dismissed;
+    }
+});
+
 // Register chart components
 Alpine.data('pieChart', pieChart);
 Alpine.data('barChart', barChart);
@@ -251,8 +280,15 @@ Alpine.data('walletReorder', walletReorder);
 Alpine.data('cardForm', cardForm);
 Alpine.data('subscriptionModal', subscriptionModal);
 
+// Magic property: $paywall resolves to $store.paywall in Alpine directives and data components
+Alpine.magic('paywall', () => Alpine.store('paywall'));
+
 // Initialize stores
 Alpine.store('theme').init();
 Alpine.store('toast').init();
+Alpine.store('paywall').init();
 
 Alpine.start();
+
+// Expose paywall on window for onclick handlers in Blade templates
+window.$paywall = Alpine.store('paywall');

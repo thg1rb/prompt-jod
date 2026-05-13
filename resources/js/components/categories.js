@@ -3,6 +3,7 @@ export function categories() {
         categories: [],
         editing: null,
         open: false,
+        isPremium: true,
         PALETTE: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#0EA5E9', '#64748B', '#14B8A6'],
 
         async loadCategories() {
@@ -16,6 +17,10 @@ export function categories() {
         },
 
         startNew() {
+            if (!this.isPremium) {
+                this.$paywall?.open();
+                return;
+            }
             this.editing = {
                 id: null,
                 name: '',
@@ -26,11 +31,20 @@ export function categories() {
         },
 
         startEdit(category) {
+            if (!this.isPremium) {
+                this.$paywall?.open();
+                return;
+            }
             this.editing = { ...category };
             this.open = true;
         },
 
         async save() {
+            if (!this.isPremium) {
+                this.$paywall?.open();
+                return;
+            }
+
             if (!this.editing || !this.editing.name.trim()) {
                 this.$store.toast.error('กรุณาตั้งชื่อหมวดหมู่');
                 return;
@@ -60,6 +74,9 @@ export function categories() {
                     this.open = false;
                     this.$store.toast.success(this.editing.id ? 'แก้ไขหมวดหมู่เรียบร้อยแล้ว' : 'เพิ่มหมวดหมู่เรียบร้อยแล้ว');
                 } else {
+                    if (data.requires_subscription) {
+                        this.$paywall?.open();
+                    }
                     this.$store.toast.error(data.message || 'เกิดข้อผิดพลาด');
                 }
             } catch (error) {
@@ -69,6 +86,11 @@ export function categories() {
         },
 
         async remove(id) {
+            if (!this.isPremium) {
+                this.$paywall?.open();
+                return;
+            }
+
             if (!confirm('คุณต้องการลบหมวดหมู่นี้ใช่หรือไม่?')) {
                 return;
             }
@@ -87,6 +109,9 @@ export function categories() {
                     this.categories = this.categories.filter(c => c.id !== id);
                     this.$store.toast.success('ลบหมวดหมู่เรียบร้อยแล้ว');
                 } else {
+                    if (data.requires_subscription) {
+                        this.$paywall?.open();
+                    }
                     this.$store.toast.error(data.message || 'เกิดข้อผิดพลาด');
                 }
             } catch (error) {

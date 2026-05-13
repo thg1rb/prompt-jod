@@ -1,6 +1,6 @@
 export function subscriptionModal() {
     return {
-        isOpen: true,
+        isOpen: false,
         selectedPlan: 'monthly',
         isPaying: false,
         error: null,
