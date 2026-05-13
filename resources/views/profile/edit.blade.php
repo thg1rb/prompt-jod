@@ -117,6 +117,82 @@
                 </form>
             </div>
 
+            <!-- Subscription Card -->
+            <div class="bg-card rounded-xl shadow-sm border border-border p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                    <h2 class="text-lg font-semibold text-foreground">การสมัครสมาชิก</h2>
+                </div>
+
+                @if($subscription && $subscription->status !== \App\Enums\SubscriptionStatus::Canceled)
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium
+                                    {{ $subscription->status === \App\Enums\SubscriptionStatus::Active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' }}">
+                                    {{ $subscription->status_label }}
+                                </span>
+                                <span class="text-sm text-muted-foreground">PromptJod Premium</span>
+                            </div>
+                            <p class="text-2xl font-bold">
+                                ฿{{ number_format($subscription->amount, 2) }}
+                                <span class="text-sm font-normal text-muted-foreground">
+                                    /{{ $subscription->plan === 'yearly' ? 'ปี' : 'เดือน' }}
+                                </span>
+                            </p>
+                            @if($subscription->current_period_end)
+                                <p class="text-sm text-muted-foreground mt-1">
+                                    ใช้งานถึง: {{ $subscription->current_period_end->locale('th')->isoFormat('D MMMM YYYY') }}
+                                </p>
+                            @endif
+                        </div>
+                        <button onclick="if(confirm('คุณต้องการยกเลิกการสมัครสมาชิกหรือไม่?')) cancelSubscription()"
+                                class="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 transition-colors">
+                            ยกเลิก
+                        </button>
+                    </div>
+                @elseif($subscription && $subscription->status === \App\Enums\SubscriptionStatus::Canceled)
+                    <div class="text-center py-4">
+                        <p class="text-muted-foreground mb-2">การสมัครสมาชิกถูกยกเลิกแล้ว</p>
+                        <button onclick="$dispatch('open-subscription-modal')"
+                                class="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                            สมัครใหม่
+                        </button>
+                    </div>
+                @else
+                    <div class="text-center py-4">
+                        <p class="text-muted-foreground mb-2">ยังไม่ได้สมัครสมาชิก</p>
+                        <button onclick="$dispatch('open-subscription-modal')"
+                                class="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                            เลือกแพ็กเกจ
+                        </button>
+                    </div>
+                @endif
+            </div>
+
+            <script>
+                async function cancelSubscription() {
+                    try {
+                        const response = await fetch('/subscription', {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            },
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert(data.message || 'ไม่สามารถยกเลิกได้');
+                        }
+                    } catch (e) {
+                        alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+                    }
+                }
+            </script>
+
             <!-- Actions -->
             <div class="bg-card rounded-xl shadow-sm border border-border divide-y divide-border">
                 <!-- Terms of Service -->

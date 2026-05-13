@@ -7,7 +7,8 @@ import { transactions } from './components/transactions';
 import { transactionModal } from './components/transaction-modal';
 import { walletShow } from './components/wallet-show';
 import { walletReorder } from './components/wallet-reorder';
-
+import { subscriptionModal } from './components/subscription';
+import { cardForm } from './components/card-form';
 window.Alpine = Alpine;
 
 // Tooltip directive
@@ -245,6 +246,8 @@ Alpine.data('transactions', transactions);
 Alpine.data('transactionModal', transactionModal);
 Alpine.data('walletShow', walletShow);
 Alpine.data('walletReorder', walletReorder);
+Alpine.data('cardForm', cardForm);
+Alpine.data('subscriptionModal', subscriptionModal);
 
 // Initialize stores
 Alpine.store('theme').init();

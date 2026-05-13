@@ -46,4 +46,11 @@ return [
         'api_url' => env('SLIP_VERIFY_API_URL', 'https://api.easyslip.com/v2/verify/bank'),
     ],
 
+    'omise' => [
+        'public_key' => env('OMISE_PUBLIC_KEY'),
+        'secret_key' => env('OMISE_SECRET_KEY'),
+        'api_version' => env('OMISE_API_VERSION', '2019-05-29'),
+        'webhook_secret' => env('OMISE_WEBHOOK_SECRET'),
+    ],
+
 ];

@@ -38,8 +38,10 @@ Route::middleware('throttle:10,1')->group(function () {
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\WebhookController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -98,7 +100,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])->name('transactions.show');
     Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])->name('transactions.update');
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+
+    // Subscription Routes
+    Route::get('/subscription', fn () => redirect()->route('profile.edit'));
+    Route::post('/subscription', [SubscriptionController::class, 'store'])->name('subscription.store');
+    Route::delete('/subscription', [SubscriptionController::class, 'destroy'])->name('subscription.destroy');
+    Route::patch('/subscription/card', [SubscriptionController::class, 'updateCard'])->name('subscription.update-card');
+    Route::post('/subscription/resume', [SubscriptionController::class, 'resume'])->name('subscription.resume');
+    Route::get('/subscription/payments', [SubscriptionController::class, 'payments'])->name('subscription.payments');
 });
+
+// Webhook Routes (no auth required)
+Route::post('/webhooks/omise', [WebhookController::class, 'handle'])->name('webhooks.omise');
 
 require __DIR__.'/auth.php';
 

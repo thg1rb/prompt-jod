@@ -40,8 +40,10 @@
             })();
         </script>
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+         <!-- Scripts -->
+         <script src="https://cdn.omise.co/omise.js"></script>
+         <meta name="omise-public-key" content="{{ config('services.omise.public_key') }}">
+         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body
         class="antialiased"
@@ -90,6 +92,10 @@
 
         <!-- Toast Container -->
         <x-toast-container />
+
+        @auth
+            <x-subscription-modal :show="auth()->user()->needsSubscription()" />
+        @endauth
 
         <!-- Flash Messages for Toasts -->
         @if(session('success') || session('error') || session('status'))
