@@ -135,6 +135,16 @@
                             <p class="text-sm text-destructive mt-1">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-foreground mb-1">การเข้าถึง</label>
+                        <select id="access_type" name="access_type" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background">
+                            <option value="personal">ส่วนตัว</option>
+                            <option value="shared">แชร์กับเพื่อน</option>
+                        </select>
+                        @error('access_type')
+                            <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
                     <template x-if="draft.type === 'bank'">
                         <div class="space-y-3">
                             <div>

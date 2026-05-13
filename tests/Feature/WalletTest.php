@@ -32,6 +32,7 @@ test('user can store wallet', function () {
     $data = [
         'name' => 'Main Wallet',
         'type' => 'bank',
+        'access_type' => 'personal',
         'bank_name' => 'KBANK',
         'account_number' => '123-4-56789-0',
         'opening_balance' => 1000.00,

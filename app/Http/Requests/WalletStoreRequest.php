@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class WalletStoreRequest extends FormRequest
 {
@@ -17,6 +16,7 @@ class WalletStoreRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'in:bank,ewallet,cash'],
+            'access_type' => ['required', 'in:personal,shared'],
             'bank_name' => ['required_if:type,bank', 'nullable', 'string', 'max:100'],
             'account_number' => ['nullable', 'string', 'max:50'],
             'opening_balance' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],

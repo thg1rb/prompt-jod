@@ -49,8 +49,13 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('*', function ($view) {
             if (auth()->check()) {
-                $view->with('wallets', auth()->user()->allWallets()->filter(fn ($w) => $w->is_active));
-                $view->with('categories', Category::where('user_id', auth()->id())->active()->ordered()->get());
+                $data = $view->getData();
+                if (! array_key_exists('wallets', $data)) {
+                    $view->with('wallets', auth()->user()->allWallets()->filter(fn ($w) => $w->is_active));
+                }
+                if (! array_key_exists('categories', $data)) {
+                    $view->with('categories', Category::where('user_id', auth()->id())->active()->ordered()->get());
+                }
                 $view->with('subscription', auth()->user()->subscription);
             }
         });

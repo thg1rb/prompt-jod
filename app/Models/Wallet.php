@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\WalletAccess;
 use App\Enums\WalletType;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,6 +24,7 @@ class Wallet extends Model
         'user_id',
         'name',
         'type',
+        'access_type',
         'bank_name',
         'account_number',
         'balance',
@@ -41,6 +43,7 @@ class Wallet extends Model
     {
         return [
             'type' => WalletType::class,
+            'access_type' => WalletAccess::class,
             'balance' => 'decimal:2',
             'is_active' => 'boolean',
             'is_default' => 'boolean',
@@ -150,5 +153,21 @@ class Wallet extends Model
     public function scopeOfType($query, WalletType $type)
     {
         return $query->where('type', $type);
+    }
+
+    /**
+     * Scope a query to only include shared wallets.
+     */
+    public function scopeShared($query)
+    {
+        return $query->where('access_type', WalletAccess::Shared);
+    }
+
+    /**
+     * Scope a query to only include personal wallets.
+     */
+    public function scopePersonal($query)
+    {
+        return $query->where('access_type', WalletAccess::Personal);
     }
 }

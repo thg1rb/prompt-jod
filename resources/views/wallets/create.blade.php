@@ -34,6 +34,14 @@
                             </select>
                             <x-input-error class="mt-2" :messages="$errors->get('type')" />
                         </div>
+                        <div>
+                            <x-input-label for="access_type" value="การเข้าถึง" />
+                            <select id="access_type" name="access_type" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm dark:bg-gray-700 dark:border-gray-600" required>
+                                <option value="personal" @selected(old('access_type') === 'personal')>ส่วนตัว</option>
+                                <option value="shared" @selected(old('access_type') === 'shared')>แชร์กับเพื่อน</option>
+                            </select>
+                            <x-input-error class="mt-2" :messages="$errors->get('access_type')" />
+                        </div>
                         <template x-if="walletType === 'bank'">
                             <div class="space-y-6">
                                 <div>

@@ -151,8 +151,9 @@
                                 <div class="font-medium truncate" x-text="t.description"></div>
                                 <div class="text-xs text-text-muted flex items-center gap-1">
                                     <span x-text="`${t.category} · ${t.wallet} · ${formatDateTime(t.transacted_at)}`"></span>
-                                    <template x-if="t.creator_name">
-                                        <span class="ml-1 px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs">
+                                    <template x-if="t.wallet_access_type === 'shared' && t.creator_name">
+                                        <span class="ml-1 px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-xs flex items-center gap-1">
+                                            <span x-text="t.creator_name.charAt(0).toUpperCase()"></span>
                                             <span x-text="`โดย ${t.creator_name}`"></span>
                                         </span>
                                     </template>
