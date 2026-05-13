@@ -134,16 +134,22 @@ class DashboardController extends Controller
     {
         $days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
         $today = Carbon::now();
-        $spending = [];
+        $startDate = $today->copy()->subDays(6)->startOfDay();
+        $endDate = $today->copy()->endOfDay();
 
+        $transactions = $user->transactions()
+            ->whereBetween('transacted_at', [$startDate, $endDate])
+            ->expense()
+            ->selectRaw('DATE(transacted_at) as date, SUM(amount) as total')
+            ->groupByRaw('DATE(transacted_at)')
+            ->pluck('total', 'date')
+            ->toArray();
+
+        $spending = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = $today->copy()->subDays($i)->startOfDay();
-            $endDate = $date->copy()->endOfDay();
-
-            $total = $user->transactions()
-                ->whereBetween('transacted_at', [$date, $endDate])
-                ->expense()
-                ->sum('amount');
+            $dateKey = $date->format('Y-m-d');
+            $total = $transactions[$dateKey] ?? 0;
 
             $spending[] = [
                 'day' => $days[$date->dayOfWeek],

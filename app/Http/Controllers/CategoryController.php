@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CategoryStoreRequest;
+use App\Http\Requests\CategoryUpdateRequest;
 use App\Models\Category;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class CategoryController extends Controller
@@ -25,15 +27,9 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(CategoryStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'icon' => 'required|string|max:4',
-            'color' => 'required|string|max:7',
-            'keywords' => 'array',
-            'keywords.*' => 'string|max:100',
-        ]);
+        $validated = $request->validated();
 
         $category = Auth::user()->categories()->create([
             'name' => $validated['name'],
@@ -64,7 +60,7 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function update(Request $request, Category $category)
+    public function update(CategoryUpdateRequest $request, Category $category): JsonResponse
     {
         if ($category->user_id !== Auth::id()) {
             return response()->json(['success' => false, 'message' => 'ไม่พบหมวดหมู่'], 404);
@@ -74,13 +70,7 @@ class CategoryController extends Controller
             return response()->json(['success' => false, 'message' => 'ไม่สามารถแก้ไขหมวดหมู่ระบบได้'], 403);
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'icon' => 'required|string|max:4',
-            'color' => 'required|string|max:7',
-            'keywords' => 'array',
-            'keywords.*' => 'string|max:100',
-        ]);
+        $validated = $request->validated();
 
         $category->update([
             'name' => $validated['name'],
@@ -110,7 +100,7 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function destroy(Category $category)
+    public function destroy(Category $category): JsonResponse
     {
         if ($category->user_id !== Auth::id()) {
             return response()->json(['success' => false, 'message' => 'ไม่พบหมวดหมู่'], 404);

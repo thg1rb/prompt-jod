@@ -213,9 +213,9 @@ class OmiseService
     public function verifyWebhookSignature(string $payload, string $signature, string $timestamp): bool
     {
         if (empty($this->webhookSecret)) {
-            Log::warning('Webhook secret not configured, skipping signature verification');
+            Log::error('Webhook secret not configured, rejecting webhook request');
 
-            return true;
+            return false;
         }
 
         $signedPayload = $timestamp.'.'.$payload;
