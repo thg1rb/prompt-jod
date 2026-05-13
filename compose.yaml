@@ -68,6 +68,24 @@ services:
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
+    sonarqube:
+        image: sonarqube:lts-community
+        ports:
+            - '9000:9000'
+        networks:
+            - sail
+        volumes:
+            - 'sail-sonarqube-data:/opt/sonarqube/data'
+            - 'sail-sonarqube-extensions:/opt/sonarqube/extensions'
+            - 'sail-sonarqube-logs:/opt/sonarqube/logs'
+    sonar-scanner:
+        image: sonarsource/sonar-scanner-cli
+        profiles:
+            - tools
+        volumes:
+            - '.:/usr/src'
+        networks:
+            - sail
 networks:
     sail:
         driver: bridge
@@ -75,4 +93,10 @@ volumes:
     sail-pgsql:
         driver: local
     sail-redis:
+        driver: local
+    sail-sonarqube-data:
+        driver: local
+    sail-sonarqube-extensions:
+        driver: local
+    sail-sonarqube-logs:
         driver: local
