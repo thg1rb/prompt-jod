@@ -16,6 +16,10 @@
         <include>
             <directory>app</directory>
         </include>
+        <exclude>
+            <directory suffix=".php">database/migrations</directory>
+            <directory suffix=".php">routes</directory>
+        </exclude>
     </source>
     <coverage>
         <report>

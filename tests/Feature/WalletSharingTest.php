@@ -492,3 +492,51 @@ describe('Accept Invitation HTML Responses', function () {
         $response->assertSessionHas('error');
     });
 });
+
+describe('Premium User Accept Invitation Already Accepted', function () {
+    beforeEach(function () {
+        $this->premiumMember = User::factory()->create();
+        Subscription::factory()->forUser($this->premiumMember)->active()->create();
+    });
+
+    test('premium user accepting already accepted invitation returns JSON 400', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => now(),
+        ]);
+        Auth::login($this->premiumMember);
+
+        $response = $this->postJson(route('invitations.accept.store', $token));
+
+        $response->assertStatus(400);
+        $response->assertJson([
+            'success' => false,
+            'message' => 'คุณเป็นสมาชิกของกระเป๋าเงินนี้แล้ว',
+        ]);
+    });
+
+    test('premium user accepting already accepted invitation returns HTML redirect to wallet', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => now(),
+        ]);
+        Auth::login($this->premiumMember);
+
+        $response = $this->post(route('invitations.accept.store', $token));
+
+        $response->assertRedirect(route('wallets.show', $wallet));
+        $response->assertSessionHas('info');
+    });
+});

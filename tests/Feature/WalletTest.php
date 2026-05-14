@@ -1,8 +1,10 @@
 <?php
 
+use App\Enums\WalletAccess;
 use App\Models\BalanceAdjustment;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Models\WalletMember;
 use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
@@ -440,4 +442,78 @@ test('updating wallet without changing default does not affect other wallets', f
 
     $wallet1->refresh();
     expect($wallet1->is_default)->toBeTrue();
+});
+
+test('free user at wallet creation limit gets HTML redirect', function () {
+    Wallet::factory()->forUser($this->user)->count(5)->create();
+
+    $data = [
+        'name' => 'Extra Wallet',
+        'type' => 'bank',
+        'access_type' => 'personal',
+        'bank_name' => 'SCB',
+    ];
+
+    $response = $this->post(route('wallets.store'), $data);
+
+    $response->assertRedirect();
+    $response->assertSessionHas('error');
+});
+
+describe('Free accepted member access to shared wallet', function () {
+    beforeEach(function () {
+        $owner = User::factory()->create();
+        $this->freeMember = User::factory()->create();
+        $this->sharedWallet = Wallet::factory()->forUser($owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        WalletMember::factory()->forWallet($this->sharedWallet)->accepted()->forUser($this->freeMember)->create();
+        Auth::login($this->freeMember);
+    });
+
+    test('free accepted member cannot show shared wallet via JSON', function () {
+        $response = $this->getJson(route('wallets.show', $this->sharedWallet));
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'success' => false,
+            'requires_subscription' => true,
+        ]);
+    });
+
+    test('free accepted member cannot show shared wallet via HTML', function () {
+        $response = $this->get(route('wallets.show', $this->sharedWallet));
+
+        $response->assertRedirect(route('wallets.index'));
+        $response->assertSessionHas('error');
+    });
+
+    test('free accepted member cannot view adjustments via JSON', function () {
+        $response = $this->getJson(route('wallets.adjustments', $this->sharedWallet));
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'success' => false,
+            'requires_subscription' => true,
+        ]);
+    });
+
+    test('free accepted member cannot view adjustments via HTML', function () {
+        $response = $this->get(route('wallets.adjustments', $this->sharedWallet));
+
+        $response->assertRedirect(route('wallets.index'));
+        $response->assertSessionHas('error');
+    });
+});
+
+test('non-member cannot view adjustments via JSON', function () {
+    $otherUser = User::factory()->create();
+    $wallet = Wallet::factory()->forUser($otherUser)->create();
+
+    $response = $this->getJson(route('wallets.adjustments', $wallet));
+
+    $response->assertStatus(403);
+    $response->assertJson([
+        'success' => false,
+    ]);
 });
