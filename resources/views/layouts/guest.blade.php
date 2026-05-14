@@ -8,8 +8,8 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
         <!-- Theme script - runs immediately to prevent flash -->
         <script>
@@ -39,14 +39,22 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-screen bg-background text-foreground antialiased">
-        <div class="min-h-screen flex flex-col justify-center items-center p-4 sm:p-6">
-            <div class="mb-8 sm:mb-10">
+        <div class="min-h-screen flex flex-col justify-center items-center px-4 py-6">
+            <!-- Logo -->
+            <div class="mb-8">
                 <a href="/">
-                    <x-application-logo class="w-16 h-16 sm:w-20 sm:h-20 text-primary" />
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-primary text-primary-foreground grid place-items-center shadow-sm">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight">PromptJod</span>
+                    </div>
                 </a>
             </div>
 
-            <div class="w-full max-w-md bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+            <div class="w-full max-w-[400px] bg-card rounded-2xl shadow-card border border-border overflow-hidden">
                 {{ $slot }}
             </div>
         </div>

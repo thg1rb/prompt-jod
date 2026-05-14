@@ -8,17 +8,17 @@
         default => 'h-9 w-9'
     };
     $iconClasses = match($size) {
-        'sm' => 'h-5 w-5',
-        'default' => 'h-5 w-5',
-        'lg' => 'h-6 w-6',
-        default => 'h-[1.125rem] w-[1.125rem]'
+        'sm' => 'h-[18px] w-[18px]',
+        'default' => 'h-[18px] w-[18px]',
+        'lg' => 'h-5 w-5',
+        default => 'h-[18px] w-[18px]'
     };
 @endphp
 
 <button
     type="button"
     @click="$store.theme.toggle()"
-    class="{{ $sizeClasses }} relative inline-flex items-center justify-center rounded-lg text-foreground hover:bg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background overflow-hidden"
+    class="{{ $sizeClasses }} relative inline-flex items-center justify-center rounded-xl text-foreground hover:bg-surface-subtle active:bg-surface-elevated transition-colors focus:outline-none focus:ring-2 focus:ring-ring overflow-hidden"
     aria-label="เปลี่ยนธีม"
 >
     <!-- Sun icon (shown in dark mode) -->
@@ -41,14 +41,7 @@
         style="display: none;"
     >
         <circle cx="12" cy="12" r="4"/>
-        <path d="M12 2v2"/>
-        <path d="M12 20v2"/>
-        <path d="m4.93 4.93 1.41 1.41"/>
-        <path d="m17.66 17.66 1.41 1.41"/>
-        <path d="M2 12h2"/>
-        <path d="M20 12h2"/>
-        <path d="m6.34 17.66-1.41 1.41"/>
-        <path d="m19.07 4.93-1.41 1.41"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
     </svg>
 
     <!-- Moon icon (shown in light mode) -->

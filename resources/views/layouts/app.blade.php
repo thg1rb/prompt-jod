@@ -8,8 +8,8 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
         <!-- Theme script - runs immediately to prevent flash -->
         <script>
@@ -60,9 +60,9 @@
             <x-desktop-sidebar />
 
             <!-- Main content area -->
-            <div class="flex-1 flex flex-col min-h-0 bg-background overflow-y-auto">
+            <div class="flex-1 flex flex-col min-h-0 bg-background rounded-l-2xl">
                 <!-- Page Content -->
-                <main class="px-4 py-6 sm:px-6 lg:px-8">
+                <main class="flex-1 px-6 py-6 lg:px-8 overflow-y-auto">
                     {{ $slot }}
                 </main>
             </div>
@@ -76,7 +76,7 @@
             <!-- Main content area -->
             <div class="flex-1">
                 <!-- Page Content -->
-                <main class="px-4 py-6 sm:px-6 lg:px-8 pb-20">
+                <main class="px-4 py-5 sm:px-6 pb-24 lg:pb-20">
                     {{ $slot }}
                 </main>
             </div>
