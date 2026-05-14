@@ -40,14 +40,15 @@
             type="button"
             x-data="{}"
             @click="$dispatch('open-transaction-modal')"
-            class="flex flex-col items-center justify-center relative -mt-3"
+            class="flex flex-col items-center justify-center relative"
             aria-label="เพิ่มธุรกรรม"
         >
-            <div class="h-12 w-12 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-floating hover:scale-105 active:scale-95 transition-all duration-200">
+            <div class="h-12 w-12 rounded-full bg-primary text-primary-foreground grid place-items-center shadow-floating hover:scale-105 active:scale-95 transition-all duration-200 -mt-5">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
             </div>
+            <span class="text-[10px] font-medium mt-0.5 text-primary">เพิ่มธุรกรรม</span>
         </button>
 
         <!-- Transactions -->

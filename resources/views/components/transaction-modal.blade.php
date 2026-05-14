@@ -32,10 +32,10 @@
     <!-- Backdrop -->
     <div
         x-show="open"
-        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter="transition ease-out duration-75"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave="transition ease-in duration-100"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm"
@@ -51,7 +51,7 @@
         x-transition:leave="transition ease-in duration-250"
         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
         x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-4 sm:scale-95"
-        class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full sm:max-w-2xl sm:max-h-[88vh] overflow-hidden flex flex-col"
+        class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-h-[70vh] sm:max-w-2xl sm:max-h-[88vh] overflow-hidden flex flex-col"
         @click.stop
     >
         <!-- Header -->
@@ -172,7 +172,7 @@
                             :class="form.type === 'expense' ? 'bg-destructive text-destructive-foreground' : 'bg-card text-text-muted hover:bg-surface-subtle'"
                         >
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181" />
                             </svg>
                             รายจ่าย
                         </button>
@@ -183,7 +183,7 @@
                             :class="form.type === 'income' ? 'bg-success text-success-foreground' : 'bg-card text-text-muted hover:bg-surface-subtle'"
                         >
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
                             </svg>
                             รายรับ
                         </button>

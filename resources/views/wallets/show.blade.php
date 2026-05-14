@@ -192,16 +192,25 @@
 
         <!-- Adjust Balance Modal -->
         <div x-cloak x-show="adjustOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="adjustOpen = false"></div>
-            <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-350" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-250" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-w-md p-6">
-                <h3 class="text-[17px] font-semibold text-foreground mb-4">ปรับยอดเงิน</h3>
+            <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-75" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="adjustOpen = false"></div>
+            <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-350" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-250" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-w-md max-h-[70vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
+                <!-- Header -->
+                <div class="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+                    <h3 class="text-[17px] font-semibold text-foreground">ปรับยอดเงิน</h3>
+                    <button @click="adjustOpen = false" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-surface-subtle active:bg-surface-elevated transition-colors" aria-label="ปิด">
+                        <svg class="h-5 w-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex-1 min-h-0 overflow-y-auto px-6 pt-5 pb-6">
                 <div class="bg-surface-subtle rounded-xl p-4 mb-4">
                     <div class="flex items-center justify-between">
                         <span class="text-sm font-medium text-text-muted">ยอดเงินปัจจุบัน</span>
                         <span class="text-lg font-bold text-foreground">{{ number_format($wallet->balance, 2) }} บาท</span>
                     </div>
                 </div>
-                <form method="POST" action="{{ route('wallets.adjust-balance', $wallet) }}" class="space-y-3.5">
+                <form id="wallet-adjust-form" method="POST" action="{{ route('wallets.adjust-balance', $wallet) }}" class="space-y-3.5">
                     @csrf
                     <div>
                         <label for="new_balance" class="block text-sm font-semibold text-foreground mb-1.5">ยอดเงินใหม่ (บาท)</label>
@@ -217,24 +226,35 @@
                         <p class="text-sm text-destructive mt-1">{{ $message }}</p>
                         @enderror
                     </div>
-                    <div class="flex gap-3 pt-2">
-                        <button type="button" @click="adjustOpen = false" class="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-surface-subtle active:bg-surface-elevated transition-colors text-foreground font-medium text-sm">
-                            ยกเลิก
-                        </button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm shadow-sm">
-                            ปรับยอด
-                        </button>
                     </div>
                 </form>
+                </div>
+                <div class="flex gap-3 p-5 border-t border-border bg-surface-subtle shrink-0">
+                    <button type="button" @click="adjustOpen = false" class="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-surface-subtle active:bg-surface-elevated transition-colors text-foreground font-medium text-sm">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" form="wallet-adjust-form" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm shadow-sm">
+                        ปรับยอด
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Edit Wallet Modal -->
         <div x-cloak x-show="editOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div x-show="editOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="editOpen = false"></div>
-            <div x-show="editOpen" x-transition:enter="transition ease-out duration-350" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-250" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-w-md p-6">
-                <h3 class="text-[17px] font-semibold text-foreground mb-4">แก้ไขกระเป๋าเงิน</h3>
-                <form method="POST" action="{{ route('wallets.update', $wallet) }}" class="space-y-3.5">
+            <div x-show="editOpen" x-transition:enter="transition ease-out duration-75" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="editOpen = false"></div>
+            <div x-show="editOpen" x-transition:enter="transition ease-out duration-350" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-250" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-w-md max-h-[70vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
+                <!-- Header -->
+                <div class="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+                    <h3 class="text-[17px] font-semibold text-foreground">แก้ไขกระเป๋าเงิน</h3>
+                    <button @click="editOpen = false" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-surface-subtle active:bg-surface-elevated transition-colors" aria-label="ปิด">
+                        <svg class="h-5 w-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="flex-1 min-h-0 overflow-y-auto px-6 pt-5 pb-6">
+                <form id="wallet-edit-form" method="POST" action="{{ route('wallets.update', $wallet) }}" class="space-y-3.5">
                     @csrf
                     @method('put')
                     <div>
@@ -284,15 +304,17 @@
                         <input type="checkbox" id="edit_is_default" name="is_default" value="1" class="w-4 h-4 rounded border-border text-primary focus:ring-ring" @checked(old('is_default', $wallet->is_default)) />
                         <label for="edit_is_default" class="text-sm font-medium text-foreground">ตั้งเป็นกระเป๋าหลัก</label>
                     </div>
-                    <div class="flex gap-3 pt-2">
-                        <button type="button" @click="editOpen = false" class="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-surface-subtle active:bg-surface-elevated transition-colors text-foreground font-medium text-sm">
-                            ยกเลิก
-                        </button>
-                        <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm shadow-sm">
-                            บันทึก
-                        </button>
                     </div>
                 </form>
+                </div>
+                <div class="flex gap-3 p-5 border-t border-border bg-surface-subtle shrink-0">
+                    <button type="button" @click="editOpen = false" class="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-surface-subtle active:bg-surface-elevated transition-colors text-foreground font-medium text-sm">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" form="wallet-edit-form" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm shadow-sm">
+                        บันทึก
+                    </button>
+                </div>
             </div>
         </div>
     </div>

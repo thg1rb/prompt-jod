@@ -18,7 +18,7 @@ $user = auth()->user();
     x-transition:leave-end="opacity-0"
     class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
 >
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true"></div>
+    <div x-show="isOpen" x-transition:enter="transition ease-out duration-75" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/50 backdrop-blur-sm" aria-hidden="true"></div>
 
     <div
         x-show="isOpen"
@@ -28,7 +28,7 @@ $user = auth()->user();
         x-transition:leave="transition ease-in duration-250"
         x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full sm:max-w-xl sm:max-h-[90vh] overflow-hidden z-10 flex flex-col"
+        class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-h-[70vh] sm:max-w-xl sm:max-h-[90vh] overflow-hidden z-10 flex flex-col"
     >
         <!-- Close button -->
         <button @click="isOpen = false" class="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-surface-subtle active:bg-surface-elevated transition-colors flex items-center justify-center z-10">

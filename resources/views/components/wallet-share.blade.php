@@ -20,10 +20,10 @@
     <!-- Backdrop -->
     <div
         x-show="shareOpen"
-        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter="transition ease-out duration-75"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave="transition ease-in duration-100"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         class="fixed inset-0 bg-black/40 backdrop-blur-sm"
@@ -39,11 +39,11 @@
         x-transition:leave="transition ease-in duration-250"
         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
         x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
-        class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full sm:max-w-lg overflow-hidden"
+        class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-h-[70vh] sm:max-w-lg sm:max-h-[88vh] overflow-hidden flex flex-col"
         @click.stop
     >
         <!-- Header -->
-        <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
             <h3 class="text-[17px] font-semibold text-foreground">แชร์กระเป๋าเงิน</h3>
             <button
                 @click="closeShareModal()"
@@ -77,7 +77,7 @@
         </div>
 
         <!-- Body -->
-        <div class="p-5 max-h-80 overflow-y-auto">
+        <div class="p-5 flex-1 min-h-0 overflow-y-auto">
             <!-- Members Tab -->
             <div x-show="activeTab === 'members'">
                 <div x-show="loading" class="text-center py-4 text-text-muted">กำลังโหลด...</div>
