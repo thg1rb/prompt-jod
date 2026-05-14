@@ -89,8 +89,13 @@
     <!-- User profile section -->
     <div class="p-2.5 border-t border-sidebar-border shrink-0">
         <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 p-2 rounded-xl transition-colors hover:bg-surface-subtle active:bg-surface-elevated group" :class="$store.sidebar.collapsed ? 'justify-center' : ''">
-            <div class="h-9 w-9 rounded-full bg-primary/10 text-primary grid place-items-center font-semibold shrink-0 text-[15px] ring-2 ring-primary/20">
-                {{ Auth::user()->name[0] ?? '?' }}
+            <div class="relative">
+                <div class="h-9 w-9 rounded-full bg-primary/10 text-primary grid place-items-center font-semibold shrink-0 text-[15px] {{ Auth::user()->isPremium() ? 'ring-2 ring-primary' : 'ring-2 ring-primary/20' }}">
+                    {{ Auth::user()->name[0] ?? '?' }}
+                </div>
+                @if(Auth::user()->isPremium())
+                    <svg class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[60%] h-4 w-4 text-primary drop-shadow-sm" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401Z" clip-rule="evenodd"/></svg>
+                @endif
             </div>
             <div x-show="!$store.sidebar.collapsed" x-transition:enter="transition ease-out duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="flex-1 min-w-0">
                 <div class="text-[13px] font-semibold text-foreground truncate leading-tight">{{ Auth::user()->name }}</div>
