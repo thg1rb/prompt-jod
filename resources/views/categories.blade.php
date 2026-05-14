@@ -3,6 +3,10 @@
         $user = auth()->user();
         $isFree = $user->isFree();
     @endphp
+    <x-subscription-banner
+        heading="ปลดล็อกฟีเจอร์จัดการหมวดหมู่ - เพียงแค่คุณสมัครสมาชิก"
+        description="สร้าง ลบ แก้ไขหมวดหมู่ได้อย่างอิสระ!"
+    />
     <div class="py-6" x-data="categories()" x-init="loadCategories(); isPremium = {{ $isFree ? 'false' : 'true' }}">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <div class="flex items-center justify-between gap-3">
@@ -26,15 +30,6 @@
                 </button>
             @endif
         </div>
-
-        @if($isFree)
-        <div class="bg-muted/50 border border-border rounded-lg p-4 text-center">
-            <p class="text-sm text-muted-foreground">
-                สมัครสมาชิก Premium เพื่อสร้างและแก้ไขหมวดหมู่
-                <button @click="$paywall?.open()" class="text-primary hover:underline">สมัครสมาชิก Premium</button>
-            </p>
-        </div>
-        @endif
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <template x-for="category in categories" :key="category.id">

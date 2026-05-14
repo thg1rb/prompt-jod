@@ -1,4 +1,8 @@
 <x-app-layout>
+    <x-subscription-banner
+        heading="ปลดล็อกฟีเจอร์ดึงข้อมูลจากรูปสลิป - เพียงแค่คุณสมัครสมาชิก"
+        description="อัปโหลดสลิปเพื่อดึงข้อมูลแบบอัตโนมัติไม่ต้องกรอกข้อมูลเองให้เสียเวลา!"
+    />
     <div
         x-data="transactions({{
             json_encode([

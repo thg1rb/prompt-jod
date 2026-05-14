@@ -5,6 +5,10 @@
         $ownedWalletCount = $user->ownedWalletCount();
         $atWalletLimit = $isFree && $ownedWalletCount >= 5;
     @endphp
+    <x-subscription-banner
+        heading="ปลดล็อกฟีเจอร์จัดการกระเป๋าเต็มรูปแบบ - เพียงแค่คุณสมัครสมาชิก"
+        description="สร้างหรือเข้าร่วมกระเป๋าเงินแบบแชร์ร่วมกับคนที่คุณต้องการ และสร้างกระเป๋าเงินได้ไม่จำกัดจำนวน!"
+    />
     <div class="py-6" x-data="{ open: false, draft: { type: 'bank' }, atLimit: {{ $atWalletLimit ? 'true' : 'false' }} }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
         <!-- Header Section -->
