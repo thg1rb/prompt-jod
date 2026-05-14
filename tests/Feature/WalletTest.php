@@ -366,3 +366,78 @@ test('wallet access type is forced to personal for free user', function () {
     expect($wallet)->not->toBeNull();
     expect($wallet->access_type->value)->toBe('personal');
 });
+
+test('user cannot view other users wallet with HTML request', function () {
+    $otherUser = User::factory()->create();
+    $wallet = Wallet::factory()->forUser($otherUser)->create();
+
+    $response = $this->get(route('wallets.show', $wallet));
+
+    $response->assertStatus(403);
+});
+
+test('free user cannot access shared wallet with HTML request', function () {
+    $owner = User::factory()->create();
+    $wallet = Wallet::factory()->forUser($owner)->create(['access_type' => 'shared']);
+
+    $response = $this->get(route('wallets.show', $wallet));
+
+    $response->assertStatus(403);
+});
+
+test('user cannot view other users wallet adjustments', function () {
+    $otherUser = User::factory()->create();
+    $wallet = Wallet::factory()->forUser($otherUser)->create();
+
+    $response = $this->get(route('wallets.adjustments', $wallet));
+
+    $response->assertStatus(403);
+});
+
+test('free user cannot access shared wallet adjustments with HTML request', function () {
+    $owner = User::factory()->create();
+    $wallet = Wallet::factory()->forUser($owner)->create(['access_type' => 'shared']);
+
+    $response = $this->get(route('wallets.adjustments', $wallet));
+
+    $response->assertStatus(403);
+});
+
+test('setting wallet as default clears other defaults', function () {
+    $wallet1 = Wallet::factory()->forUser($this->user)->default()->create();
+    $wallet2 = Wallet::factory()->forUser($this->user)->create(['is_default' => false]);
+
+    $data = [
+        'name' => 'Updated Wallet',
+        'type' => 'ewallet',
+        'is_default' => true,
+    ];
+
+    $response = $this->put(route('wallets.update', $wallet2), $data);
+
+    $response->assertRedirect(route('wallets.index'));
+
+    $wallet1->refresh();
+    $wallet2->refresh();
+
+    expect($wallet1->is_default)->toBeFalse();
+    expect($wallet2->is_default)->toBeTrue();
+});
+
+test('updating wallet without changing default does not affect other wallets', function () {
+    $wallet1 = Wallet::factory()->forUser($this->user)->default()->create();
+    $wallet2 = Wallet::factory()->forUser($this->user)->create(['is_default' => false]);
+
+    $data = [
+        'name' => 'Updated Name',
+        'type' => 'ewallet',
+        'is_default' => false,
+    ];
+
+    $response = $this->put(route('wallets.update', $wallet2), $data);
+
+    $response->assertRedirect(route('wallets.index'));
+
+    $wallet1->refresh();
+    expect($wallet1->is_default)->toBeTrue();
+});

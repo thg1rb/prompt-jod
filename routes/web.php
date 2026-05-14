@@ -113,7 +113,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
 
     // Subscription Routes
-    Route::get('/subscription', fn () => redirect()->route('profile.edit'));
+    Route::get('/subscription', fn () => redirect()->route('profile.edit'))->name('subscription.index');
     Route::post('/subscription', [SubscriptionController::class, 'store'])->name('subscription.store');
     Route::delete('/subscription', [SubscriptionController::class, 'destroy'])->name('subscription.destroy');
     Route::patch('/subscription/card', [SubscriptionController::class, 'updateCard'])->name('subscription.update-card');

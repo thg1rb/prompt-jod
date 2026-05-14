@@ -195,6 +195,52 @@ test('user cannot delete category with transactions', function () {
     $this->assertDatabaseHas('categories', ['id' => $category->id]);
 });
 
+test('free user cannot store category', function () {
+    $data = [
+        'name' => 'Food',
+        'icon' => '🍔',
+        'color' => '#FF5733',
+    ];
+
+    $response = $this->postJson(route('categories.store'), $data);
+
+    $response->assertStatus(403);
+    $response->assertJson([
+        'success' => false,
+        'requires_subscription' => true,
+    ]);
+});
+
+test('free user cannot update category', function () {
+    $category = Category::factory()->forUser($this->user)->create();
+
+    $data = [
+        'name' => 'Updated Food',
+        'icon' => '🍕',
+        'color' => '#00FF00',
+    ];
+
+    $response = $this->putJson(route('categories.update', $category), $data);
+
+    $response->assertStatus(403);
+    $response->assertJson([
+        'success' => false,
+        'requires_subscription' => true,
+    ]);
+});
+
+test('free user cannot delete category', function () {
+    $category = Category::factory()->forUser($this->user)->create();
+
+    $response = $this->deleteJson(route('categories.destroy', $category));
+
+    $response->assertStatus(403);
+    $response->assertJson([
+        'success' => false,
+        'requires_subscription' => true,
+    ]);
+});
+
 test('category factory creates system category', function () {
     $category = Category::factory()->system()->create();
 

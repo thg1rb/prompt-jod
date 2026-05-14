@@ -11,7 +11,7 @@ class EnsureSubscribed
     public function handle(Request $request, Closure $next): Response
     {
         if (! auth()->check() || ! auth()->user()->can('subscribed')) {
-            return redirect()->route('subscription.index');
+            return redirect('/subscription');
         }
 
         return $next($request);

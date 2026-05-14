@@ -24,20 +24,20 @@ Auth: Google OAuth (Socialite) + standard Breeze email/password.
 composer run dev
 
 # Tests
-php artisan test --compact
-php artisan test --compact --filter=testName
+sail artisan test --compact
+sail artisan test --compact --filter=testName
 
 # Formatting (always run after editing PHP)
 vendor/bin/pint --dirty --format agent
 
 # Build frontend
-bun run build
+sail bun run build
 
 # Fresh DB
-php artisan migrate:fresh --seed
+sail artisan migrate:fresh --seed
 ```
 
-**Do not prefix commands with `sail`** — Sail is configured but not enabled (`boost.json` has `"sail": false`). Run commands natively.
+**Use `sail` prefix for commands** — Sail is configured via Docker. All artisan, bun, and composer commands should be prefixed with `sail`.
 
 ## Architecture
 

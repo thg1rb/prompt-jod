@@ -2,10 +2,13 @@
 
 use App\Enums\WalletAccess;
 use App\Models\Category;
+use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletMember;
+use App\Services\EasySlipService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -321,6 +324,91 @@ test('user cannot delete other users transaction', function () {
     $response->assertStatus(404);
 });
 
+test('user can export transactions', function () {
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+    $category = Category::factory()->forUser($this->user)->create();
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+    ]);
+
+    $response = $this->get(route('transactions.export'));
+
+    $response->assertStatus(200);
+    $response->assertJsonStructure(['rows']);
+    $rows = $response->json('rows');
+    expect(count($rows))->toBeGreaterThan(1);
+});
+
+test('export respects category filter', function () {
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+    $cat1 = Category::factory()->forUser($this->user)->create();
+    $cat2 = Category::factory()->forUser($this->user)->create();
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $cat1->id,
+        'note' => 'Cat1Note',
+        'transacted_at' => '2024-01-01 10:00:00',
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $cat2->id,
+        'note' => 'Cat2Note',
+        'transacted_at' => '2024-01-02 10:00:00',
+    ]);
+
+    $response = $this->get(route('transactions.export', ['category' => $cat1->id]));
+    $rows = $response->json('rows');
+
+    expect(count($rows))->toBe(2);
+    expect($rows[1][0])->toBe('01/01/2024 10:00');
+});
+
+test('export respects wallet filter', function () {
+    $wallet1 = Wallet::factory()->forUser($this->user)->create();
+    $wallet2 = Wallet::factory()->forUser($this->user)->create();
+    $category = Category::factory()->forUser($this->user)->create();
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet1->id,
+        'category_id' => $category->id,
+        'transacted_at' => '2024-01-01 10:00:00',
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet2->id,
+        'category_id' => $category->id,
+        'transacted_at' => '2024-01-02 10:00:00',
+    ]);
+
+    $response = $this->get(route('transactions.export', ['wallet' => $wallet1->id]));
+    $rows = $response->json('rows');
+
+    expect(count($rows))->toBe(2);
+    expect($rows[1][0])->toBe('01/01/2024 10:00');
+});
+
+test('export respects search query', function () {
+    $wallet = Wallet::factory()->forUser($this->user)->create();
+    $category = Category::factory()->forUser($this->user)->create();
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'recipient' => 'Coffee Shop Bangkok',
+        'transacted_at' => '2024-01-01 10:00:00',
+    ]);
+    Transaction::factory()->forUser($this->user)->create([
+        'wallet_id' => $wallet->id,
+        'category_id' => $category->id,
+        'recipient' => '7-Eleven',
+        'transacted_at' => '2024-01-02 10:00:00',
+    ]);
+
+    $response = $this->get(route('transactions.export', ['q' => 'coffee']));
+    $rows = $response->json('rows');
+
+    expect(count($rows))->toBe(2);
+    expect($rows[1][0])->toBe('01/01/2024 10:00');
+});
+
 test('transaction factory creates expense', function () {
     $transaction = Transaction::factory()->expense()->create();
 
@@ -568,4 +656,238 @@ describe('Shared Wallet Visibility', function () {
         $txIds = collect($transactions)->pluck('id')->all();
         expect($txIds)->toContain($memberTx->id);
     });
+});
+
+test('free user cannot verify slip', function () {
+    $user = User::factory()->create();
+    Auth::login($user);
+
+    $image = UploadedFile::fake()->image('slip.jpg');
+
+    $response = $this->post(route('transactions.verify-slip'), ['image' => $image]);
+
+    $response->assertStatus(403);
+    $response->assertJson(['success' => false]);
+});
+
+test('premium user can verify slip', function () {
+    $user = User::factory()->create();
+    Subscription::factory()->active()->create(['user_id' => $user->id]);
+    $user->refresh();
+    Auth::login($user);
+
+    $mockSlip = UploadedFile::fake()->image('slip.jpg');
+
+    $mockService = Mockery::mock(EasySlipService::class);
+    $mockService->shouldReceive('verifyBankSlip')
+        ->once()
+        ->andReturn([
+            'success' => true,
+            'data' => [
+                'amount' => 500.00,
+                'date' => '2024-01-15 10:30:00',
+                'sender_name' => 'John Doe',
+                'sender_bank' => 'SCB',
+                'receiver_name' => 'Coffee Shop',
+                'transaction_ref' => 'REF123',
+                'ref1' => '123456',
+                'ref2' => '789012',
+            ],
+        ]);
+
+    $this->app->instance(EasySlipService::class, $mockService);
+
+    $response = $this->post(route('transactions.verify-slip'), ['image' => $mockSlip]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+        'slip' => [
+            'amount' => 500.00,
+            'sender_name' => 'John Doe',
+        ],
+    ]);
+});
+
+test('verify slip returns 400 on api failure', function () {
+    $user = User::factory()->create();
+    Subscription::factory()->active()->create(['user_id' => $user->id]);
+    $user->refresh();
+    Auth::login($user);
+
+    $mockSlip = UploadedFile::fake()->image('slip.jpg');
+
+    $mockService = Mockery::mock(EasySlipService::class);
+    $mockService->shouldReceive('verifyBankSlip')
+        ->once()
+        ->andReturn(['success' => false, 'error' => 'Invalid slip image']);
+
+    $this->app->instance(EasySlipService::class, $mockService);
+
+    $response = $this->post(route('transactions.verify-slip'), ['image' => $mockSlip]);
+
+    $response->assertStatus(400);
+    $response->assertJson(['success' => false]);
+});
+
+test('free user cannot store transaction in shared wallet', function () {
+    $owner = User::factory()->create();
+    $freeUser = User::factory()->create();
+
+    $sharedWallet = Wallet::factory()->forUser($owner)->create([
+        'access_type' => WalletAccess::Shared,
+    ]);
+    WalletMember::factory()->forWallet($sharedWallet)->accepted()->forUser($freeUser)->create();
+
+    $freeCategory = Category::factory()->forUser($freeUser)->create();
+
+    Auth::login($freeUser);
+
+    $data = [
+        'wallet_id' => $sharedWallet->id,
+        'category_id' => $freeCategory->id,
+        'type' => 'expense',
+        'amount' => 100,
+        'recipient' => 'Test',
+        'transacted_at' => now()->toDateString(),
+    ];
+
+    $response = $this->post(route('transactions.store'), $data);
+
+    $response->assertStatus(403);
+    $response->assertJson(['requires_subscription' => true]);
+});
+
+test('premium member can store transaction in shared wallet', function () {
+    $owner = User::factory()->create();
+    $premiumUser = User::factory()->create();
+
+    $subscription = Subscription::factory()->active()->create(['user_id' => $premiumUser->id]);
+
+    $sharedWallet = Wallet::factory()->forUser($owner)->create([
+        'access_type' => WalletAccess::Shared,
+    ]);
+    WalletMember::factory()->forWallet($sharedWallet)->accepted()->forUser($premiumUser)->create();
+
+    $category = Category::factory()->forUser($premiumUser)->create();
+
+    Auth::login($premiumUser);
+
+    $data = [
+        'wallet_id' => $sharedWallet->id,
+        'category_id' => $category->id,
+        'type' => 'expense',
+        'amount' => 100,
+        'recipient' => 'Test Shared Wallet',
+        'transacted_at' => now()->toDateString(),
+    ];
+
+    $response = $this->post(route('transactions.store'), $data);
+
+    $response->assertStatus(200);
+    $response->assertJson(['success' => true]);
+});
+
+test('owner can store transaction in shared wallet regardless of subscription', function () {
+    $owner = User::factory()->create();
+    $this->actingAs($owner);
+
+    $sharedWallet = Wallet::factory()->forUser($owner)->create([
+        'access_type' => WalletAccess::Shared,
+    ]);
+
+    $category = Category::factory()->forUser($owner)->create();
+
+    $data = [
+        'wallet_id' => $sharedWallet->id,
+        'category_id' => $category->id,
+        'type' => 'expense',
+        'amount' => 100,
+        'recipient' => 'Owner Transaction',
+        'transacted_at' => now()->toDateString(),
+    ];
+
+    $response = $this->post(route('transactions.store'), $data);
+
+    $response->assertStatus(200);
+    $response->assertJson(['success' => true]);
+});
+
+test('free user cannot show transaction in shared wallet', function () {
+    $owner = User::factory()->create();
+    $freeUser = User::factory()->create();
+
+    $sharedWallet = Wallet::factory()->forUser($owner)->create([
+        'access_type' => WalletAccess::Shared,
+    ]);
+    WalletMember::factory()->forWallet($sharedWallet)->accepted()->forUser($freeUser)->create();
+
+    $category = Category::factory()->forUser($owner)->create();
+    $transaction = Transaction::factory()->forUser($owner)->create([
+        'wallet_id' => $sharedWallet->id,
+        'category_id' => $category->id,
+    ]);
+
+    Auth::login($freeUser);
+
+    $response = $this->getJson(route('transactions.show', $transaction));
+
+    $response->assertStatus(403);
+    $response->assertJson(['requires_subscription' => true]);
+});
+
+test('free user cannot update transaction in shared wallet', function () {
+    $owner = User::factory()->create();
+    $freeUser = User::factory()->create();
+
+    $sharedWallet = Wallet::factory()->forUser($owner)->create([
+        'access_type' => WalletAccess::Shared,
+    ]);
+    WalletMember::factory()->forWallet($sharedWallet)->accepted()->forUser($freeUser)->create();
+
+    $ownerCategory = Category::factory()->forUser($owner)->create();
+    $freeCategory = Category::factory()->forUser($freeUser)->create();
+    $transaction = Transaction::factory()->forUser($owner)->create([
+        'wallet_id' => $sharedWallet->id,
+        'category_id' => $ownerCategory->id,
+    ]);
+
+    Auth::login($freeUser);
+
+    $data = [
+        'wallet_id' => $sharedWallet->id,
+        'category_id' => $freeCategory->id,
+        'type' => 'expense',
+        'amount' => 200,
+        'recipient' => 'Updated',
+        'transacted_at' => now()->toDateString(),
+    ];
+
+    $response = $this->putJson(route('transactions.update', $transaction), $data);
+
+    $response->assertStatus(403);
+    $response->assertJson(['requires_subscription' => true]);
+});
+
+test('free user cannot delete transaction in shared wallet', function () {
+    $owner = User::factory()->create();
+    $freeUser = User::factory()->create();
+
+    $sharedWallet = Wallet::factory()->forUser($owner)->create([
+        'access_type' => WalletAccess::Shared,
+    ]);
+    WalletMember::factory()->forWallet($sharedWallet)->accepted()->forUser($freeUser)->create();
+
+    $category = Category::factory()->forUser($owner)->create();
+    $transaction = Transaction::factory()->forUser($owner)->create([
+        'wallet_id' => $sharedWallet->id,
+        'category_id' => $category->id,
+    ]);
+
+    Auth::login($freeUser);
+
+    $response = $this->deleteJson(route('transactions.destroy', $transaction));
+
+    $response->assertStatus(403);
+    $response->assertJson(['requires_subscription' => true]);
 });

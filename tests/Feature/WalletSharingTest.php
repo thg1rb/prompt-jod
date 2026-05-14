@@ -103,6 +103,103 @@ describe('Invitation System', function () {
 
         $response->assertStatus(400);
     });
+
+    test('owner can see pending invitations', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        WalletMember::factory()->forWallet($wallet)->pending()->forUser($this->member)->create([
+            'invited_by' => $this->owner->id,
+            'token' => Str::random(64),
+            'token_expires_at' => now()->addHours(24),
+        ]);
+
+        $response = $this->getJson(route('wallets.invitations', $wallet));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'invitations');
+    });
+
+    test('non-owner cannot see invitations', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        Auth::login($this->member);
+
+        $response = $this->getJson(route('wallets.invitations', $wallet));
+
+        $response->assertStatus(403);
+    });
+
+    test('create invitation fails when max members reached', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        WalletMember::factory()->count(10)->forWallet($wallet)->accepted()->create();
+
+        $response = $this->postJson(route('wallets.invitations.create', $wallet));
+
+        $response->assertStatus(400);
+        $response->assertJson(['success' => false]);
+    });
+
+    test('remove member returns 404 when member not found', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $nonexistentId = '00000000-0000-0000-0000-000000000000';
+
+        $response = $this->deleteJson(route('wallets.members.remove', [$wallet, $nonexistentId]));
+
+        $response->assertStatus(404);
+        $response->assertJson(['success' => false]);
+    });
+
+    test('show invitation redirects when already accepted', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => now(),
+        ]);
+
+        $response = $this->get(route('invitations.accept', $token));
+
+        $response->assertRedirect();
+    });
+
+    test('accept invitation as free user returns 403', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => null,
+        ]);
+        Auth::login($this->member);
+
+        $response = $this->postJson(route('invitations.accept.store', $token));
+
+        $response->assertStatus(403);
+        $response->assertJson(['requires_subscription' => true]);
+    });
+
+    test('accept invitation returns 404 for expired token (JSON)', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->subHour(),
+            'accepted_at' => null,
+        ]);
+        Auth::login($this->member);
+
+        $response = $this->postJson(route('invitations.accept.store', $token));
+
+        $response->assertStatus(404);
+    });
 });
 
 describe('Invitation Flow', function () {
@@ -258,5 +355,140 @@ describe('Wallet Adjustments Access', function () {
         $response = $this->get(route('wallets.adjustments', $wallet));
 
         $response->assertStatus(403);
+    });
+});
+
+describe('Accept Invitation HTML Responses', function () {
+    beforeEach(function () {
+        Auth::logout();
+    });
+
+    test('accept invitation returns 404 for expired token as HTML redirect', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->subHour(),
+            'accepted_at' => null,
+        ]);
+
+        $response = $this->post(route('invitations.accept.store', $token));
+
+        $response->assertRedirect();
+    });
+
+    test('accept invitation redirects to login when not authenticated as HTML', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => null,
+        ]);
+
+        $response = $this->post(route('invitations.accept.store', $token));
+
+        $response->assertRedirect(route('login'));
+    });
+
+    test('accept invitation as free user returns HTML redirect', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => null,
+        ]);
+        Auth::login($this->member);
+
+        $response = $this->post(route('invitations.accept.store', $token));
+
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
+    });
+
+    test('accept invitation returns JSON 401 when not authenticated via JSON', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => null,
+        ]);
+
+        $response = $this->postJson(route('invitations.accept.store', $token));
+
+        $response->assertStatus(401);
+    });
+
+    test('accept invitation success returns JSON response', function () {
+        Subscription::factory()->forUser($this->member)->active()->create();
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => null,
+        ]);
+        Auth::login($this->member);
+
+        $response = $this->postJson(route('invitations.accept.store', $token));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+        ]);
+    });
+
+    test('accept invitation already accepted returns JSON 403 for free member', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => now(),
+        ]);
+        Auth::login($this->member);
+
+        $response = $this->postJson(route('invitations.accept.store', $token));
+
+        $response->assertStatus(403);
+    });
+
+    test('accept invitation already accepted returns HTML redirect to dashboard', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => $this->owner->id,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => now(),
+        ]);
+        Auth::login($this->member);
+
+        $response = $this->post(route('invitations.accept.store', $token));
+
+        $response->assertRedirect(route('dashboard'));
+        $response->assertSessionHas('error');
     });
 });
