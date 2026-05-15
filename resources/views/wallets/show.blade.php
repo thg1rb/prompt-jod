@@ -1,7 +1,7 @@
 <style>[x-cloak] { display: none !important; }</style>
 
 <x-app-layout>
-    <div class="space-y-5" x-data="walletShow()" x-init="initWallet('{{ $wallet->id }}', '{{ $wallet->type->value }}')">
+    <div class="space-y-5" x-data="walletShow()" x-init="initWallet('{{ $wallet->id }}', '{{ $wallet->type->value }}', '{{ $wallet->access_type->value }}')">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-5">
             <!-- Back Button -->
             <a href="{{ route('wallets.index') }}" class="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-foreground transition-colors">
@@ -86,7 +86,7 @@
                                 ปรับยอด
                             </button>
                             <button
-                                @click="editOpen = true"
+                                x-on:click="$dispatch('open-edit-modal')"
                                 class="inline-flex items-center px-4 py-2.5 bg-surface-subtle text-foreground rounded-xl font-medium text-sm hover:bg-surface-elevated transition-colors"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,10 +200,10 @@
 
             <!-- Categories Tab (shared wallets only) -->
             @if($wallet->access_type->value === 'shared' && $wallet->isOwner(auth()->user()))
-            <div x-show="activeTab === 'categories'" x-data="walletCategories('{{ $wallet->id }}')" x-init="loadCategories()" class="bg-card rounded-2xl border border-border overflow-hidden shadow-card">
+            <div x-show="activeTab === 'categories'" class="bg-card rounded-2xl border border-border overflow-hidden shadow-card">
                 <div class="flex items-center justify-between px-5 py-4 border-b border-border">
                     <h3 class="font-semibold text-[15px]">หมวดหมู่ของกระเป๋า</h3>
-                    <button @click="startNew()" class="text-sm text-primary hover:text-primary/80 font-semibold transition-colors">+ เพิ่ม</button>
+                    <button @click="startNewCategory()" class="text-sm text-primary hover:text-primary/80 font-semibold transition-colors">+ เพิ่ม</button>
                 </div>
                 <div class="grid gap-2 sm:grid-cols-2 p-4">
                     <template x-for="cat in categories" :key="cat.id">
@@ -213,9 +213,85 @@
                                 <div class="font-medium text-sm truncate" x-text="cat.name"></div>
                                 <div class="text-xs text-text-muted truncate" x-text="cat.fixed_category?.name ?? ''"></div>
                             </div>
+                            <div class="flex items-center gap-1">
+                                <button @click="startEditCategory(cat)" class="w-8 h-8 rounded-xl hover:bg-surface-subtle active:bg-surface-elevated flex items-center justify-center transition-colors" aria-label="แก้ไข">
+                                    <svg class="h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button @click="removeCategory(cat.id)" class="w-8 h-8 rounded-xl hover:bg-destructive-light active:bg-surface-elevated flex items-center justify-center text-destructive transition-colors" aria-label="ลบ">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </template>
                     <div x-show="categories.length === 0" class="sm:col-span-2 py-6 text-center text-text-muted text-sm">ยังไม่มีหมวดหมู่</div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Category Modal (shared wallets only) -->
+            @if($wallet->access_type->value === 'shared' && $wallet->isOwner(auth()->user()))
+            <div x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style="display: none;">
+                <div x-show="open" x-transition:enter="transition ease-out duration-75" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="open = false"></div>
+                <div x-show="open" x-transition:enter="transition ease-out duration-350" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-250" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-w-md max-h-[70vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
+                    <div class="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+                        <h3 class="text-[17px] font-semibold text-foreground" x-text="editing && editing.id ? 'แก้ไขหมวดหมู่' : 'เพิ่มหมวดหมู่'"></h3>
+                        <button @click="open = false" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-surface-subtle active:bg-surface-elevated transition-colors" aria-label="ปิด">
+                            <svg class="h-5 w-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-1 min-h-0 overflow-y-auto px-6 pt-5 pb-6">
+                    <template x-if="editing">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="wallet_fixed_category_id" class="block text-sm font-semibold text-foreground mb-1.5">หมวดหมู่หลัก</label>
+                                <select
+                                    id="wallet_fixed_category_id"
+                                    x-model="editing.fixed_category_id"
+                                    class="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                                >
+                                    <template x-for="fc in fixedCategories" :key="fc.id">
+                                        <option :value="fc.id" x-text="`${fc.icon} ${fc.name}`"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-[80px,1fr] gap-3">
+                                <div>
+                                    <label for="wallet_cat_icon" class="block text-sm font-semibold text-foreground mb-1.5">ไอคอน</label>
+                                    <input
+                                        id="wallet_cat_icon"
+                                        type="text"
+                                        x-model="editing.icon"
+                                        maxlength="4"
+                                        class="w-full text-center text-2xl h-12 px-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label for="wallet_cat_name" class="block text-sm font-semibold text-foreground mb-1.5">ชื่อ</label>
+                                    <input
+                                        id="wallet_cat_name"
+                                        type="text"
+                                        x-model="editing.name"
+                                        class="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    </div>
+                    <div class="flex gap-3 p-5 border-t border-border bg-surface-subtle shrink-0">
+                        <button @click="open = false" class="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-surface-subtle active:bg-surface-elevated transition-colors text-foreground font-medium text-sm">
+                            ยกเลิก
+                        </button>
+                        <button @click="saveCategory()" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm shadow-sm">
+                            บันทึก
+                        </button>
+                    </div>
                 </div>
             </div>
             @endif
@@ -251,10 +327,8 @@
                     <div>
                         <label for="adjust_notes" class="block text-sm font-semibold text-foreground mb-1.5">เหตุผลการปรับ</label>
                         <textarea id="adjust_notes" name="notes" rows="2" required placeholder="เช่น ตรวจสอบยอดเงิน, โอนเงินระหว่างบัญชี" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors resize-none"></textarea>
-                        @error('notes')
-                        <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+@error('notes')
                         @enderror
-                    </div>
                     </div>
                 </form>
                 </div>
@@ -332,7 +406,6 @@
                     <div class="flex items-center gap-2.5">
                         <input type="checkbox" id="edit_is_default" name="is_default" value="1" class="w-4 h-4 rounded border-border text-primary focus:ring-ring" @checked(old('is_default', $wallet->is_default)) />
                         <label for="edit_is_default" class="text-sm font-medium text-foreground">ตั้งเป็นกระเป๋าหลัก</label>
-                    </div>
                     </div>
                 </form>
                 </div>

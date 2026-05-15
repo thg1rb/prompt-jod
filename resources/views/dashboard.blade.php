@@ -12,7 +12,7 @@
                     <h1 class="text-[22px] font-bold tracking-tight">แดชบอร์ด</h1>
                     <p class="text-text-muted text-sm">ภาพรวมการเงินของคุณ</p>
                 </div>
-                <div class="inline-flex bg-surface-subtle p-1 rounded-xl flex-wrap gap-1">
+                <div class="flex flex-wrap items-center gap-3">
                     <div class="inline-flex bg-surface-subtle p-1 rounded-xl">
                         <button
                             @click="setRange('today')"

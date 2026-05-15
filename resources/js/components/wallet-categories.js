@@ -31,6 +31,11 @@ export function walletCategories(walletId) {
             this.open = true;
         },
 
+        startEdit(cat) {
+            this.editing = { ...cat };
+            this.open = true;
+        },
+
         async save() {
             if (!this.editing || !this.editing.name.trim() || !this.editing.fixed_category_id) return;
 
