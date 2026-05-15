@@ -76,7 +76,6 @@ class UserObserver
                 'color' => $category['color'],
                 'icon' => $category['icon'],
                 'is_active' => true,
-                'is_system' => true,
                 'sort_order' => $category['sort_order'],
             ]);
         }

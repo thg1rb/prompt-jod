@@ -43,7 +43,6 @@ class CategoryController extends Controller
             'icon' => $validated['icon'],
             'color' => $validated['color'],
             'is_active' => true,
-            'is_system' => false,
             'sort_order' => Category::where('user_id', Auth::id())->count(),
         ]);
 
@@ -66,10 +65,6 @@ class CategoryController extends Controller
 
         if ($category->user_id !== Auth::id()) {
             return response()->json(['success' => false, 'message' => 'ไม่พบหมวดหมู่'], 404);
-        }
-
-        if ($category->is_system) {
-            return response()->json(['success' => false, 'message' => 'ไม่สามารถแก้ไขหมวดหมู่ระบบได้'], 403);
         }
 
         $validated = $request->validated();
@@ -99,10 +94,6 @@ class CategoryController extends Controller
 
         if ($category->user_id !== Auth::id()) {
             return response()->json(['success' => false, 'message' => 'ไม่พบหมวดหมู่'], 404);
-        }
-
-        if ($category->is_system) {
-            return response()->json(['success' => false, 'message' => 'ไม่สามารถลบหมวดหมู่ระบบได้'], 403);
         }
 
         if ($category->transactions()->exists()) {

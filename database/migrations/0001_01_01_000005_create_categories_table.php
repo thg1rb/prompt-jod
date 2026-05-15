@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('color', 7)->default('#6366f1'); // Default indigo color
             $table->string('icon')->nullable();
             $table->boolean('is_active')->default(true);
-            $table->boolean('is_system')->default(false); // System categories cannot be deleted
             $table->integer('sort_order')->default(0);
             $table->timestamps();
             $table->softDeletes();

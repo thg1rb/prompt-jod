@@ -14,47 +14,31 @@ class CategoryPolicy
 
     public function view(User $user, Category $category): bool
     {
-        return $category->user_id === $user->id || $category->is_system;
+        return $category->user_id === $user->id;
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return $user->isPremium();
     }
 
     public function update(User $user, Category $category): bool
     {
-        if ($category->is_system) {
-            return false;
-        }
-
-        return $category->user_id === $user->id;
+        return $user->isPremium() && $category->user_id === $user->id;
     }
 
     public function delete(User $user, Category $category): bool
     {
-        if ($category->is_system) {
-            return false;
-        }
-
-        return $category->user_id === $user->id;
+        return $user->isPremium() && $category->user_id === $user->id;
     }
 
     public function restore(User $user, Category $category): bool
     {
-        if ($category->is_system) {
-            return false;
-        }
-
-        return $category->user_id === $user->id;
+        return $user->isPremium() && $category->user_id === $user->id;
     }
 
     public function forceDelete(User $user, Category $category): bool
     {
-        if ($category->is_system) {
-            return false;
-        }
-
-        return $category->user_id === $user->id;
+        return $user->isPremium() && $category->user_id === $user->id;
     }
 }

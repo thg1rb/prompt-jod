@@ -38,13 +38,12 @@ test('user can get categories data', function () {
                 'icon',
                 'color',
                 'is_active',
-                'is_system',
             ],
         ],
     ]);
 });
 
-test('user can store category', function () {
+test('premium user can store category', function () {
     Subscription::factory()->forUser($this->user)->active()->create();
 
     $data = [
@@ -55,7 +54,7 @@ test('user can store category', function () {
 
     $response = $this->post(route('categories.store'), $data);
 
-    $response->assertStatus(200);
+    $response->assertSuccessful();
     $response->assertJson([
         'success' => true,
         'message' => 'บันทึกหมวดหมู่เรียบร้อย',
@@ -65,7 +64,7 @@ test('user can store category', function () {
     expect($category->user_id)->toBe($this->user->id);
 });
 
-test('user can update category', function () {
+test('premium user can update category', function () {
     Subscription::factory()->forUser($this->user)->active()->create();
     $category = Category::factory()->forUser($this->user)->create();
 
@@ -77,7 +76,7 @@ test('user can update category', function () {
 
     $response = $this->put(route('categories.update', $category), $data);
 
-    $response->assertStatus(200);
+    $response->assertSuccessful();
     $response->assertJson([
         'success' => true,
         'message' => 'แก้ไขหมวดหมู่เรียบร้อย',
@@ -85,25 +84,6 @@ test('user can update category', function () {
 
     $category->refresh();
     expect($category->name)->toBe('Updated Food');
-});
-
-test('user cannot update system category', function () {
-    Subscription::factory()->forUser($this->user)->active()->create();
-    $category = Category::factory()->forUser($this->user)->system()->create();
-
-    $data = [
-        'name' => 'Updated',
-        'icon' => '🍕',
-        'color' => '#00FF00',
-    ];
-
-    $response = $this->put(route('categories.update', $category), $data);
-
-    $response->assertStatus(403);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'ไม่สามารถแก้ไขหมวดหมู่ระบบได้',
-    ]);
 });
 
 test('user cannot update other users category', function () {
@@ -119,41 +99,26 @@ test('user cannot update other users category', function () {
 
     $response = $this->put(route('categories.update', $category), $data);
 
-    $response->assertStatus(404);
+    $response->assertNotFound();
     $response->assertJson([
         'success' => false,
         'message' => 'ไม่พบหมวดหมู่',
     ]);
 });
 
-test('user can delete category', function () {
+test('premium user can delete category', function () {
     Subscription::factory()->forUser($this->user)->active()->create();
     $category = Category::factory()->forUser($this->user)->create();
 
     $response = $this->delete(route('categories.destroy', $category));
 
-    $response->assertStatus(200);
+    $response->assertSuccessful();
     $response->assertJson([
         'success' => true,
         'message' => 'ลบหมวดหมู่เรียบร้อย',
     ]);
 
     $this->assertSoftDeleted('categories', ['id' => $category->id]);
-});
-
-test('user cannot delete system category', function () {
-    Subscription::factory()->forUser($this->user)->active()->create();
-    $category = Category::factory()->forUser($this->user)->system()->create();
-
-    $response = $this->delete(route('categories.destroy', $category));
-
-    $response->assertStatus(403);
-    $response->assertJson([
-        'success' => false,
-        'message' => 'ไม่สามารถลบหมวดหมู่ระบบได้',
-    ]);
-
-    $this->assertDatabaseHas('categories', ['id' => $category->id]);
 });
 
 test('user cannot delete other users category', function () {
@@ -163,7 +128,7 @@ test('user cannot delete other users category', function () {
 
     $response = $this->delete(route('categories.destroy', $category));
 
-    $response->assertStatus(404);
+    $response->assertNotFound();
     $response->assertJson([
         'success' => false,
         'message' => 'ไม่พบหมวดหมู่',
@@ -204,7 +169,7 @@ test('free user cannot store category', function () {
 
     $response = $this->postJson(route('categories.store'), $data);
 
-    $response->assertStatus(403);
+    $response->assertForbidden();
     $response->assertJson([
         'success' => false,
         'requires_subscription' => true,
@@ -222,7 +187,7 @@ test('free user cannot update category', function () {
 
     $response = $this->putJson(route('categories.update', $category), $data);
 
-    $response->assertStatus(403);
+    $response->assertForbidden();
     $response->assertJson([
         'success' => false,
         'requires_subscription' => true,
@@ -234,23 +199,23 @@ test('free user cannot delete category', function () {
 
     $response = $this->deleteJson(route('categories.destroy', $category));
 
-    $response->assertStatus(403);
+    $response->assertForbidden();
     $response->assertJson([
         'success' => false,
         'requires_subscription' => true,
     ]);
 });
 
-test('category factory creates system category', function () {
-    $category = Category::factory()->system()->create();
+test('category factory creates default category', function () {
+    $category = Category::factory()->create();
 
-    expect($category->is_system)->toBeTrue();
+    expect($category->is_active)->toBeTrue();
 });
 
-test('category factory creates custom category', function () {
-    $category = Category::factory()->custom()->create();
+test('category factory creates inactive category', function () {
+    $category = Category::factory()->inactive()->create();
 
-    expect($category->is_system)->toBeFalse();
+    expect($category->is_active)->toBeFalse();
 });
 
 test('categories are ordered by sort_order then name', function () {
@@ -261,12 +226,12 @@ test('categories are ordered by sort_order then name', function () {
     $response = $this->get(route('categories.data'));
     $categories = $response->json('categories');
 
-    $customCategories = array_filter($categories, fn ($c) => ! $c['is_system']);
-    $customCategories = array_values($customCategories);
+    $userCategories = array_filter($categories, fn ($c) => $c['name'] === 'Alpha' || $c['name'] === 'Beta' || $c['name'] === 'Zebra');
+    $userCategories = array_values($userCategories);
 
-    expect($customCategories[0]['name'])->toBe('Alpha');
-    expect($customCategories[1]['name'])->toBe('Beta');
-    expect($customCategories[2]['name'])->toBe('Zebra');
+    expect($userCategories[0]['name'])->toBe('Alpha');
+    expect($userCategories[1]['name'])->toBe('Beta');
+    expect($userCategories[2]['name'])->toBe('Zebra');
 });
 
 test('new user gets default categories', function () {
@@ -289,9 +254,26 @@ test('new user gets default categories', function () {
             ->first();
 
         expect($category)->not->toBeNull();
-        expect($category->is_system)->toBeTrue();
         expect($category->is_active)->toBeTrue();
     }
 
     expect(Category::where('user_id', $user->id)->count())->toBe(8);
+});
+
+test('free user sees categories index without edit delete buttons', function () {
+    Category::factory()->forUser($this->user)->count(3)->create();
+
+    $response = $this->get(route('categories.index'));
+
+    $response->assertSuccessful();
+    $response->assertSee('หมวดหมู่');
+});
+
+test('premium user sees categories index with edit delete buttons', function () {
+    Subscription::factory()->forUser($this->user)->active()->create();
+    Category::factory()->forUser($this->user)->count(3)->create();
+
+    $response = $this->get(route('categories.index'));
+
+    $response->assertSuccessful();
 });

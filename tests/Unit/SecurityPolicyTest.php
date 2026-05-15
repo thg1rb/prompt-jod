@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Category;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Policies\CategoryPolicy;
@@ -44,22 +45,22 @@ class SecurityPolicyTest extends TestCase
     }
 
     #[Test]
-    public function category_policy_blocks_update_on_system_categories(): void
+    public function category_policy_blocks_update_for_free_user(): void
     {
         $user = User::factory()->create();
-        $systemCategory = Category::factory()->for($user)->create(['is_system' => true]);
+        $category = Category::factory()->for($user)->create();
 
         $policy = new CategoryPolicy;
 
-        expect($policy->update($user, $systemCategory))->toBeFalse();
-        expect($policy->delete($user, $systemCategory))->toBeFalse();
+        expect($policy->update($user, $category))->toBeFalse();
+        expect($policy->delete($user, $category))->toBeFalse();
     }
 
     #[Test]
-    public function category_policy_allows_update_on_own_non_system_categories(): void
+    public function category_policy_allows_update_for_premium_user_on_own_category(): void
     {
-        $user = User::factory()->create();
-        $category = Category::factory()->for($user)->create(['is_system' => false]);
+        $user = User::factory()->has(Subscription::factory()->active())->create();
+        $category = Category::factory()->for($user)->create();
 
         $policy = new CategoryPolicy;
 
@@ -70,8 +71,8 @@ class SecurityPolicyTest extends TestCase
     #[Test]
     public function category_policy_blocks_access_to_other_users_categories(): void
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
+        $user1 = User::factory()->has(Subscription::factory()->active())->create();
+        $user2 = User::factory()->has(Subscription::factory()->active())->create();
 
         $category = Category::factory()->for($user1)->create();
 
@@ -82,13 +83,13 @@ class SecurityPolicyTest extends TestCase
     }
 
     #[Test]
-    public function category_policy_allows_viewing_system_categories(): void
+    public function category_policy_allows_viewing_own_category(): void
     {
         $user = User::factory()->create();
-        $systemCategory = Category::factory()->for($user)->create(['is_system' => true]);
+        $category = Category::factory()->for($user)->create();
 
         $policy = new CategoryPolicy;
 
-        expect($policy->view($user, $systemCategory))->toBeTrue();
+        expect($policy->view($user, $category))->toBeTrue();
     }
 }

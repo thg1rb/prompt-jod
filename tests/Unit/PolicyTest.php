@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Budget;
 use App\Models\Category;
+use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
@@ -764,10 +765,10 @@ class PolicyTest extends TestCase
     }
 
     #[Test]
-    public function category_policy_restore_allows_non_system_owner(): void
+    public function category_policy_restore_allows_premium_owner(): void
     {
-        $user = User::factory()->create();
-        $category = Category::factory()->for($user)->create(['is_system' => false]);
+        $user = User::factory()->has(Subscription::factory()->active())->create();
+        $category = Category::factory()->for($user)->create();
 
         $policy = new CategoryPolicy;
 
@@ -775,10 +776,10 @@ class PolicyTest extends TestCase
     }
 
     #[Test]
-    public function category_policy_restore_blocks_system(): void
+    public function category_policy_restore_blocks_free_user(): void
     {
         $user = User::factory()->create();
-        $category = Category::factory()->for($user)->create(['is_system' => true]);
+        $category = Category::factory()->for($user)->create();
 
         $policy = new CategoryPolicy;
 
@@ -788,9 +789,9 @@ class PolicyTest extends TestCase
     #[Test]
     public function category_policy_restore_blocks_non_owner(): void
     {
-        $owner = User::factory()->create();
-        $stranger = User::factory()->create();
-        $category = Category::factory()->for($owner)->create(['is_system' => false]);
+        $owner = User::factory()->has(Subscription::factory()->active())->create();
+        $stranger = User::factory()->has(Subscription::factory()->active())->create();
+        $category = Category::factory()->for($owner)->create();
 
         $policy = new CategoryPolicy;
 
@@ -798,10 +799,10 @@ class PolicyTest extends TestCase
     }
 
     #[Test]
-    public function category_policy_force_delete_allows_non_system_owner(): void
+    public function category_policy_force_delete_allows_premium_owner(): void
     {
-        $user = User::factory()->create();
-        $category = Category::factory()->for($user)->create(['is_system' => false]);
+        $user = User::factory()->has(Subscription::factory()->active())->create();
+        $category = Category::factory()->for($user)->create();
 
         $policy = new CategoryPolicy;
 
@@ -809,10 +810,10 @@ class PolicyTest extends TestCase
     }
 
     #[Test]
-    public function category_policy_force_delete_blocks_system(): void
+    public function category_policy_force_delete_blocks_free_user(): void
     {
         $user = User::factory()->create();
-        $category = Category::factory()->for($user)->create(['is_system' => true]);
+        $category = Category::factory()->for($user)->create();
 
         $policy = new CategoryPolicy;
 
@@ -822,9 +823,9 @@ class PolicyTest extends TestCase
     #[Test]
     public function category_policy_force_delete_blocks_non_owner(): void
     {
-        $owner = User::factory()->create();
-        $stranger = User::factory()->create();
-        $category = Category::factory()->for($owner)->create(['is_system' => false]);
+        $owner = User::factory()->has(Subscription::factory()->active())->create();
+        $stranger = User::factory()->has(Subscription::factory()->active())->create();
+        $category = Category::factory()->for($owner)->create();
 
         $policy = new CategoryPolicy;
 
@@ -832,11 +833,11 @@ class PolicyTest extends TestCase
     }
 
     #[Test]
-    public function category_policy_view_blocks_other_users_non_system_category(): void
+    public function category_policy_view_blocks_other_users_category(): void
     {
         $owner = User::factory()->create();
         $stranger = User::factory()->create();
-        $category = Category::factory()->for($owner)->create(['is_system' => false]);
+        $category = Category::factory()->for($owner)->create();
 
         $policy = new CategoryPolicy;
 
@@ -844,10 +845,10 @@ class PolicyTest extends TestCase
     }
 
     #[Test]
-    public function category_policy_view_allows_own_non_system_category(): void
+    public function category_policy_view_allows_own_category(): void
     {
         $user = User::factory()->create();
-        $category = Category::factory()->for($user)->create(['is_system' => false]);
+        $category = Category::factory()->for($user)->create();
 
         $policy = new CategoryPolicy;
 

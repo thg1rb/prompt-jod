@@ -25,7 +25,6 @@ class Category extends Model
         'color',
         'icon',
         'is_active',
-        'is_system',
         'sort_order',
     ];
 
@@ -38,7 +37,6 @@ class Category extends Model
     {
         return [
             'is_active' => 'boolean',
-            'is_system' => 'boolean',
             'sort_order' => 'integer',
         ];
     }
@@ -73,22 +71,6 @@ class Category extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    /**
-     * Scope a query to only include system categories.
-     */
-    public function scopeSystem($query)
-    {
-        return $query->where('is_system', true);
-    }
-
-    /**
-     * Scope a query to only include custom (non-system) categories.
-     */
-    public function scopeCustom($query)
-    {
-        return $query->where('is_system', false);
     }
 
     /**
