@@ -2,11 +2,9 @@
 
 namespace Tests\Unit;
 
-use App\Enums\AlertType;
 use App\Enums\SubscriptionStatus;
 use App\Enums\WalletAccess;
 use App\Enums\WalletType;
-use App\Models\BudgetAlert;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
@@ -343,143 +341,5 @@ class ModelTest extends TestCase
         Subscription::factory()->for($user2)->create(['status' => SubscriptionStatus::Active]);
 
         expect(Subscription::pastDue()->count())->toBe(1);
-    }
-
-    #[Test]
-    public function budget_alert_mark_as_read_twice_is_no_op(): void
-    {
-        $user = User::factory()->create();
-        $alert = BudgetAlert::factory()->for($user)->sent()->create();
-        $originalReadAt = $alert->read_at;
-
-        $alert->markAsRead();
-        $firstReadAt = $alert->read_at;
-        $alert->markAsRead();
-        $secondReadAt = $alert->read_at;
-
-        expect($firstReadAt)->toEqual($secondReadAt);
-    }
-
-    #[Test]
-    public function budget_alert_dismiss(): void
-    {
-        $user = User::factory()->create();
-        $alert = BudgetAlert::factory()->for($user)->create([
-            'dismissed_at' => null,
-            'status' => 'sent',
-        ]);
-
-        expect($alert->isDismissed())->toBeFalse();
-        $alert->dismiss();
-        expect($alert->isDismissed())->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_alert_is_read(): void
-    {
-        $user = User::factory()->create();
-        $alert = BudgetAlert::factory()->for($user)->create([
-            'read_at' => null,
-            'status' => 'sent',
-        ]);
-
-        expect($alert->isRead())->toBeFalse();
-        $alert->markAsRead();
-        expect($alert->isRead())->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_alert_is_warning_80(): void
-    {
-        $user = User::factory()->create();
-        $alert = BudgetAlert::factory()->for($user)->warning80()->create();
-
-        expect($alert->isWarning80())->toBeTrue();
-        expect($alert->isWarning100())->toBeFalse();
-        expect($alert->isExceededAlert())->toBeFalse();
-    }
-
-    #[Test]
-    public function budget_alert_is_warning_100(): void
-    {
-        $user = User::factory()->create();
-        $alert = BudgetAlert::factory()->for($user)->warning100()->create();
-
-        expect($alert->isWarning100())->toBeTrue();
-        expect($alert->isWarning80())->toBeFalse();
-        expect($alert->isExceededAlert())->toBeFalse();
-    }
-
-    #[Test]
-    public function budget_alert_is_exceeded_alert(): void
-    {
-        $user = User::factory()->create();
-        $alert = BudgetAlert::factory()->for($user)->exceeded()->create();
-
-        expect($alert->isExceededAlert())->toBeTrue();
-        expect($alert->isWarning80())->toBeFalse();
-        expect($alert->isWarning100())->toBeFalse();
-    }
-
-    #[Test]
-    public function budget_alert_scope_sent(): void
-    {
-        $user = User::factory()->create();
-        BudgetAlert::factory()->for($user)->sent()->count(2)->create();
-        BudgetAlert::factory()->for($user)->read()->count(3)->create();
-
-        expect(BudgetAlert::sent()->count())->toBe(2);
-    }
-
-    #[Test]
-    public function budget_alert_scope_read(): void
-    {
-        $user = User::factory()->create();
-        BudgetAlert::factory()->for($user)->read()->count(2)->create();
-        BudgetAlert::factory()->for($user)->sent()->count(3)->create();
-
-        expect(BudgetAlert::read()->count())->toBe(2);
-    }
-
-    #[Test]
-    public function budget_alert_scope_dismissed(): void
-    {
-        $user = User::factory()->create();
-        BudgetAlert::factory()->for($user)->dismissed()->count(2)->create();
-        BudgetAlert::factory()->for($user)->sent()->count(3)->create();
-
-        expect(BudgetAlert::dismissed()->count())->toBe(2);
-    }
-
-    #[Test]
-    public function budget_alert_scope_unread(): void
-    {
-        $user = User::factory()->create();
-        BudgetAlert::factory()->for($user)->create(['read_at' => now()]);
-        BudgetAlert::factory()->for($user)->create(['read_at' => null]);
-        BudgetAlert::factory()->for($user)->create(['read_at' => null]);
-
-        expect(BudgetAlert::unread()->count())->toBe(2);
-    }
-
-    #[Test]
-    public function budget_alert_scope_undismissed(): void
-    {
-        $user = User::factory()->create();
-        BudgetAlert::factory()->for($user)->create(['dismissed_at' => now()]);
-        BudgetAlert::factory()->for($user)->create(['dismissed_at' => null]);
-
-        expect(BudgetAlert::undismissed()->count())->toBe(1);
-    }
-
-    #[Test]
-    public function budget_alert_scope_of_type(): void
-    {
-        $user = User::factory()->create();
-        BudgetAlert::factory()->for($user)->warning80()->count(2)->create();
-        BudgetAlert::factory()->for($user)->exceeded()->count(3)->create();
-
-        expect(BudgetAlert::ofType(AlertType::Warning80)->count())->toBe(2);
-        expect(BudgetAlert::ofType(AlertType::Exceeded)->count())->toBe(3);
     }
 }

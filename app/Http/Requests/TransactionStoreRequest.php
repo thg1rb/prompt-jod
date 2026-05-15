@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Category;
 use App\Models\Wallet;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,25 @@ class TransactionStoreRequest extends FormRequest
                     $fail('กระเป๋าเงินไม่ถูกต้อง');
                 }
             }],
-            'category_id' => ['required', 'uuid', Rule::exists('categories', 'id')->where('user_id', $userId)],
+            'category_id' => ['required', 'uuid', Rule::exists('custom_categories', 'id'), function ($attribute, $value, $fail) use ($userId) {
+                $category = Category::find($value);
+                if (! $category) {
+                    return;
+                }
+
+                $wallet = Wallet::find($this->wallet_id);
+                if (! $wallet) {
+                    return;
+                }
+
+                if ($wallet->access_type->isShared()) {
+                    return;
+                }
+
+                if ($category->user_id !== $userId) {
+                    $fail('หมวดหมู่ไม่ถูกต้อง');
+                }
+            }],
             'type' => ['required', 'in:expense,income,adjustment'],
             'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999.99'],
             'sender' => ['nullable', 'string', 'max:255'],

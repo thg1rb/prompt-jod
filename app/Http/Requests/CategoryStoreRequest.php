@@ -14,9 +14,9 @@ class CategoryStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'fixed_category_id' => ['required', 'uuid', 'exists:fixed_categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'icon' => ['required', 'string', 'max:4'],
-            'color' => ['required', 'string', 'max:7', 'regex:/^#[0-9A-Fa-f]{6}$/'],
         ];
     }
 }

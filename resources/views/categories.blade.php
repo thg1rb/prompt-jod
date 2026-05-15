@@ -37,9 +37,10 @@
                 <template x-for="category in categories" :key="category.id">
                     <div class="bg-card rounded-2xl border border-border p-4 shadow-card hover:shadow-elevated transition-shadow">
                         <div class="flex items-center gap-3">
-                            <div class="h-12 w-12 rounded-2xl grid place-items-center text-2xl shrink-0" :style="{ background: `${category.color}18` }" x-text="category.icon"></div>
+                            <div class="h-12 w-12 rounded-2xl grid place-items-center text-2xl shrink-0" :style="{ background: `${getFixedCategoryColor(category.fixed_category_id)}18` }" x-text="category.icon"></div>
                             <div class="flex-1 min-w-0">
                                 <div class="font-semibold text-[14px] truncate" x-text="category.name"></div>
+                                <div class="text-xs text-text-muted truncate" x-text="getFixedCategoryName(category.fixed_category_id)"></div>
                             </div>
                             @if(!$isFree)
                             <div class="flex items-center gap-1">
@@ -90,6 +91,18 @@
                     <div class="flex-1 min-h-0 overflow-y-auto px-6 pt-5 pb-6">
                     <template x-if="editing">
                         <div class="space-y-4">
+                            <div>
+                                <label for="fixed_category_id" class="block text-sm font-semibold text-foreground mb-1.5">หมวดหมู่หลัก</label>
+                                <select
+                                    id="fixed_category_id"
+                                    x-model="editing.fixed_category_id"
+                                    class="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
+                                >
+                                    <template x-for="fc in fixedCategories" :key="fc.id">
+                                        <option :value="fc.id" x-text="`${fc.icon} ${fc.name}`"></option>
+                                    </template>
+                                </select>
+                            </div>
                             <div class="grid grid-cols-[80px,1fr] gap-3">
                                 <div>
                                     <label for="icon" class="block text-sm font-semibold text-foreground mb-1.5">ไอคอน</label>
@@ -109,21 +122,6 @@
                                         x-model="editing.name"
                                         class="w-full px-3 py-2.5 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
                                     />
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-foreground mb-2">สี</label>
-                                <div class="flex flex-wrap gap-2.5">
-                                    <template x-for="color in PALETTE" :key="color">
-                                        <button
-                                            type="button"
-                                            @click="editing.color = color"
-                                            class="h-8 w-8 rounded-full border-2 transition-all duration-150"
-                                            :class="editing.color === color ? 'border-foreground scale-110' : 'border-transparent hover:scale-105'"
-                                            :style="{ background: color }"
-                                            :aria-label="`เลือกสี ${color}`"
-                                        ></button>
-                                    </template>
                                 </div>
                             </div>
                         </div>

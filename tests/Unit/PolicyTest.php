@@ -2,14 +2,12 @@
 
 namespace Tests\Unit;
 
-use App\Models\Budget;
 use App\Models\Category;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletMember;
-use App\Policies\BudgetPolicy;
 use App\Policies\CategoryPolicy;
 use App\Policies\TransactionPolicy;
 use App\Policies\WalletMemberPolicy;
@@ -456,139 +454,6 @@ class PolicyTest extends TestCase
     }
 
     #[Test]
-    public function budget_policy_view_any_always_returns_true(): void
-    {
-        $user = User::factory()->create();
-        $policy = new BudgetPolicy;
-
-        expect($policy->viewAny($user))->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_policy_view_allows_owner(): void
-    {
-        $user = User::factory()->create();
-        $budget = Budget::factory()->for($user)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->view($user, $budget))->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_policy_view_blocks_non_owner(): void
-    {
-        $owner = User::factory()->create();
-        $stranger = User::factory()->create();
-        $budget = Budget::factory()->for($owner)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->view($stranger, $budget))->toBeFalse();
-    }
-
-    #[Test]
-    public function budget_policy_create_always_returns_true(): void
-    {
-        $user = User::factory()->create();
-        $policy = new BudgetPolicy;
-
-        expect($policy->create($user))->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_policy_update_allows_owner(): void
-    {
-        $user = User::factory()->create();
-        $budget = Budget::factory()->for($user)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->update($user, $budget))->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_policy_update_blocks_non_owner(): void
-    {
-        $owner = User::factory()->create();
-        $stranger = User::factory()->create();
-        $budget = Budget::factory()->for($owner)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->update($stranger, $budget))->toBeFalse();
-    }
-
-    #[Test]
-    public function budget_policy_delete_allows_owner(): void
-    {
-        $user = User::factory()->create();
-        $budget = Budget::factory()->for($user)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->delete($user, $budget))->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_policy_delete_blocks_non_owner(): void
-    {
-        $owner = User::factory()->create();
-        $stranger = User::factory()->create();
-        $budget = Budget::factory()->for($owner)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->delete($stranger, $budget))->toBeFalse();
-    }
-
-    #[Test]
-    public function budget_policy_restore_allows_owner(): void
-    {
-        $user = User::factory()->create();
-        $budget = Budget::factory()->for($user)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->restore($user, $budget))->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_policy_restore_blocks_non_owner(): void
-    {
-        $owner = User::factory()->create();
-        $stranger = User::factory()->create();
-        $budget = Budget::factory()->for($owner)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->restore($stranger, $budget))->toBeFalse();
-    }
-
-    #[Test]
-    public function budget_policy_force_delete_allows_owner(): void
-    {
-        $user = User::factory()->create();
-        $budget = Budget::factory()->for($user)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->forceDelete($user, $budget))->toBeTrue();
-    }
-
-    #[Test]
-    public function budget_policy_force_delete_blocks_non_owner(): void
-    {
-        $owner = User::factory()->create();
-        $stranger = User::factory()->create();
-        $budget = Budget::factory()->for($owner)->create();
-
-        $policy = new BudgetPolicy;
-
-        expect($policy->forceDelete($stranger, $budget))->toBeFalse();
-    }
-
-    #[Test]
     public function wallet_policy_restore_allows_owner(): void
     {
         $user = User::factory()->create();
@@ -853,5 +718,60 @@ class PolicyTest extends TestCase
         $policy = new CategoryPolicy;
 
         expect($policy->view($user, $category))->toBeTrue();
+    }
+
+    #[Test]
+    public function category_policy_view_allows_wallet_member(): void
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $wallet = Wallet::factory()->for($owner)->create();
+        WalletMember::factory()->for($wallet)->for($member)->accepted()->create();
+        $category = Category::factory()->forWallet($wallet)->create();
+
+        $policy = new CategoryPolicy;
+
+        expect($policy->view($member, $category))->toBeTrue();
+    }
+
+    #[Test]
+    public function category_policy_view_blocks_non_wallet_member(): void
+    {
+        $owner = User::factory()->create();
+        $stranger = User::factory()->create();
+        $wallet = Wallet::factory()->for($owner)->create();
+        $category = Category::factory()->forWallet($wallet)->create();
+
+        $policy = new CategoryPolicy;
+
+        expect($policy->view($stranger, $category))->toBeFalse();
+    }
+
+    #[Test]
+    public function category_policy_update_allows_wallet_owner(): void
+    {
+        $owner = User::factory()->has(Subscription::factory()->active())->create();
+        $wallet = Wallet::factory()->for($owner)->create();
+        $category = Category::factory()->forWallet($wallet)->create();
+
+        $policy = new CategoryPolicy;
+
+        expect($policy->update($owner, $category))->toBeTrue();
+        expect($policy->delete($owner, $category))->toBeTrue();
+    }
+
+    #[Test]
+    public function category_policy_update_blocks_wallet_member_non_owner(): void
+    {
+        $owner = User::factory()->has(Subscription::factory()->active())->create();
+        $member = User::factory()->has(Subscription::factory()->active())->create();
+        $wallet = Wallet::factory()->for($owner)->create();
+        WalletMember::factory()->for($wallet)->for($member)->accepted()->create();
+        $category = Category::factory()->forWallet($wallet)->create();
+
+        $policy = new CategoryPolicy;
+
+        expect($policy->update($member, $category))->toBeFalse();
+        expect($policy->delete($member, $category))->toBeFalse();
     }
 }

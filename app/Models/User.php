@@ -73,7 +73,7 @@ class User extends Authenticatable
     /**
      * Get all categories for the user.
      */
-    public function categories(): HasMany
+    public function customCategories(): HasMany
     {
         return $this->hasMany(Category::class);
     }
@@ -84,22 +84,6 @@ class User extends Authenticatable
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
-    }
-
-    /**
-     * Get all budgets for the user.
-     */
-    public function budgets(): HasMany
-    {
-        return $this->hasMany(Budget::class);
-    }
-
-    /**
-     * Get all budget alerts for the user.
-     */
-    public function budgetAlerts(): HasMany
-    {
-        return $this->hasMany(BudgetAlert::class);
     }
 
     /**

@@ -13,71 +13,68 @@ class Category extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    protected $table = 'custom_categories';
+
     protected $fillable = [
-        'user_id',
+        'fixed_category_id',
         'name',
-        'description',
-        'color',
+        'user_id',
+        'wallet_id',
         'icon',
-        'is_active',
-        'sort_order',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
-        return [
-            'is_active' => 'boolean',
-            'sort_order' => 'integer',
-        ];
+        return [];
     }
 
-    /**
-     * Get the user that owns the category.
-     */
+    public function fixedCategory(): BelongsTo
+    {
+        return $this->belongsTo(FixedCategory::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the transactions for the category.
-     */
+    public function wallet(): BelongsTo
+    {
+        return $this->belongsTo(Wallet::class);
+    }
+
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
     }
 
-    /**
-     * Get the budgets for the category.
-     */
-    public function budgets(): HasMany
+    public function getColorAttribute(): string
     {
-        return $this->hasMany(Budget::class);
+        return $this->fixedCategory?->color ?? '#64748b';
     }
 
-    /**
-     * Scope a query to only include active categories.
-     */
-    public function scopeActive($query)
+    public function scopePersonal($query)
     {
-        return $query->where('is_active', true);
+        return $query->whereNotNull('user_id');
     }
 
-    /**
-     * Scope a query to order by sort order.
-     */
+    public function scopeForWallet($query, string $walletId)
+    {
+        return $query->where('wallet_id', $walletId);
+    }
+
     public function scopeOrdered($query)
     {
-        return $query->orderBy('sort_order')->orderBy('name');
+        return $query->orderBy('name');
+    }
+
+    public function isOwnedBy(User $user): bool
+    {
+        return $this->user_id === $user->id;
+    }
+
+    public function belongsToWallet(Wallet $wallet): bool
+    {
+        return $this->wallet_id === $wallet->id;
     }
 }

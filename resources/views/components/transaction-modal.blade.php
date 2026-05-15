@@ -10,7 +10,7 @@
     x-data="transactionModal({{
         json_encode([
             'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name, 'is_default' => $w->is_default, 'type' => $w->type->value, 'access_type' => $w->access_type->value])->values(),
-            'categories' => $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'icon' => $c->icon])->values(),
+            'categories' => $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'icon' => $c->icon, 'fixed_category_name' => $c->fixedCategory?->name, 'fixed_category_color' => $c->fixedCategory?->color])->values(),
             'initialOpen' => $initialOpen,
             'currentUserId' => $currentUserId,
             'isPremium' => $isPremium,
@@ -260,7 +260,7 @@
                     >
                         <option value="">เลือกหมวดหมู่</option>
                         <template x-for="category in categories" :key="category.id">
-                            <option :value="category.id" x-text="category.icon + ' ' + category.name"></option>
+                            <option :value="category.id" x-text="category.icon + ' ' + category.name + (category.fixed_category_name && category.fixed_category_name !== category.name ? ' (' + category.fixed_category_name + ')' : '')"></option>
                         </template>
                     </select>
                     <p x-show="errors.category_id" class="mt-1 text-xs text-destructive" x-text="errors.category_id"></p>

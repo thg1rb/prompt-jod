@@ -242,6 +242,7 @@ export function barChart(initialData = {}) {
 export function dashboard(initialData = {}) {
     return {
         range: 'month',
+        walletType: 'all',
         loading: false,
 
         totalExpenses: initialData.totalExpenses || '0.00',
@@ -265,7 +266,8 @@ export function dashboard(initialData = {}) {
             this.loading = true;
 
             try {
-                const response = await fetch(`/dashboard/filter?range=${this.range}`, {
+                const params = new URLSearchParams({ range: this.range, wallet_type: this.walletType });
+                const response = await fetch(`/dashboard/filter?${params}`, {
                     headers: {
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest',
@@ -295,6 +297,12 @@ export function dashboard(initialData = {}) {
         async setRange(newRange) {
             if (this.range === newRange) return;
             this.range = newRange;
+            await this.loadDashboardData();
+        },
+
+        async setWalletType(newType) {
+            if (this.walletType === newType) return;
+            this.walletType = newType;
             await this.loadDashboardData();
         },
 

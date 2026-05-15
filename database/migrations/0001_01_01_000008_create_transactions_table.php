@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('wallet_id')->constrained()->restrictOnDelete();
-            $table->foreignUuid('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('category_id')->nullable()->constrained('custom_categories')->nullOnDelete();
             $table->string('transaction_ref')->nullable(); // เลขอ้างอิงจากสลิป ใช้ตรวจ duplicate
             $table->string('type'); // expense | income | adjustment
             $table->decimal('amount', 15, 2);

@@ -94,9 +94,16 @@ Route::middleware('auth')->group(function () {
     // Category Routes
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::get('/categories/data', [CategoryController::class, 'data'])->name('categories.data');
+    Route::get('/categories/fixed', [CategoryController::class, 'fixedCategories'])->name('categories.fixed');
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::put('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+    // Wallet Category Routes
+    Route::get('/wallets/{wallet}/categories', [CategoryController::class, 'walletCategories'])->name('wallets.categories');
+    Route::post('/wallets/{wallet}/categories', [CategoryController::class, 'storeWalletCategory'])->name('wallets.categories.store');
+    Route::put('/wallets/{wallet}/categories/{category}', [CategoryController::class, 'updateWalletCategory'])->name('wallets.categories.update');
+    Route::delete('/wallets/{wallet}/categories/{category}', [CategoryController::class, 'destroyWalletCategory'])->name('wallets.categories.destroy');
 
     // Transaction Routes
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');

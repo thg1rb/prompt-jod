@@ -9,7 +9,7 @@ Auth: Google OAuth (Socialite) + standard Breeze email/password.
 ## Stack
 
 - **PHP 8.3+**, **Laravel 13**
-- **SQLite** by default locally (`.env.example`); PostgreSQL 16 available via Sail (`compose.yaml`)
+- **PostgreSQL 16** available via Sail (`compose.yaml`)
 - **TailwindCSS v3** with `darkMode: 'class'` and CSS-variable design system in `resources/css/app.css`
 - **Alpine.js v3** — all frontend interactivity (no Livewire, no Inertia)
 - **ApexCharts** for dashboard charts
@@ -24,20 +24,20 @@ Auth: Google OAuth (Socialite) + standard Breeze email/password.
 composer run dev
 
 # Tests
-sail artisan test --compact
-sail artisan test --compact --filter=testName
+./vendor/bin/sail artisan test --compact
+./vendor/bin/sail artisan test --compact --filter=testName
 
 # Formatting (always run after editing PHP)
 vendor/bin/pint --dirty --format agent
 
 # Build frontend
-sail bun run build
+./vendor/bin/sail bun run build
 
 # Fresh DB
-sail artisan migrate:fresh --seed
+./vendor/bin/sail artisan migrate:fresh --seed
 ```
 
-**Use `sail` prefix for commands** — Sail is configured via Docker. All artisan, bun, and composer commands should be prefixed with `sail`.
+**Use `./vendor/bin/sail` prefix for commands** — Sail is configured via Docker. All artisan, bun, and composer commands should be prefixed with `sail`.
 
 ## Architecture
 

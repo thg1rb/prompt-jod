@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
                     $view->with('wallets', auth()->user()->allWallets()->filter(fn ($w) => $w->is_active));
                 }
                 if (! array_key_exists('categories', $data)) {
-                    $view->with('categories', Category::where('user_id', auth()->id())->active()->ordered()->get());
+                    $view->with('categories', Category::where('user_id', auth()->id())->with('fixedCategory')->ordered()->get());
                 }
                 $view->with('subscription', auth()->user()->subscription);
             }

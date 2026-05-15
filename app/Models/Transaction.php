@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Enums\TransactionType;
-use App\Observers\TransactionBudgetObserver;
 use App\Observers\TransactionObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -11,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[ObservedBy([TransactionObserver::class, TransactionBudgetObserver::class])]
+#[ObservedBy([TransactionObserver::class])]
 class Transaction extends Model
 {
     use HasFactory, HasUuids;

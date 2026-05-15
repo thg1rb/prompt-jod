@@ -2,6 +2,7 @@
 
 use App\Enums\WalletAccess;
 use App\Models\Category;
+use App\Models\FixedCategory;
 use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Models\User;
@@ -16,6 +17,22 @@ beforeEach(function () {
     $this->user = User::factory()->create();
     Auth::login($this->user);
     Storage::fake('public');
+
+    if (FixedCategory::count() === 0) {
+        $categories = [
+            ['name' => 'อาหาร & เครื่องดื่ม', 'color' => '#EC4899', 'icon' => '🍜', 'sort_order' => 1, 'type' => 'expense'],
+            ['name' => 'ช้อปปิ้ง', 'color' => '#F59E0B', 'icon' => '🛍️', 'sort_order' => 2, 'type' => 'expense'],
+            ['name' => 'เดินทาง', 'color' => '#EC4899', 'icon' => '🚗', 'sort_order' => 3, 'type' => 'expense'],
+            ['name' => 'ค่าสาธารณูปโภค', 'color' => '#EF4444', 'icon' => '💡', 'sort_order' => 4, 'type' => 'expense'],
+            ['name' => 'บันเทิง', 'color' => '#F59E0B', 'icon' => '🎬', 'sort_order' => 5, 'type' => 'expense'],
+            ['name' => 'สุขภาพ', 'color' => '#F59E0B', 'icon' => '🏥', 'sort_order' => 6, 'type' => 'expense'],
+            ['name' => 'การเงิน', 'color' => '#10B981', 'icon' => '🏦', 'sort_order' => 7, 'type' => 'expense'],
+            ['name' => 'อื่น ๆ', 'color' => '#3B82F6', 'icon' => '📌', 'sort_order' => 99, 'type' => 'expense'],
+        ];
+        foreach ($categories as $cat) {
+            FixedCategory::create($cat);
+        }
+    }
 });
 
 test('user can view transactions index', function () {
@@ -790,13 +807,16 @@ test('premium member can store transaction in shared wallet', function () {
 
 test('owner can store transaction in shared wallet regardless of subscription', function () {
     $owner = User::factory()->create();
-    $this->actingAs($owner);
+    Auth::login($owner);
 
     $sharedWallet = Wallet::factory()->forUser($owner)->create([
         'access_type' => WalletAccess::Shared,
     ]);
 
-    $category = Category::factory()->forUser($owner)->create();
+    $sharedWallet->setupSharedWalletCategories();
+    $category = $sharedWallet->customCategories()->first();
+
+    expect($category)->not->toBeNull();
 
     $data = [
         'wallet_id' => $sharedWallet->id,

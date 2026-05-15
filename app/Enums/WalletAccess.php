@@ -14,4 +14,14 @@ enum WalletAccess: string
             self::Shared => 'แชร์กับเพื่อน',
         };
     }
+
+    public function isShared(): bool
+    {
+        return $this === self::Shared;
+    }
+
+    public function isPersonal(): bool
+    {
+        return $this === self::Personal;
+    }
 }

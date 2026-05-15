@@ -31,7 +31,7 @@ class TransactionController extends Controller
 
         return view('transactions', [
             'transactions' => $this->getTransactions($user),
-            'categories' => $user->categories()->orderBy('name')->get(),
+            'categories' => $user->customCategories()->with('fixedCategory')->orderBy('name')->get(),
             'wallets' => $user->allWallets(),
         ]);
     }
@@ -45,7 +45,7 @@ class TransactionController extends Controller
 
         $sharedWalletIds = $this->sharedWalletIds($user);
 
-        $transactions = Transaction::with(['category', 'wallet', 'creator'])
+        $transactions = Transaction::with(['category.fixedCategory', 'wallet', 'creator'])
             ->where(function ($query) use ($sharedWalletIds, $user) {
                 $query->where('user_id', $user->id)
                     ->orWhereIn('wallet_id', $sharedWalletIds);
@@ -78,8 +78,9 @@ class TransactionController extends Controller
                 'amount' => (float) $t->amount,
                 'type' => $t->type->value,
                 'category_id' => $t->category_id,
-                'category' => $t->category?->name ?? '-',
-                'category_icon' => $t->category?->icon ?? '📌',
+                'category' => $t->category?->fixedCategory?->name ?? '-',
+                'category_icon' => $t->category?->fixedCategory?->icon ?? '📌',
+                'category_color' => $t->category?->fixedCategory?->color ?? '#64748b',
                 'wallet_id' => $t->wallet_id,
                 'wallet' => $t->wallet?->name ?? '-',
                 'wallet_access_type' => $t->wallet?->access_type?->value,
@@ -100,7 +101,7 @@ class TransactionController extends Controller
 
         $sharedWalletIds = $this->sharedWalletIds($user);
 
-        $transactions = Transaction::with(['category', 'wallet'])
+        $transactions = Transaction::with(['category.fixedCategory', 'wallet'])
             ->where(function ($query) use ($sharedWalletIds, $user) {
                 $query->where('user_id', $user->id)
                     ->orWhereIn('wallet_id', $sharedWalletIds);
@@ -131,7 +132,7 @@ class TransactionController extends Controller
             $rows[] = [
                 $t->transacted_at->format('d/m/Y H:i'),
                 $t->description ?? '-',
-                $t->category?->name ?? '-',
+                $t->category?->fixedCategory?->name ?? '-',
                 $t->wallet?->name ?? '-',
                 $t->type->value === 'expense' ? 'รายจ่าย' : ($t->type->value === 'income' ? 'รายรับ' : 'ปรับ'),
                 number_format((float) $t->amount, 2),
@@ -147,7 +148,7 @@ class TransactionController extends Controller
 
         return view('transactions.create', [
             'wallets' => $user->wallets()->orderBy('is_default', 'desc')->orderBy('name')->get(),
-            'categories' => $user->categories()->orderBy('name')->get(),
+            'categories' => $user->customCategories()->with('fixedCategory')->orderBy('name')->get(),
         ]);
     }
 
@@ -374,7 +375,7 @@ class TransactionController extends Controller
     {
         $sharedWalletIds = $this->sharedWalletIds($user);
 
-        return Transaction::with(['category', 'wallet', 'creator'])
+        return Transaction::with(['category.fixedCategory', 'wallet', 'creator'])
             ->where(function ($query) use ($sharedWalletIds, $user) {
                 $query->where('user_id', $user->id)
                     ->orWhereIn('wallet_id', $sharedWalletIds);
@@ -387,8 +388,9 @@ class TransactionController extends Controller
                 'amount' => (float) $t->amount,
                 'type' => $t->type->value,
                 'category_id' => $t->category_id,
-                'category' => $t->category?->name ?? '-',
-                'category_icon' => $t->category?->icon ?? '📌',
+                'category' => $t->category?->fixedCategory?->name ?? '-',
+                'category_icon' => $t->category?->fixedCategory?->icon ?? '📌',
+                'category_color' => $t->category?->fixedCategory?->color ?? '#64748b',
                 'wallet_id' => $t->wallet_id,
                 'wallet' => $t->wallet?->name ?? '-',
                 'wallet_access_type' => $t->wallet?->access_type?->value,

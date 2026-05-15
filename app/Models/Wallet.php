@@ -75,9 +75,11 @@ class Wallet extends Model
         return $this->hasMany(BalanceAdjustment::class);
     }
 
-    /**
-     * Get the members for the wallet.
-     */
+    public function customCategories(): HasMany
+    {
+        return $this->hasMany(Category::class);
+    }
+
     public function members(): HasMany
     {
         return $this->hasMany(WalletMember::class);
@@ -169,5 +171,25 @@ class Wallet extends Model
     public function scopePersonal($query)
     {
         return $query->where('access_type', WalletAccess::Personal);
+    }
+
+    public function setupSharedWalletCategories(): void
+    {
+        if (! $this->access_type->isShared()) {
+            return;
+        }
+
+        if ($this->customCategories()->exists()) {
+            return;
+        }
+
+        FixedCategory::orderBy('sort_order')->each(function (FixedCategory $fixedCategory) {
+            Category::create([
+                'fixed_category_id' => $fixedCategory->id,
+                'wallet_id' => $this->id,
+                'name' => $fixedCategory->name,
+                'icon' => $fixedCategory->icon,
+            ]);
+        });
     }
 }

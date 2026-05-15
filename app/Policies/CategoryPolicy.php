@@ -14,7 +14,15 @@ class CategoryPolicy
 
     public function view(User $user, Category $category): bool
     {
-        return $category->user_id === $user->id;
+        if ($category->user_id && $category->user_id === $user->id) {
+            return true;
+        }
+
+        if ($category->wallet_id && $category->wallet->hasAccess($user)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function create(User $user): bool
@@ -24,21 +32,45 @@ class CategoryPolicy
 
     public function update(User $user, Category $category): bool
     {
-        return $user->isPremium() && $category->user_id === $user->id;
+        if (! $user->isPremium()) {
+            return false;
+        }
+
+        if ($category->user_id && $category->user_id === $user->id) {
+            return true;
+        }
+
+        if ($category->wallet_id && $category->wallet->isOwner($user)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function delete(User $user, Category $category): bool
     {
-        return $user->isPremium() && $category->user_id === $user->id;
+        if (! $user->isPremium()) {
+            return false;
+        }
+
+        if ($category->user_id && $category->user_id === $user->id) {
+            return true;
+        }
+
+        if ($category->wallet_id && $category->wallet->isOwner($user)) {
+            return true;
+        }
+
+        return false;
     }
 
     public function restore(User $user, Category $category): bool
     {
-        return $user->isPremium() && $category->user_id === $user->id;
+        return $this->update($user, $category);
     }
 
     public function forceDelete(User $user, Category $category): bool
     {
-        return $user->isPremium() && $category->user_id === $user->id;
+        return $this->delete($user, $category);
     }
 }

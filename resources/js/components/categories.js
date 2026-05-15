@@ -1,16 +1,21 @@
 export function categories() {
     return {
         categories: [],
+        fixedCategories: [],
         editing: null,
         open: false,
         isPremium: true,
-        PALETTE: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#0EA5E9', '#64748B', '#14B8A6'],
 
         async loadCategories() {
             try {
-                const response = await fetch('/categories/data');
-                const data = await response.json();
-                this.categories = data.categories;
+                const [catRes, fixedRes] = await Promise.all([
+                    fetch('/categories/data'),
+                    fetch('/categories/fixed'),
+                ]);
+                const catData = await catRes.json();
+                const fixedData = await fixedRes.json();
+                this.categories = catData.categories;
+                this.fixedCategories = fixedData.fixed_categories;
             } catch (error) {
                 console.error('Failed to load categories:', error);
             }
@@ -23,9 +28,9 @@ export function categories() {
             }
             this.editing = {
                 id: null,
+                fixed_category_id: this.fixedCategories.length > 0 ? this.fixedCategories[0].id : null,
                 name: '',
                 icon: '📌',
-                color: this.PALETTE[0],
             };
             this.open = true;
         },
@@ -50,6 +55,11 @@ export function categories() {
                 return;
             }
 
+            if (!this.editing.fixed_category_id) {
+                this.$store.toast.error('กรุณาเลือกหมวดหมู่หลัก');
+                return;
+            }
+
             try {
                 const url = this.editing.id ? `/categories/${this.editing.id}` : '/categories';
                 const method = this.editing.id ? 'PUT' : 'POST';
@@ -61,9 +71,9 @@ export function categories() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify({
+                        fixed_category_id: this.editing.fixed_category_id,
                         name: this.editing.name,
                         icon: this.editing.icon,
-                        color: this.editing.color,
                     })
                 });
 
@@ -118,6 +128,16 @@ export function categories() {
                 console.error('Failed to delete category:', error);
                 this.$store.toast.error('เกิดข้อผิดพลาดในการลบ');
             }
-        }
+        },
+
+        getFixedCategoryName(fixedCategoryId) {
+            const fc = this.fixedCategories.find(c => c.id === fixedCategoryId);
+            return fc ? fc.name : '';
+        },
+
+        getFixedCategoryColor(fixedCategoryId) {
+            const fc = this.fixedCategories.find(c => c.id === fixedCategoryId);
+            return fc ? fc.color : '#64748b';
+        },
     };
 }

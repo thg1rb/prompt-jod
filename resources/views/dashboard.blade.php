@@ -12,35 +12,60 @@
                     <h1 class="text-[22px] font-bold tracking-tight">แดชบอร์ด</h1>
                     <p class="text-text-muted text-sm">ภาพรวมการเงินของคุณ</p>
                 </div>
-                <div class="inline-flex bg-surface-subtle p-1 rounded-xl">
-                    <button
-                        @click="setRange('today')"
-                        :class="range === 'today' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
-                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
-                    >
-                        วันนี้
-                    </button>
-                    <button
-                        @click="setRange('week')"
-                        :class="range === 'week' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
-                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
-                    >
-                        สัปดาห์นี้
-                    </button>
-                    <button
-                        @click="setRange('month')"
-                        :class="range === 'month' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
-                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
-                    >
-                        เดือนนี้
-                    </button>
-                    <button
-                        @click="setRange('all')"
-                        :class="range === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
-                        class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
-                    >
-                        ทั้งหมด
-                    </button>
+                <div class="inline-flex bg-surface-subtle p-1 rounded-xl flex-wrap gap-1">
+                    <div class="inline-flex bg-surface-subtle p-1 rounded-xl">
+                        <button
+                            @click="setRange('today')"
+                            :class="range === 'today' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
+                            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                        >
+                            วันนี้
+                        </button>
+                        <button
+                            @click="setRange('week')"
+                            :class="range === 'week' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
+                            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                        >
+                            สัปดาห์นี้
+                        </button>
+                        <button
+                            @click="setRange('month')"
+                            :class="range === 'month' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
+                            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                        >
+                            เดือนนี้
+                        </button>
+                        <button
+                            @click="setRange('all')"
+                            :class="range === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
+                            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                        >
+                            ทั้งหมด
+                        </button>
+                    </div>
+                    <div class="inline-flex bg-surface-subtle p-1 rounded-xl">
+                        <button
+                            @click="setWalletType('all')"
+                            :class="walletType === 'all' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
+                            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                        >
+                            ทุกกระเป๋า
+                        </button>
+                        <button
+                            @click="setWalletType('personal')"
+                            :class="walletType === 'personal' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
+                            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                        >
+                            ส่วนตัว
+                        </button>
+                        <button
+                            @click="setWalletType('shared')"
+                            :class="walletType === 'shared' ? 'bg-card text-foreground shadow-sm' : 'text-text-muted hover:text-foreground'"
+                            class="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200"
+                        >
+                            แชร์
+                        </button>
+                    </div>
                 </div>
             </div>
 

@@ -98,6 +98,10 @@ class WalletController extends Controller
 
         $wallet = $user->wallets()->create($data);
 
+        if ($wallet->access_type->isShared()) {
+            $wallet->setupSharedWalletCategories();
+        }
+
         if (isset($data['opening_balance']) && $data['opening_balance'] > 0) {
             BalanceAdjustment::create([
                 'wallet_id' => $wallet->id,
@@ -148,7 +152,7 @@ class WalletController extends Controller
         }
 
         $wallet->load(['transactions' => function ($query) {
-            $query->with(['category', 'creator'])
+            $query->with(['category.fixedCategory', 'creator'])
                 ->latest()
                 ->limit(10);
         }]);
@@ -156,6 +160,10 @@ class WalletController extends Controller
         $wallet->load(['balanceAdjustments' => function ($query) {
             $query->latest('adjusted_at')
                 ->limit(5);
+        }]);
+
+        $wallet->load(['customCategories' => function ($query) {
+            $query->with('fixedCategory')->ordered();
         }]);
 
         return view('wallets.show', compact('wallet'));

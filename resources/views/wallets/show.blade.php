@@ -131,6 +131,15 @@
                     >
                         ประวัติการปรับยอด ({{ $wallet->balanceAdjustments()->count() }})
                     </button>
+                    @if($wallet->access_type->value === 'shared' && $wallet->isOwner(auth()->user()))
+                    <button
+                        @click="activeTab = 'categories'"
+                        :class="activeTab === 'categories' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-foreground'"
+                        class="whitespace-nowrap py-3 px-0.5 border-b-2 font-semibold text-sm transition-colors"
+                    >
+                        หมวดหมู่ ({{ $wallet->customCategories->count() }})
+                    </button>
+                    @endif
                 </nav>
             </div>
 
@@ -146,13 +155,13 @@
                     @else
                         @foreach($wallet->transactions as $transaction)
                             @php
-                                $icon = $transaction->category?->icon ?? '📌';
+                                $icon = $transaction->category?->fixedCategory?->icon ?? '📌';
                             @endphp
                             <li class="py-3.5 px-5 flex items-center gap-3">
                                 <div class="h-11 w-11 rounded-xl bg-surface-subtle grid place-items-center text-lg shrink-0">{{ $icon }}</div>
                                 <div class="flex-1 min-w-0">
-                                    <div class="font-medium text-[14px] truncate">{{ $transaction->recipient ?? $transaction->category?->name ?? '-' }}</div>
-                                    <div class="text-xs text-text-muted">{{ $transaction->category?->name ?? '-' }} · {{ $transaction->transacted_at?->diffForHumans() ?? '-' }}</div>
+                                    <div class="font-medium text-[14px] truncate">{{ $transaction->recipient ?? $transaction->category?->fixedCategory?->name ?? '-' }}</div>
+                                    <div class="text-xs text-text-muted">{{ $transaction->category?->fixedCategory?->name ?? '-' }} · {{ $transaction->transacted_at?->diffForHumans() ?? '-' }}</div>
                                 </div>
                                 <div class="font-semibold text-[14px] {{ $transaction->isExpense() ? 'text-destructive' : 'text-success' }}">
                                     {{ $transaction->isExpense() ? '-' : '+' }}{{ number_format($transaction->amount, 2) }}
@@ -188,9 +197,29 @@
                     @endif
                 </ul>
             </div>
-        </div>
 
-        <!-- Adjust Balance Modal -->
+            <!-- Categories Tab (shared wallets only) -->
+            @if($wallet->access_type->value === 'shared' && $wallet->isOwner(auth()->user()))
+            <div x-show="activeTab === 'categories'" x-data="walletCategories('{{ $wallet->id }}')" x-init="loadCategories()" class="bg-card rounded-2xl border border-border overflow-hidden shadow-card">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <h3 class="font-semibold text-[15px]">หมวดหมู่ของกระเป๋า</h3>
+                    <button @click="startNew()" class="text-sm text-primary hover:text-primary/80 font-semibold transition-colors">+ เพิ่ม</button>
+                </div>
+                <div class="grid gap-2 sm:grid-cols-2 p-4">
+                    <template x-for="cat in categories" :key="cat.id">
+                        <div class="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-surface-subtle/50 transition-colors">
+                            <div class="h-10 w-10 rounded-xl grid place-items-center text-lg shrink-0" :style="{ background: `${cat.fixed_category?.color ?? '#64748b'}18` }" x-text="cat.icon"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-sm truncate" x-text="cat.name"></div>
+                                <div class="text-xs text-text-muted truncate" x-text="cat.fixed_category?.name ?? ''"></div>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="categories.length === 0" class="sm:col-span-2 py-6 text-center text-text-muted text-sm">ยังไม่มีหมวดหมู่</div>
+                </div>
+            </div>
+            @endif
+        </div>
         <div x-cloak x-show="adjustOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
             <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-75" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="adjustOpen = false"></div>
             <div x-show="adjustOpen" x-transition:enter="transition ease-out duration-350" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-250" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-w-md max-h-[70vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
