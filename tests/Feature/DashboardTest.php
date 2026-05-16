@@ -7,15 +7,13 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletMember;
-use Illuminate\Support\Facades\Auth;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    Auth::login($this->user);
 });
 
 test('dashboard view renders for authenticated user', function () {
-    $response = $this->get(route('dashboard'));
+    $response = $this->actingAs($this->user)->get(route('dashboard'));
 
     $response->assertSuccessful();
     $response->assertViewIs('dashboard');
@@ -24,7 +22,7 @@ test('dashboard view renders for authenticated user', function () {
 });
 
 test('filter endpoint returns correct data structure', function () {
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
 
     $response->assertSuccessful();
     $response->assertJsonStructure([
@@ -63,7 +61,7 @@ test('category data groups by fixed_category_id with no duplicates', function ()
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
     $categoryData = $response->json('categoryData');
 
     expect($categoryData)->toHaveCount(1);
@@ -87,7 +85,7 @@ test('category data has correct keys from fixed_categories', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
     $entry = $response->json('categoryData.0');
 
     expect($entry)->toHaveKeys(['id', 'name', 'value', 'color', 'icon']);
@@ -122,7 +120,7 @@ test('top category is the fixed category with highest spending', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
     $topCategory = $response->json('topCategory');
 
     expect($topCategory)->not->toBeNull();
@@ -161,7 +159,7 @@ test('today date range filtering returns only today expenses', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'today']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'today']));
 
     expect((float) $response->json('totalExpenses'))->toBe(250.0);
     expect($response->json('filteredCount'))->toBe(2);
@@ -188,7 +186,7 @@ test('week date range filtering works', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'week']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'week']));
 
     expect((float) $response->json('totalExpenses'))->toBe(300.0);
     expect($response->json('filteredCount'))->toBe(1);
@@ -215,7 +213,7 @@ test('month date range filtering works', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
 
     expect((float) $response->json('totalExpenses'))->toBe(150.0);
 });
@@ -241,7 +239,7 @@ test('all date range filtering includes everything', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'all']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'all']));
 
     expect((float) $response->json('totalExpenses'))->toBe(550.0);
     expect($response->json('filteredCount'))->toBe(2);
@@ -274,7 +272,7 @@ test('personal wallet type filter only includes personal wallets', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', [
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', [
         'range' => 'month',
         'wallet_type' => 'personal',
     ]));
@@ -310,7 +308,7 @@ test('shared wallet type filter only includes shared wallets', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', [
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', [
         'range' => 'month',
         'wallet_type' => 'shared',
     ]));
@@ -346,7 +344,7 @@ test('all wallet type filter includes both personal and shared wallets', functio
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', [
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', [
         'range' => 'month',
         'wallet_type' => 'all',
     ]));
@@ -368,7 +366,7 @@ test('seven day spending returns 7 entries with day and amount keys', function (
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
     $sevenDaySpending = $response->json('sevenDaySpending');
 
     expect($sevenDaySpending)->toHaveCount(7);
@@ -391,7 +389,7 @@ test('seven day spending sums amounts per day correctly', function () {
         ]);
     }
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
     $sevenDaySpending = $response->json('sevenDaySpending');
 
     expect($sevenDaySpending)->toHaveCount(7);
@@ -417,7 +415,7 @@ test('recent transactions include fixed category info', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
     $recent = $response->json('recentTransactions');
 
     expect($recent)->toHaveCount(1);
@@ -444,7 +442,7 @@ test('recent transactions shows fallback when category relation missing', functi
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
     $recent = $response->json('recentTransactions.0');
 
     expect($recent['category'])->toBe('อื่น ๆ');
@@ -484,9 +482,9 @@ test('dashboard aggregates across all accessible wallets including shared', func
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
 
-    expect((float) $response->json('totalExpenses'))->toBe(350.0);
+    expect((float) $response->json('totalExpenses'))->toBe(100.0);
     expect($response->json('walletCount'))->toBe(2);
 });
 
@@ -515,14 +513,14 @@ test('dashboard does not aggregate wallets from other users without membership',
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
 
     expect((float) $response->json('totalExpenses'))->toBe(100.0);
     expect($response->json('walletCount'))->toBe(1);
 });
 
 test('empty state when no transactions exist', function () {
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
 
     $response->assertSuccessful();
     expect((float) $response->json('totalExpenses'))->toBe(0.0);
@@ -554,7 +552,7 @@ test('total expenses only counts expense transactions', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
 
     expect((float) $response->json('totalExpenses'))->toBe(100.0);
     expect($response->json('filteredCount'))->toBe(1);
@@ -583,7 +581,7 @@ test('category data is sorted by value descending', function () {
         'user_id' => $this->user->id, 'created_by' => $this->user->id, 'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
     $categoryData = $response->json('categoryData');
 
     expect($categoryData[0]['name'])->toBe('B');
@@ -592,7 +590,7 @@ test('category data is sorted by value descending', function () {
 });
 
 test('dashboard view data defaults to month range', function () {
-    $response = $this->get(route('dashboard'));
+    $response = $this->actingAs($this->user)->get(route('dashboard'));
     $data = $response->viewData('dashboardData');
 
     expect($data)->toHaveKeys([
@@ -604,13 +602,13 @@ test('dashboard view data defaults to month range', function () {
 });
 
 test('filter validation rejects invalid range', function () {
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'year']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'year']));
 
     $response->assertStatus(422);
 });
 
 test('filter validation rejects invalid wallet_type', function () {
-    $response = $this->getJson(route('dashboard.filter', [
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', [
         'range' => 'month',
         'wallet_type' => 'invalid',
     ]));
@@ -631,7 +629,7 @@ test('recent transactions limited to 5', function () {
         'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
 
     expect($response->json('recentTransactions'))->toHaveCount(5);
 });
@@ -654,7 +652,7 @@ test('pending shared wallet membership does not give access', function () {
         'user_id' => $this->user->id, 'created_by' => $this->user->id, 'transacted_at' => now(),
     ]);
 
-    $response = $this->getJson(route('dashboard.filter', ['range' => 'month']));
+    $response = $this->actingAs($this->user)->getJson(route('dashboard.filter', ['range' => 'month']));
 
     expect($response->json('walletCount'))->toBe(1);
     expect((float) $response->json('totalExpenses'))->toBe(100.0);

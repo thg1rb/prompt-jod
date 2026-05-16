@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\Wallet;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -43,13 +44,14 @@ class DashboardController extends Controller
 
         $transactions = Transaction::with(['category.fixedCategory', 'wallet'])
             ->whereIn('wallet_id', $walletIds)
+            ->where('user_id', $user->id)
             ->whereBetween('transacted_at', [$startDate, $endDate])
             ->expense()
             ->latest()
             ->get();
 
         $totalExpenses = $transactions->sum('amount');
-        $totalBalance = $user->wallets()->whereIn('id', $walletIds)->sum('balance');
+        $totalBalance = Wallet::whereIn('id', $walletIds)->sum('balance');
         $filteredCount = $transactions->count();
         $averagePerTransaction = $filteredCount > 0 ? $totalExpenses / $filteredCount : 0;
         $walletCount = count($walletIds);
@@ -58,6 +60,7 @@ class DashboardController extends Controller
             ->join('custom_categories', 'transactions.category_id', '=', 'custom_categories.id')
             ->join('fixed_categories', 'custom_categories.fixed_category_id', '=', 'fixed_categories.id')
             ->whereIn('transactions.wallet_id', $walletIds)
+            ->where('transactions.user_id', $user->id)
             ->whereBetween('transactions.transacted_at', [$startDate, $endDate])
             ->where('transactions.type', 'expense')
             ->select(
@@ -85,10 +88,11 @@ class DashboardController extends Controller
             $topCategoryData = $categoryData[0];
         }
 
-        $sevenDaySpending = $this->getSevenDaySpending($walletIds);
+        $sevenDaySpending = $this->getSevenDaySpending($user, $walletIds);
 
         $recentTransactions = Transaction::with(['category.fixedCategory', 'wallet'])
             ->whereIn('wallet_id', $walletIds)
+            ->where('user_id', $user->id)
             ->latest()
             ->limit(5)
             ->get()
@@ -154,7 +158,7 @@ class DashboardController extends Controller
         };
     }
 
-    private function getSevenDaySpending(array $walletIds): array
+    private function getSevenDaySpending($user, array $walletIds): array
     {
         $days = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
         $today = Carbon::now();
@@ -162,6 +166,7 @@ class DashboardController extends Controller
         $endDate = $today->copy()->endOfDay();
 
         $transactions = Transaction::whereIn('wallet_id', $walletIds)
+            ->where('user_id', $user->id)
             ->whereBetween('transacted_at', [$startDate, $endDate])
             ->expense()
             ->selectRaw('DATE(transacted_at) as date, SUM(amount) as total')
