@@ -49,7 +49,7 @@ class DashboardController extends Controller
             ->get();
 
         $totalExpenses = $transactions->sum('amount');
-        $totalBalance = $user->wallets()->sum('balance');
+        $totalBalance = $user->wallets()->whereIn('id', $walletIds)->sum('balance');
         $filteredCount = $transactions->count();
         $averagePerTransaction = $filteredCount > 0 ? $totalExpenses / $filteredCount : 0;
         $walletCount = count($walletIds);
