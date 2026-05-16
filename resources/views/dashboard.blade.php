@@ -88,7 +88,7 @@
                         <div class="flex items-center gap-2.5 mb-3">
                             <div class="w-9 h-9 rounded-xl bg-destructive/10 flex items-center justify-center">
                                 <svg class="h-4 w-4 text-destructive" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <span class="text-xs font-medium text-text-muted">ยอดใช้จ่าย</span>
@@ -102,7 +102,8 @@
                         <div class="flex items-center gap-2.5 mb-3">
                             <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <svg class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8h18M7 12h10" />
                                 </svg>
                             </div>
                             <span class="text-xs font-medium text-text-muted">ยอดคงเหลือรวม</span>
@@ -116,7 +117,7 @@
                         <div class="flex items-center gap-2.5 mb-3">
                             <div class="w-9 h-9 rounded-xl bg-success/10 flex items-center justify-center">
                                 <svg class="h-4 w-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 </svg>
                             </div>
                             <span class="text-xs font-medium text-text-muted">เฉลี่ยต่อรายการ</span>
@@ -130,7 +131,7 @@
                         <div class="flex items-center gap-2.5 mb-3">
                             <div class="w-9 h-9 rounded-xl bg-warning/10 flex items-center justify-center">
                                 <svg class="h-4 w-4 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
                                 </svg>
                             </div>
                             <span class="text-xs font-medium text-text-muted">หมวดสูงสุด</span>
