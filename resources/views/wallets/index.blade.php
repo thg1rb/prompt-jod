@@ -131,101 +131,101 @@
                 <div x-show="open" x-transition:enter="transition ease-out duration-75" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="open = false"></div>
 
                 <!-- Modal Content -->
-                <div x-show="open" x-transition:enter="transition ease-out duration-350" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-250" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-w-md max-h-[70vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
+                <form id="wallet-create-form" x-show="open" x-transition:enter="transition ease-out duration-350" x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="transition ease-in duration-250" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95" method="POST" action="{{ route('wallets.store') }}" class="relative bg-card rounded-t-2xl sm:rounded-2xl shadow-floating border border-border w-full max-w-md overflow-hidden flex flex-col">
+                    @csrf
                     <!-- Header -->
                     <div class="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
                         <h3 class="text-[17px] font-semibold text-foreground">เพิ่มกระเป๋าใหม่</h3>
-                        <button @click="open = false" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-surface-subtle active:bg-surface-elevated transition-colors" aria-label="ปิด">
+                        <button type="button" @click="open = false" class="inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-surface-subtle active:bg-surface-elevated transition-colors" aria-label="ปิด">
                             <svg class="h-5 w-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
                     <div class="flex-1 min-h-0 overflow-y-auto px-6 pt-5 pb-6">
-                    <form id="wallet-create-form" method="POST" action="{{ route('wallets.store') }}" class="space-y-3.5">
-                        @csrf
-                        <div>
-                            <label for="wname" class="block text-sm font-semibold text-foreground mb-1.5">ชื่อกระเป๋า</label>
-                            <input type="text" id="wname" name="name" required class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors" />
-                            @error('name')
-                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-foreground mb-1.5">ประเภท</label>
-                            <select id="type" name="type" x-model="draft.type" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
-                                <option value="bank">ธนาคาร</option>
-                                <option value="ewallet">e-Wallet</option>
-                                <option value="cash">เงินสด</option>
-                            </select>
-                            @error('type')
-                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-foreground mb-1.5">การเข้าถึง</label>
-                            <select id="access_type" name="access_type" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
-                                @if($isFree)
-                                    <option value="personal" selected>ส่วนตัว</option>
-                                @else
-                                    <option value="personal">ส่วนตัว</option>
-                                    <option value="shared">แชร์กับเพื่อน</option>
-                                @endif
-                            </select>
-                            @if($isFree)
-                                <p class="text-xs text-text-muted mt-1">สมัครสมาชิก Premium เพื่อสร้างกระเป๋าแชร์</p>
-                            @endif
-                            @error('access_type')
-                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <template x-if="draft.type === 'bank'">
-                            <div class="space-y-3.5">
-                                <div>
-                                    <label for="bank" class="block text-sm font-semibold text-foreground mb-1.5">ชื่อธนาคาร</label>
-                                    <input type="text" id="bank" name="bank_name" placeholder="SCB, KBank, BBL..." class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors" />
-                                    @error('bank_name')
-                                        <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
-                                <div>
-                                    <label for="account" class="block text-sm font-semibold text-foreground mb-1.5">เลขที่บัญชี</label>
-                                    <input type="text" id="account" name="account_number" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors" />
-                                    @error('account_number')
-                                        <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                                    @enderror
-                                </div>
+                        <div class="space-y-3.5">
+                            <div>
+                                <label for="wname" class="block text-sm font-semibold text-foreground mb-1.5">ชื่อกระเป๋า</label>
+                                <input type="text" id="wname" name="name" required class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors" />
+                                @error('name')
+                                    <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
-                        </template>
-                        <div>
-                            <label for="bal" class="block text-sm font-semibold text-foreground mb-1.5">ยอดเริ่มต้น</label>
-                            <input type="number" id="bal" name="opening_balance" step="0.01" min="0" value="0" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors" />
-                            @error('opening_balance')
-                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                            @enderror
+                            <div>
+                                <label class="block text-sm font-semibold text-foreground mb-1.5">ประเภท</label>
+                                <select id="type" name="type" x-model="draft.type" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                                    <option value="bank">ธนาคาร</option>
+                                    <option value="ewallet">e-Wallet</option>
+                                    <option value="cash">เงินสด</option>
+                                </select>
+                                @error('type')
+                                    <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-foreground mb-1.5">การเข้าถึง</label>
+                                <select id="access_type" name="access_type" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors">
+                                    @if($isFree)
+                                        <option value="personal" selected>ส่วนตัว</option>
+                                    @else
+                                        <option value="personal">ส่วนตัว</option>
+                                        <option value="shared">แชร์กับเพื่อน</option>
+                                    @endif
+                                </select>
+                                @if($isFree)
+                                    <p class="text-xs text-text-muted mt-1">สมัครสมาชิก Premium เพื่อสร้างกระเป๋าแชร์</p>
+                                @endif
+                                @error('access_type')
+                                    <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <template x-if="draft.type === 'bank'">
+                                <div class="space-y-3.5">
+                                    <div>
+                                        <label for="bank" class="block text-sm font-semibold text-foreground mb-1.5">ชื่อธนาคาร</label>
+                                        <input type="text" id="bank" name="bank_name" placeholder="SCB, KBank, BBL..." class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors" />
+                                        @error('bank_name')
+                                            <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <label for="account" class="block text-sm font-semibold text-foreground mb-1.5">เลขที่บัญชี</label>
+                                        <input type="text" id="account" name="account_number" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors" />
+                                        @error('account_number')
+                                            <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </template>
+                            <div>
+                                <label for="bal" class="block text-sm font-semibold text-foreground mb-1.5">ยอดเริ่มต้น</label>
+                                <input type="number" id="bal" name="opening_balance" step="0.01" min="0" value="0" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors" />
+                                @error('opening_balance')
+                                    <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="notes" class="block text-sm font-semibold text-foreground mb-1.5">หมายเหตุ</label>
+                                <textarea id="notes" name="notes" rows="2" placeholder="เพิ่มบันทึกเกี่ยวกับกระเป๋าเงินนี้" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors resize-none"></textarea>
+                                @error('notes')
+                                    <p class="text-sm text-destructive mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div class="flex items-center gap-2.5">
+                                <input type="checkbox" id="is_default" name="is_default" value="1" class="w-4 h-4 rounded border-border text-primary focus:ring-ring" @checked(old('is_default')) />
+                                <label for="is_default" class="text-sm font-medium text-foreground">ตั้งเป็นกระเป๋าหลัก</label>
+                            </div>
                         </div>
-                        <div>
-                            <label for="notes" class="block text-sm font-semibold text-foreground mb-1.5">หมายเหตุ</label>
-                            <textarea id="notes" name="notes" rows="2" placeholder="เพิ่มบันทึกเกี่ยวกับกระเป๋าเงินนี้" class="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors resize-none"></textarea>
-                            @error('notes')
-                                <p class="text-sm text-destructive mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
-                        <div class="flex items-center gap-2.5">
-                            <input type="checkbox" id="is_default" name="is_default" value="1" class="w-4 h-4 rounded border-border text-primary focus:ring-ring" @checked(old('is_default')) />
-                            <label for="is_default" class="text-sm font-medium text-foreground">ตั้งเป็นกระเป๋าหลัก</label>
-                        </div>
-                    </form>
                     </div>
                     <div class="flex gap-3 p-5 border-t border-border bg-surface-subtle shrink-0">
                         <button type="button" @click="open = false" class="flex-1 px-4 py-2.5 border border-border rounded-xl hover:bg-surface-subtle active:bg-surface-elevated transition-colors text-foreground font-medium text-sm">
                             ยกเลิก
                         </button>
-                        <button type="submit" form="wallet-create-form" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm shadow-sm">
+                        <button type="submit" class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm shadow-sm">
                             บันทึก
                         </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
