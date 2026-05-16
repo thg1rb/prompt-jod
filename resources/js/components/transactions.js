@@ -5,7 +5,9 @@ export function transactions(initialData) {
         wallets: initialData.wallets || [],
         q: '',
         cat: 'all',
+        walType: 'all',
         wal: 'all',
+        txFilter: 'all',
         loading: false,
 
         init() {
@@ -22,9 +24,29 @@ export function transactions(initialData) {
 
             this.$watch('q', () => this.refresh());
             this.$watch('cat', () => this.refresh());
-            this.$watch('wal', () => this.refresh());
+            this.$watch('wal', () => this.refreshWithWalletType());
+            this.$watch('walType', () => {
+                this.wal = 'all';
+                this.refreshWithWalletType();
+            });
+            this.$watch('txFilter', () => this.refresh());
 
             this.refresh();
+        },
+
+        get walletTypeLabel() {
+            return this.walType === 'all' ? 'ทั้งหมด' : this.walType === 'personal' ? 'ส่วนตัว' : 'แชร์';
+        },
+
+        setWalletType(type) {
+            this.walType = type;
+        },
+
+        get filteredWallets() {
+            if (this.walType === 'all') {
+                return this.wallets;
+            }
+            return this.wallets.filter(w => w.access_type === this.walType);
         },
 
         get list() {
@@ -85,13 +107,35 @@ export function transactions(initialData) {
             URL.revokeObjectURL(url);
         },
 
+        async refreshWithWalletType() {
+            this.loading = true;
+            try {
+                const params = new URLSearchParams();
+                if (this.q) params.append('q', this.q);
+                if (this.cat !== 'all') params.append('category', this.cat);
+                if (this.walType !== 'all') params.append('wallet_type', this.walType);
+                if (this.wal !== 'all') params.append('wallet', this.wal);
+                if (this.walType === 'shared' && this.txFilter !== 'all') params.append('transaction_filter', this.txFilter);
+
+                const response = await fetch(`/transactions/data?${params.toString()}`);
+                const data = await response.json();
+                this.transactions = data.transactions;
+            } catch (error) {
+                console.error('Failed to load transactions:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+
         async refresh() {
             this.loading = true;
             try {
                 const params = new URLSearchParams();
                 if (this.q) params.append('q', this.q);
                 if (this.cat !== 'all') params.append('category', this.cat);
+                if (this.walType !== 'all') params.append('wallet_type', this.walType);
                 if (this.wal !== 'all') params.append('wallet', this.wal);
+                if (this.walType === 'shared' && this.txFilter !== 'all') params.append('transaction_filter', this.txFilter);
 
                 const response = await fetch(`/transactions/data?${params.toString()}`);
                 const data = await response.json();

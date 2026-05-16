@@ -8,7 +8,7 @@
             json_encode([
                 'transactions' => $transactions,
                 'categories' => $categories->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'icon' => $c->icon])->values(),
-                'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name])->values(),
+                'wallets' => $wallets->map(fn($w) => ['id' => $w->id, 'name' => $w->name, 'access_type' => $w->access_type->value])->values(),
             ])
         }})"
         @transaction-created.window="refresh()"
@@ -46,7 +46,7 @@
             </div>
 
             <!-- Filter Bar -->
-            <div class="grid gap-2.5 sm:grid-cols-[1fr,180px,180px]">
+            <div class="grid gap-2.5 sm:grid-cols-[1fr]">
                 <!-- Search -->
                 <div class="relative">
                     <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -59,12 +59,15 @@
                         class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors placeholder-text-muted"
                     />
                 </div>
+            </div>
 
+            <!-- Filters Row -->
+            <div class="grid gap-2.5" :class="walType === 'shared' ? 'sm:grid-cols-4' : 'sm:grid-cols-3'">
                 <!-- Category Filter -->
                 <div x-data="{ open: false }" class="relative">
                     <button
                         @click="open = !open"
-                        class="w-full px-3 py-2.5 border border-border rounded-xl bg-card text-foreground text-left flex items-center justify-between text-sm font-medium hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+                        class="w-full px-3 py-2 border border-border rounded-xl bg-card text-foreground text-left flex items-center justify-between text-sm font-medium hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         <span x-text="cat === 'all' ? 'ทุกหมวดหมู่' : categoryFor(cat)?.icon + ' ' + categoryFor(cat)?.name"></span>
                         <svg class="h-4 w-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -103,11 +106,58 @@
                     </div>
                 </div>
 
+                <!-- Wallet Type Filter -->
+                <div x-data="{ open: false }" class="relative">
+                    <button
+                        @click="open = !open"
+                        class="w-full px-3 py-2 border border-border rounded-xl bg-card text-foreground text-left flex items-center justify-between text-sm font-medium hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                        <span x-text="walletTypeLabel"></span>
+                        <svg class="h-4 w-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div
+                        x-show="open"
+                        @click.outside="open = false"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute z-50 mt-1 w-full bg-card border border-border rounded-xl shadow-floating py-1"
+                        style="display: none;"
+                    >
+                        <button
+                            @click="setWalletType('all'); open = false"
+                            class="w-full px-3 py-2.5 text-left text-sm hover:bg-surface-subtle transition-colors font-medium"
+                            :class="walType === 'all' ? 'bg-surface-subtle text-primary' : 'text-foreground'"
+                        >
+                            ทั้งหมด
+                        </button>
+                        <button
+                            @click="setWalletType('personal'); open = false"
+                            class="w-full px-3 py-2.5 text-left text-sm hover:bg-surface-subtle transition-colors"
+                            :class="walType === 'personal' ? 'bg-surface-subtle text-primary' : 'text-foreground'"
+                        >
+                            ส่วนตัว
+                        </button>
+                        <button
+                            @click="setWalletType('shared'); open = false"
+                            class="w-full px-3 py-2.5 text-left text-sm hover:bg-surface-subtle transition-colors"
+                            :class="walType === 'shared' ? 'bg-surface-subtle text-primary' : 'text-foreground'"
+                        >
+                            แชร์
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Wallet Filter -->
                 <div x-data="{ open: false }" class="relative">
                     <button
                         @click="open = !open"
-                        class="w-full px-3 py-2.5 border border-border rounded-xl bg-card text-foreground text-left flex items-center justify-between text-sm font-medium hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+                        class="w-full px-3 py-2 border border-border rounded-xl bg-card text-foreground text-left flex items-center justify-between text-sm font-medium hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         <span x-text="wal === 'all' ? 'ทุกกระเป๋า' : walletFor(wal)?.name"></span>
                         <svg class="h-4 w-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -133,7 +183,7 @@
                         >
                             ทุกกระเป๋า
                         </button>
-                        <template x-for="w in wallets" :key="w.id">
+                        <template x-for="w in filteredWallets" :key="w.id">
                             <button
                                 @click="wal = w.id; open = false"
                                 class="w-full px-3 py-2.5 text-left text-sm hover:bg-surface-subtle transition-colors"
@@ -141,6 +191,46 @@
                                 x-text="w.name"
                             ></button>
                         </template>
+                    </div>
+                </div>
+
+                <!-- Transaction Filter (only for shared wallets) -->
+                <div x-show="walType === 'shared'" x-data="{ open: false }" class="relative">
+                    <button
+                        @click="open = !open"
+                        class="w-full px-3 py-2 border border-border rounded-xl bg-card text-foreground text-left flex items-center justify-between text-sm font-medium hover:bg-surface-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                        <span x-text="txFilter === 'all' ? 'ทั้งหมด' : 'ฉัน'"></span>
+                        <svg class="h-4 w-4 shrink-0 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div
+                        x-show="open"
+                        @click.outside="open = false"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute z-50 mt-1 w-full bg-card border border-border rounded-xl shadow-floating py-1"
+                        style="display: none;"
+                    >
+                        <button
+                            @click="txFilter = 'all'; open = false"
+                            class="w-full px-3 py-2.5 text-left text-sm hover:bg-surface-subtle transition-colors font-medium"
+                            :class="txFilter === 'all' ? 'bg-surface-subtle text-primary' : 'text-foreground'"
+                        >
+                            ทั้งหมด
+                        </button>
+                        <button
+                            @click="txFilter = 'shared'; open = false"
+                            class="w-full px-3 py-2.5 text-left text-sm hover:bg-surface-subtle transition-colors"
+                            :class="txFilter === 'shared' ? 'bg-surface-subtle text-primary' : 'text-foreground'"
+                        >
+                            ฉัน
+                        </button>
                     </div>
                 </div>
             </div>

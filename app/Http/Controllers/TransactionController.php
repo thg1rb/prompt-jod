@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\WalletAccess;
 use App\Http\Requests\SlipVerifyRequest;
 use App\Http\Requests\TransactionStoreRequest;
 use App\Models\Transaction;
@@ -42,13 +43,27 @@ class TransactionController extends Controller
         $q = $request->input('q', '');
         $cat = $request->input('category', 'all');
         $wal = $request->input('wallet', 'all');
+        $walType = $request->input('wallet_type', 'all');
+        $txFilter = $request->input('transaction_filter', 'all');
 
-        $sharedWalletIds = $this->sharedWalletIds($user);
-
-        $transactions = Transaction::with(['category.fixedCategory', 'wallet', 'creator'])
-            ->where(function ($query) use ($sharedWalletIds, $user) {
-                $query->where('user_id', $user->id)
-                    ->orWhereIn('wallet_id', $sharedWalletIds);
+        $query = Transaction::with(['category.fixedCategory', 'wallet', 'creator'])
+            ->where(function ($query) use ($user, $walType, $txFilter) {
+                if ($walType === 'personal') {
+                    $query->where('user_id', $user->id)
+                        ->whereHas('wallet', fn ($q) => $q->where('access_type', WalletAccess::Personal));
+                } elseif ($walType === 'shared') {
+                    $sharedWalletIds = $this->sharedWalletIds($user);
+                    $query->whereIn('wallet_id', $sharedWalletIds);
+                    if ($txFilter === 'shared') {
+                        $query->where('user_id', $user->id);
+                    }
+                } else {
+                    $sharedWalletIds = $this->sharedWalletIds($user);
+                    $query->where(function ($q) use ($user, $sharedWalletIds) {
+                        $q->where('user_id', $user->id)
+                            ->orWhereIn('wallet_id', $sharedWalletIds);
+                    });
+                }
             })
             ->latest('transacted_at');
 
@@ -57,19 +72,19 @@ class TransactionController extends Controller
         }
 
         if ($wal !== 'all') {
-            $transactions->where('wallet_id', $wal);
+            $query->where('wallet_id', $wal);
         }
 
         if ($q) {
             $search = '%'.addcslashes(strtolower($q), '%_').'%';
-            $transactions->where(function ($query) use ($search) {
+            $query->where(function ($query) use ($search) {
                 $query->whereRaw('LOWER(recipient) LIKE ?', [$search])
                     ->orWhereRaw('LOWER(note) LIKE ?', [$search])
                     ->orWhereRaw('LOWER(sender) LIKE ?', [$search]);
             });
         }
 
-        $transactions = $transactions->get();
+        $transactions = $query->get();
 
         return response()->json([
             'transactions' => $transactions->map(fn ($t) => [

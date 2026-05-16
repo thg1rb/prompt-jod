@@ -911,3 +911,147 @@ test('free user cannot delete transaction in shared wallet', function () {
     $response->assertStatus(403);
     $response->assertJson(['requires_subscription' => true]);
 });
+
+describe('Wallet Type Filter', function () {
+    test('user can filter transactions by wallet type personal', function () {
+        $personalWallet = Wallet::factory()->forUser($this->user)->create([
+            'access_type' => WalletAccess::Personal,
+        ]);
+        $sharedWallet = Wallet::factory()->forUser($this->user)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        $category = Category::factory()->forUser($this->user)->create();
+
+        Transaction::factory()->forUser($this->user)->create([
+            'wallet_id' => $personalWallet->id,
+            'category_id' => $category->id,
+        ]);
+        Transaction::factory()->forUser($this->user)->create([
+            'wallet_id' => $sharedWallet->id,
+            'category_id' => $category->id,
+        ]);
+
+        $response = $this->get(route('transactions.data', ['wallet_type' => 'personal']));
+        $data = $response->json('transactions');
+
+        expect($data)->toHaveCount(1);
+        expect($data[0]['wallet_id'])->toBe($personalWallet->id);
+    });
+
+    test('user can filter transactions by wallet type shared', function () {
+        $personalWallet = Wallet::factory()->forUser($this->user)->create([
+            'access_type' => WalletAccess::Personal,
+        ]);
+        $sharedWallet = Wallet::factory()->forUser($this->user)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        $category = Category::factory()->forUser($this->user)->create();
+
+        Transaction::factory()->forUser($this->user)->create([
+            'wallet_id' => $personalWallet->id,
+            'category_id' => $category->id,
+        ]);
+        Transaction::factory()->forUser($this->user)->create([
+            'wallet_id' => $sharedWallet->id,
+            'category_id' => $category->id,
+        ]);
+
+        $response = $this->get(route('transactions.data', ['wallet_type' => 'shared']));
+        $data = $response->json('transactions');
+
+        expect($data)->toHaveCount(1);
+        expect($data[0]['wallet_id'])->toBe($sharedWallet->id);
+    });
+
+    test('shared wallet member can filter to show only own transactions', function () {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $sharedWallet = Wallet::factory()->forUser($owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        WalletMember::factory()->forWallet($sharedWallet)->accepted()->forUser($member)->create();
+
+        $category = Category::factory()->forUser($owner)->create();
+        Transaction::factory()->forUser($owner)->create([
+            'wallet_id' => $sharedWallet->id,
+            'category_id' => $category->id,
+            'created_by' => $owner->id,
+        ]);
+        Transaction::factory()->forUser($member)->create([
+            'wallet_id' => $sharedWallet->id,
+            'category_id' => $category->id,
+            'created_by' => $member->id,
+        ]);
+
+        Auth::login($member);
+
+        $response = $this->get(route('transactions.data', [
+            'wallet_type' => 'shared',
+            'transaction_filter' => 'shared',
+        ]));
+        $data = $response->json('transactions');
+
+        expect($data)->toHaveCount(1);
+        expect($data[0]['created_by'])->toBe($member->id);
+    });
+
+    test('shared wallet owner can filter to show only own transactions', function () {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $sharedWallet = Wallet::factory()->forUser($owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        WalletMember::factory()->forWallet($sharedWallet)->accepted()->forUser($member)->create();
+
+        $category = Category::factory()->forUser($owner)->create();
+        Transaction::factory()->forUser($owner)->create([
+            'wallet_id' => $sharedWallet->id,
+            'category_id' => $category->id,
+            'created_by' => $owner->id,
+        ]);
+        Transaction::factory()->forUser($member)->create([
+            'wallet_id' => $sharedWallet->id,
+            'category_id' => $category->id,
+            'created_by' => $member->id,
+        ]);
+
+        Auth::login($owner);
+
+        $response = $this->get(route('transactions.data', [
+            'wallet_type' => 'shared',
+            'transaction_filter' => 'shared',
+        ]));
+        $data = $response->json('transactions');
+
+        expect($data)->toHaveCount(1);
+        expect($data[0]['created_by'])->toBe($owner->id);
+    });
+
+    test('shared wallet shows all transactions by default when wallet_type is shared', function () {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $sharedWallet = Wallet::factory()->forUser($owner)->create([
+            'access_type' => WalletAccess::Shared,
+        ]);
+        WalletMember::factory()->forWallet($sharedWallet)->accepted()->forUser($member)->create();
+
+        $category = Category::factory()->forUser($owner)->create();
+        Transaction::factory()->forUser($owner)->create([
+            'wallet_id' => $sharedWallet->id,
+            'category_id' => $category->id,
+            'created_by' => $owner->id,
+        ]);
+        Transaction::factory()->forUser($member)->create([
+            'wallet_id' => $sharedWallet->id,
+            'category_id' => $category->id,
+            'created_by' => $member->id,
+        ]);
+
+        Auth::login($member);
+
+        $response = $this->get(route('transactions.data', ['wallet_type' => 'shared']));
+        $data = $response->json('transactions');
+
+        expect($data)->toHaveCount(2);
+    });
+});
