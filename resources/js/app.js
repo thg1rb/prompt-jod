@@ -27,7 +27,7 @@ Alpine.directive('tooltip', (el, { expression }, { evaluateLater, effect }) => {
 
         // Create tooltip element
         tooltip = document.createElement('div');
-        tooltip.className = 'fixed z-50 px-2.5 py-1 text-xs font-medium text-white bg-gray-900 rounded-md shadow-lg pointer-events-none opacity-0 transition-opacity duration-200';
+        tooltip.className = 'fixed z-50 px-2.5 py-1 text-xs font-medium rounded-md shadow-lg pointer-events-none opacity-0 transition-opacity duration-200 bg-foreground text-background dark:bg-background dark:text-foreground';
         tooltip.textContent = content;
         document.body.appendChild(tooltip);
 
