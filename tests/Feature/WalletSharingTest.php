@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\WalletAccess;
+use App\Jobs\SendWalletInvitationEmail;
+use App\Mail\WalletInvitationMail;
 use App\Models\Category;
 use App\Models\Subscription;
 use App\Models\Transaction;
@@ -8,6 +10,8 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletMember;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 beforeEach(function () {
@@ -490,6 +494,103 @@ describe('Accept Invitation HTML Responses', function () {
 
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('error');
+    });
+});
+
+describe('Email Invitation', function () {
+    test('owner can send email invitation', function () {
+        Bus::fake();
+        Mail::fake();
+
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $email = 'friend@example.com';
+
+        $response = $this->postJson(route('wallets.invitations.send-email', $wallet), [
+            'email' => $email,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+        ]);
+        Bus::assertDispatched(SendWalletInvitationEmail::class);
+    });
+
+    test('non-owner cannot send email invitation', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        Auth::login($this->member);
+
+        $response = $this->postJson(route('wallets.invitations.send-email', $wallet), [
+            'email' => 'friend@example.com',
+        ]);
+
+        $response->assertStatus(403);
+    });
+
+    test('duplicate email invitation is rejected', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $email = 'friend@example.com';
+        WalletMember::factory()->forWallet($wallet)->create([
+            'email' => $email,
+            'invited_by' => $this->owner->id,
+            'token' => Str::random(64),
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => null,
+        ]);
+
+        $response = $this->postJson(route('wallets.invitations.send-email', $wallet), [
+            'email' => $email,
+        ]);
+
+        $response->assertStatus(422);
+    });
+
+    test('invalid email returns 422', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+
+        $response = $this->postJson(route('wallets.invitations.send-email', $wallet), [
+            'email' => 'not-an-email',
+        ]);
+
+        $response->assertStatus(422);
+    });
+
+    test('wallet invitation mail has correct content', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $member = WalletMember::factory()->forWallet($wallet)->create([
+            'email' => 'friend@example.com',
+            'invited_by' => $this->owner->id,
+            'token' => Str::random(64),
+            'token_expires_at' => now()->addHours(24),
+        ]);
+        $acceptUrl = route('invitations.accept', ['token' => $member->token]);
+
+        $mailable = new WalletInvitationMail($wallet, $member, $acceptUrl);
+        $mailable->assertSeeInHtml('เชิญเข้าร่วมกระเป๋าเงิน');
+        $mailable->assertSeeInHtml($wallet->name);
+        $mailable->assertSeeInHtml($this->owner->name);
+        $mailable->assertSeeInHtml($acceptUrl);
+    });
+
+    test('owner cannot accept own wallet invitation', function () {
+        $wallet = Wallet::factory()->forUser($this->owner)->create();
+        $token = Str::random(64);
+        WalletMember::factory()->create([
+            'wallet_id' => $wallet->id,
+            'user_id' => null,
+            'invited_by' => $this->owner->id,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+            'accepted_at' => null,
+        ]);
+
+        $response = $this->postJson(route('invitations.accept.store', $token));
+
+        $response->assertStatus(400);
+        $response->assertJson([
+            'success' => false,
+            'message' => 'คุณเป็นเจ้าของกระเป๋าเงินนี้อยู่แล้ว',
+        ]);
     });
 });
 

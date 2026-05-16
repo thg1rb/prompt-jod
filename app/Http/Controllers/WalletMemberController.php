@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SendWalletInvitationRequest;
+use App\Jobs\SendWalletInvitationEmail;
 use App\Models\Wallet;
 use App\Models\WalletMember;
 use Illuminate\Http\JsonResponse;
@@ -84,6 +86,27 @@ class WalletMemberController extends Controller
         ]);
     }
 
+    public function sendInvitationEmail(SendWalletInvitationRequest $request, Wallet $wallet): JsonResponse
+    {
+        $email = $request->validated()['email'];
+
+        $token = Str::random(64);
+        $member = $wallet->members()->create([
+            'user_id' => null,
+            'invited_by' => auth()->id(),
+            'email' => $email,
+            'token' => $token,
+            'token_expires_at' => now()->addHours(24),
+        ]);
+
+        SendWalletInvitationEmail::dispatch($wallet, $member, $email);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'ส่งเชิญไปที่ '.$email.' แล้ว',
+        ]);
+    }
+
     public function removeMember(Wallet $wallet, string $userId): JsonResponse
     {
         abort_if(! $wallet->isOwner(auth()->user()), 403);
@@ -132,7 +155,7 @@ class WalletMemberController extends Controller
         }
 
         $isLoggedIn = auth()->check();
-        $isAlreadyMember = $isLoggedIn && $wallet->hasMember(auth()->user());
+        $isAlreadyMember = $isLoggedIn && ($wallet->hasMember(auth()->user()) || $wallet->isOwner(auth()->user()));
 
         return view('invitations.accept', [
             'wallet' => $wallet,
@@ -171,6 +194,18 @@ class WalletMemberController extends Controller
 
             return redirect()->route('login')
                 ->with('info', 'กรุณาเข้าสู่ระบบก่อนเข้าร่วมกระเป๋าเงิน');
+        }
+
+        if ($member->wallet->isOwner(auth()->user())) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'คุณเป็นเจ้าของกระเป๋าเงินนี้อยู่แล้ว',
+                ], 400);
+            }
+
+            return redirect()->route('wallets.show', $member->wallet)
+                ->with('info', 'คุณเป็นเจ้าของกระเป๋าเงินนี้อยู่แล้ว');
         }
 
         if (auth()->user()->isFree()) {

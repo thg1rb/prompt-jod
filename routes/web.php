@@ -85,6 +85,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/wallets/{wallet}/members', [WalletMemberController::class, 'members'])->name('wallets.members');
     Route::get('/wallets/{wallet}/invitations', [WalletMemberController::class, 'invitations'])->name('wallets.invitations');
     Route::post('/wallets/{wallet}/invitations', [WalletMemberController::class, 'createInvitation'])->name('wallets.invitations.create');
+    Route::post('/wallets/{wallet}/invitations/send-email', [WalletMemberController::class, 'sendInvitationEmail'])->name('wallets.invitations.send-email');
     Route::delete('/wallets/{wallet}/members/{user}', [WalletMemberController::class, 'removeMember'])->name('wallets.members.remove');
 
     // Invitation Routes

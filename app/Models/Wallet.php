@@ -101,6 +101,11 @@ class Wallet extends Model
         return $this->members()->pending();
     }
 
+    public function hasPendingInvitation(string $email): bool
+    {
+        return $this->members()->pendingForEmail($email)->exists();
+    }
+
     /**
      * Check if the given user is the owner of the wallet.
      */

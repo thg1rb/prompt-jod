@@ -10,6 +10,9 @@ export function walletShare(walletId, isOwner) {
         generating: false,
         copied: false,
         newInvitationUrl: null,
+        emailInput: '',
+        emailError: '',
+        sendingEmail: false,
 
         async loadMembers() {
             this.loading = true;
@@ -99,6 +102,47 @@ export function walletShare(walletId, isOwner) {
                 }, 2000);
             } catch (error) {
                 console.error('Failed to copy:', error);
+            }
+        },
+
+        async sendInvitationEmail() {
+            this.emailError = '';
+            const email = this.emailInput.trim();
+
+            if (!email) {
+                this.emailError = 'กรุณาระบุอีเมล';
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                this.emailError = 'รูปแบบอีเมลไม่ถูกต้อง';
+                return;
+            }
+
+            this.sendingEmail = true;
+            try {
+                const response = await fetch(`/wallets/${this.walletId}/invitations/send-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({ email })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.$store.toast.success(data.message);
+                    this.emailInput = '';
+                    this.loadInvitations();
+                } else {
+                    this.emailError = data.message || 'เกิดข้อผิดพลาด';
+                }
+            } catch (error) {
+                console.error('Failed to send invitation email:', error);
+                this.emailError = 'เกิดข้อผิดพลาดในการส่งอีเมล';
+            } finally {
+                this.sendingEmail = false;
             }
         },
 

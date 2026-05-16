@@ -20,6 +20,7 @@ class WalletMemberFactory extends Factory
             'user_id' => User::factory(),
             'invited_by' => User::factory(),
             'token' => Str::random(64),
+            'email' => null,
             'token_expires_at' => now()->addHours(24),
             'accepted_at' => null,
         ];

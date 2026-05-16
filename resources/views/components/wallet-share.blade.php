@@ -73,6 +73,13 @@
                 >
                     เชิญเพื่อน
                 </button>
+                <button
+                    @click="activeTab = 'email'"
+                    :class="activeTab === 'email' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-foreground'"
+                    class="whitespace-nowrap py-3 px-0.5 border-b-2 font-semibold text-sm transition-colors"
+                >
+                    ส่งอีเมล
+                </button>
             </nav>
         </div>
 
@@ -156,6 +163,38 @@
                         </template>
                     </ul>
                 </div>
+            </div>
+
+            <!-- Email Tab -->
+            <div x-show="activeTab === 'email'">
+                <p class="text-sm text-text-muted mb-4">
+                    ส่งเชิญเข้าร่วมกระเป๋าเงินไปยังอีเมลของเพื่อน ลิงก์จะหมดอายุภายใน 24 ชั่วโมง
+                </p>
+
+                <form @submit.prevent="sendInvitationEmail()">
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-foreground mb-1.5">อีเมลเพื่อน</label>
+                        <input
+                            type="email"
+                            x-model="emailInput"
+                            placeholder="friend@example.com"
+                            class="w-full px-3 py-2.5 rounded-xl border border-border bg-surface text-foreground text-sm placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                            :class="{ 'border-destructive': emailError }"
+                        >
+                        <p x-show="emailError" class="mt-1.5 text-xs text-destructive" x-text="emailError"></p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        :disabled="sendingEmail || !emailInput.trim()"
+                        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm disabled:opacity-50 shadow-sm active:scale-[0.98]"
+                    >
+                        <svg x-show="!sendingEmail" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span x-text="sendingEmail ? 'กำลังส่ง...' : 'ส่งเชิญอีเมล'"></span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>

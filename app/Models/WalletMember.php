@@ -17,6 +17,7 @@ class WalletMember extends Model
         'user_id',
         'invited_by',
         'token',
+        'email',
         'token_expires_at',
         'accepted_at',
     ];
@@ -62,6 +63,11 @@ class WalletMember extends Model
     public function scopeValidToken(Builder $query): Builder
     {
         return $query->where('token_expires_at', '>', now());
+    }
+
+    public function scopePendingForEmail(Builder $query, string $email): Builder
+    {
+        return $query->where('email', $email)->pending()->validToken();
     }
 
     public function isAccepted(): bool
