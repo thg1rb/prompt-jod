@@ -116,24 +116,20 @@
 
             <!-- Invite Tab -->
             <div x-show="activeTab === 'invite'">
-                <p class="text-sm text-text-muted mb-4">
-                    สร้างลิงก์เชิญเพื่อแชร์กระเป๋าเงินนี้กับเพื่อน ลิงก์จะหมดอายุภายใน 24 ชั่วโมง
-                </p>
-
-                <button
-                    @click="generateInvitation()"
-                    :disabled="generating"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm disabled:opacity-50 shadow-sm active:scale-[0.98]"
+                <!-- Active Invitation Card -->
+                <div
+                    x-show="newInvitationUrl && timeRemaining"
+                    class="p-4 bg-primary/5 border border-primary/20 rounded-xl"
                 >
-                    <svg x-show="!generating" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span x-text="generating ? 'กำลังสร้าง...' : 'สร้างลิงก์เชิญ'"></span>
-                </button>
-
-                <div x-show="newInvitationUrl" class="mt-4">
-                    <label class="block text-sm font-semibold text-foreground mb-1.5">ลิงก์เชิญ</label>
-                    <div class="flex gap-2">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <svg class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <span class="text-sm font-semibold text-primary">ลิงก์เชิญของคุณ</span>
+                    </div>
+                    <div class="flex gap-2 mb-4">
                         <input
                             type="text"
                             readonly
@@ -142,27 +138,67 @@
                         >
                         <button
                             @click="copyInvitationUrl()"
-                            class="px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-medium text-sm shadow-sm"
+                            class="px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-medium text-sm shadow-sm whitespace-nowrap"
                         >
                             <span x-show="!copied">คัดลอก</span>
-                            <span x-show="copied" class="text-primary-foreground">คัดลอกแล้ว!</span>
+                            <span x-show="copied" class="flex items-center gap-1">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                คัดลอกแล้ว!
+                            </span>
                         </button>
+                    </div>
+                    <div class="flex items-center gap-2 p-3 bg-surface rounded-lg">
+                        <svg class="h-5 w-5 text-text-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div class="flex-1">
+                            <span class="text-xs text-text-muted">หมดอายุใน</span>
+                            <div class="font-semibold text-foreground" x-text="timeRemaining"></div>
+                        </div>
                     </div>
                 </div>
 
-                <div x-show="invitations.length > 0" class="mt-6">
-                    <h4 class="text-sm font-semibold text-foreground mb-2">ลิงก์เชิญที่รอดำเนินการ</h4>
-                    <ul class="divide-y divide-border">
-                        <template x-for="inv in invitations" :key="inv.id">
-                            <li class="py-2 flex items-center justify-between text-sm">
-                                <div>
-                                    <div class="text-foreground" x-text="inv.email"></div>
-                                    <div class="text-xs text-text-muted">หมดอายุ: <span x-text="inv.expires_at"></span></div>
-                                </div>
-                            </li>
-                        </template>
-                    </ul>
+                <!-- Expired State -->
+                <div
+                    x-show="newInvitationUrl === null && !timeRemaining"
+                    class="text-center py-6"
+                >
+                    <div class="h-12 w-12 rounded-full bg-text-muted/10 flex items-center justify-center mx-auto mb-3">
+                        <svg class="h-6 w-6 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <p class="text-sm text-text-muted mb-1">ลิงก์เชิญหมดอายุแล้ว</p>
+                    <p class="text-xs text-text-muted">สร้างลิงก์ใหม่เพื่อแชร์กระเป๋าเงิน</p>
                 </div>
+
+                <!-- Generate Button -->
+                <button
+                    x-show="newInvitationUrl === null || !timeRemaining"
+                    @click="generateInvitation()"
+                    :disabled="generating"
+                    class="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm disabled:opacity-50 shadow-sm active:scale-[0.98]"
+                >
+                    <svg x-show="!generating" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span x-text="generating ? 'กำลังสร้าง...' : 'สร้างลิงก์เชิญ'"></span>
+                </button>
+
+                <!-- Create New Link Button (when active link exists) -->
+                <button
+                    x-show="newInvitationUrl && timeRemaining"
+                    @click="generateInvitation()"
+                    :disabled="generating"
+                    class="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-surface hover:bg-surface-subtle border border-border text-foreground rounded-xl transition-colors font-semibold text-sm disabled:opacity-50 shadow-sm active:scale-[0.98]"
+                >
+                    <svg x-show="!generating" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span x-text="generating ? 'กำลังสร้าง...' : 'สร้างลิงก์ใหม่'"></span>
+                </button>
             </div>
 
             <!-- Email Tab -->
@@ -195,6 +231,51 @@
                         <span x-text="sendingEmail ? 'กำลังส่ง...' : 'ส่งเชิญอีเมล'"></span>
                     </button>
                 </form>
+            </div>
+
+            <!-- Confirmation Dialog -->
+            <div
+                x-show="showConfirmDialog"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-5 rounded-t-2xl sm:rounded-2xl"
+                @click.self="cancelGenerateInvitation()"
+            >
+                <div
+                    x-show="showConfirmDialog"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    class="bg-card rounded-xl shadow-floating border border-border p-5 w-full max-w-sm"
+                >
+                    <div class="text-center mb-4">
+                        <div class="h-12 w-12 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-3">
+                            <svg class="h-6 w-6 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-foreground mb-1">สร้างลิงก์ใหม่?</h4>
+                        <p class="text-sm text-text-muted">ลิงก์เชิญเดิมจะถูกยกเลิกทันที แม้ยังไม่หมดอายุ</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button
+                            @click="cancelGenerateInvitation()"
+                            class="flex-1 px-4 py-2.5 bg-surface hover:bg-surface-subtle border border-border text-foreground rounded-xl transition-colors font-medium text-sm"
+                        >
+                            ยกเลิก
+                        </button>
+                        <button
+                            @click="doGenerateInvitation()"
+                            class="flex-1 px-4 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl transition-colors font-semibold text-sm"
+                        >
+                            สร้างลิงก์ใหม่
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

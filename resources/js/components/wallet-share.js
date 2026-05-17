@@ -10,9 +10,13 @@ export function walletShare(walletId, isOwner) {
         generating: false,
         copied: false,
         newInvitationUrl: null,
+        expiresAt: null,
+        timeRemaining: null,
+        countdownInterval: null,
         emailInput: '',
         emailError: '',
         sendingEmail: false,
+        showConfirmDialog: false,
 
         async loadMembers() {
             this.loading = true;
@@ -22,6 +26,39 @@ export function walletShare(walletId, isOwner) {
                 this.members = data.members || [];
             } catch (error) {
                 console.error('Failed to load members:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async loadInvitationLink() {
+            this.loading = true;
+            try {
+                const response = await fetch(`/wallets/${this.walletId}/invitation-link`);
+                const data = await response.json();
+
+                if (data.invitation) {
+                    const expiresAt = new Date(data.invitation.expires_at);
+                    const now = new Date();
+
+                    if (expiresAt > now) {
+                        this.newInvitationUrl = data.invitation.url;
+                        this.expiresAt = data.invitation.expires_at;
+                        this.startCountdown();
+                    } else {
+                        this.newInvitationUrl = null;
+                        this.expiresAt = null;
+                        this.timeRemaining = null;
+                        this.stopCountdown();
+                    }
+                } else {
+                    this.newInvitationUrl = null;
+                    this.expiresAt = null;
+                    this.timeRemaining = null;
+                    this.stopCountdown();
+                }
+            } catch (error) {
+                console.error('Failed to load invitation link:', error);
             } finally {
                 this.loading = false;
             }
@@ -41,6 +78,16 @@ export function walletShare(walletId, isOwner) {
         },
 
         async generateInvitation() {
+            if (this.newInvitationUrl && this.timeRemaining) {
+                this.showConfirmDialog = true;
+                return;
+            }
+
+            await this.doGenerateInvitation();
+        },
+
+        async doGenerateInvitation() {
+            this.showConfirmDialog = false;
             this.generating = true;
             try {
                 const response = await fetch(`/wallets/${this.walletId}/invitations`, {
@@ -52,8 +99,9 @@ export function walletShare(walletId, isOwner) {
                 const data = await response.json();
                 if (data.success) {
                     this.newInvitationUrl = data.invitation.url;
+                    this.expiresAt = data.invitation.expires_at;
                     this.$store.toast.success('สร้างลิงก์เชิญเรียบร้อยแล้ว');
-                    this.loadInvitations();
+                    this.loadInvitationLink();
                 } else {
                     this.$store.toast.error(data.message || 'เกิดข้อผิดพลาด');
                 }
@@ -63,6 +111,64 @@ export function walletShare(walletId, isOwner) {
             } finally {
                 this.generating = false;
             }
+        },
+
+        startCountdown() {
+            this.stopCountdown();
+            this.updateCountdown();
+
+            this.countdownInterval = setInterval(() => {
+                this.updateCountdown();
+            }, 1000);
+        },
+
+        stopCountdown() {
+            if (this.countdownInterval) {
+                clearInterval(this.countdownInterval);
+                this.countdownInterval = null;
+            }
+        },
+
+        updateCountdown() {
+            if (!this.expiresAt) {
+                this.timeRemaining = null;
+                this.stopCountdown();
+                return;
+            }
+
+            const expiresAt = new Date(this.expiresAt);
+            const now = new Date();
+            const diff = Math.floor((expiresAt - now) / 1000);
+
+            if (diff <= 0) {
+                this.timeRemaining = null;
+                this.newInvitationUrl = null;
+                this.expiresAt = null;
+                this.stopCountdown();
+                return;
+            }
+
+            this.timeRemaining = this.formatTimeRemaining(diff);
+        },
+
+        formatTimeRemaining(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const parts = [];
+
+            if (hours > 0) {
+                parts.push(`${hours} ชั่วโมง`);
+            }
+            if (minutes > 0) {
+                parts.push(`${minutes} นาที`);
+            }
+            if (seconds > 0 || parts.length === 0) {
+                parts.push(`${seconds} วินาที`);
+            }
+
+            return parts.join(' ');
         },
 
         async removeMember(userId) {
@@ -140,7 +246,7 @@ export function walletShare(walletId, isOwner) {
                 }
             } catch (error) {
                 console.error('Failed to send invitation email:', error);
-                this.emailError = 'เกิดข้อผิดพลาดในการส่งอีเมล';
+                this.$store.toast.error('เกิดข้อผิดพลาดในการส่งอีเมล');
             } finally {
                 this.sendingEmail = false;
             }
@@ -149,11 +255,18 @@ export function walletShare(walletId, isOwner) {
         openShareModal() {
             this.shareOpen = true;
             this.loadMembers();
+            this.loadInvitationLink();
             this.loadInvitations();
         },
 
         closeShareModal() {
             this.shareOpen = false;
+            this.stopCountdown();
+            this.showConfirmDialog = false;
+        },
+
+        cancelGenerateInvitation() {
+            this.showConfirmDialog = false;
         }
     };
 }

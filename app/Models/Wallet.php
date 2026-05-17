@@ -101,6 +101,25 @@ class Wallet extends Model
         return $this->members()->pending();
     }
 
+    /**
+     * Get the invitation links for the wallet.
+     */
+    public function invitationLinks(): HasMany
+    {
+        return $this->hasMany(WalletInvitation::class);
+    }
+
+    /**
+     * Get the active (non-expired) invitation link for the wallet.
+     */
+    public function activeInvitationLink(): ?WalletInvitation
+    {
+        return $this->invitationLinks()
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+    }
+
     public function hasPendingInvitation(string $email): bool
     {
         return $this->members()->pendingForEmail($email)->exists();
